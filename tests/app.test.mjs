@@ -130,7 +130,25 @@ test("patient portal keeps MFA optional until the user shares data", async () =>
   const migration = await read("supabase/migrations/20260827145500_patient_mfa_only_for_sharing.sql");
   assert.match(portal, /path==="patient"\|\|await requireMfa/);
   assert.match(features, /share-pdf[^;]+requireMfa/s);
-  assert.match(features, /access-share-form[^;]+requireMfa/s);
+  assert.match(features, /access-share-form[\s\S]*?if\(!await requireMfa/);
   assert.match(migration, /pa\.user_id=\(select auth\.uid\(\)\) and pa\.patient_id=diagnoses\.patient_id/);
   assert.match(migration, /shares_grantor_create/);
+});
+
+test("facility types, training hospital, workforce, and messaging are durable", async () => {
+  const migration = await read("supabase/migrations/20260827161000_facility_types_training_workforce.sql");
+  const createFacility = await read("supabase/functions/create-facility/index.ts");
+  const features = await read("portal-features.js");
+  const messaging = await read("supabase/migrations/20260827091618_department_community_sharing.sql");
+  assert.match(migration, /'Demo Hospital','demo-hospital'/);
+  assert.match(migration, /facility_type in \('Hospital','Health Center','Pharmacy','Laboratory \(Labs\)','Imaging Center','Research Center','Other'\)/);
+  assert.match(migration, /create table public\.staff_shifts/);
+  assert.match(migration, /create table public\.facility_tasks/);
+  assert.match(migration, /private\.has_training_access/);
+  assert.match(migration, /health_department_memberships hm/);
+  assert.match(createFacility, /facilityTypes=/);
+  assert.match(features, /Staff scheduling/);
+  assert.match(features, /Task assignment/);
+  assert.match(messaging, /create table public\.message_threads/);
+  assert.match(messaging, /create table public\.messages/);
 });
