@@ -3,6 +3,31 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 const supabase = globalThis.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const modal = document.querySelector("#live-modal");
 let session = null;
+let currentProviderId = null;
+let currentFacilityId = null;
+const safe = value => String(value ?? "—").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character]));
+const optionList = (rows, label, empty="Select") => `<option value="">${empty}</option>` + rows.map(row => `<option value="${row.id}">${safe(label(row))}</option>`).join("");
+
+async function loadClinicalContext() {
+  if (!session) return;
+  const [{data:provider},{data:membership}] = await Promise.all([
+    supabase.from("providers").select("id").eq("user_id",session.user.id).maybeSingle(),
+    supabase.from("facility_memberships").select("facility_id").eq("user_id",session.user.id).eq("active",true).limit(1).maybeSingle()
+  ]);
+  currentProviderId=provider?.id||null;
+  currentFacilityId=membership?.facility_id||null;
+}
+
+async function clinicalChoices() {
+  const [{data:patients,error:patientError},{data:services,error:serviceError},{data:medications,error:medicationError}] = await Promise.all([
+    supabase.from("patients").select("id,first_name,last_name,snau").order("last_name"),
+    supabase.from("services").select("id,name,departments(name)").order("name"),
+    supabase.from("medications").select("id,name,generic_name,strength,route").order("name")
+  ]);
+  const error=patientError||serviceError||medicationError;
+  if(error) throw error;
+  return {patients:patients||[],services:services||[],medications:medications||[]};
+}
 
 const notify = message => {
   const el = document.querySelector("#toast");
@@ -61,16 +86,31 @@ async function loadCountries(select) {
 
 async function patientForm() {
   const {data:membership}=await supabase.from("facility_memberships").select("facility_id").eq("user_id",session.user.id).eq("active",true).limit(1).maybeSingle();
-  showModal("Register patient", `<form id="patient-form"><div class="live-banner">UNIN is generated automatically once and is permanent. MRN belongs to the registering facility.</div><label>Patient type<select name="patient_type" required><option>Standard Patient</option><option>Military</option><option>Military Dependent</option><option>Police</option><option>Police Dependent</option><option>Public Servant / Fonctionnaire</option><option>Public Servant / Fonctionnaire Dependent</option><option>Personnel CIVIL (PERCI) / Civilian Personnel</option><option>Personnel CIVIL (PERCI) / Civilian Personnel Dependent</option></select></label><label>First name<input name="first_name" required></label><label>Middle name<input name="middle_name"></label><label>Last name<input name="last_name" required></label><label>Facility MRN<input name="mrn"></label><label>Date of birth<input type="date" name="date_of_birth"></label><label>Gender<select name="gender_identity" id="patient-gender"><option value="">Not specified</option><option>Male</option><option>Female</option><option>Other</option></select></label><label id="patient-gender-other" hidden>Other gender<input name="gender_other"></label><label>Ethnicity<select name="ethnicity" id="patient-ethnicity"><option value="">Not specified</option><option>Black</option><option>White</option><option>Arab</option><option>Asian</option><option>Latino</option><option>Other</option></select></label><label id="patient-ethnicity-other" hidden>Other ethnicity<input name="ethnicity_other"></label><label>Preferred language<input name="preferred_language" placeholder="Language"></label><label>Primary phone<div class="phone-grid"><input name="country_calling_code" placeholder="Country code, e.g. +243"><input name="phone" type="tel"></div></label><label>Service / matricule ID<input name="service_identifier"></label><label>Rank<input name="service_rank"></label><label>Unit<input name="service_unit"></label><label>Dependent relationship<select name="dependent_relationship"><option value="">Not a dependent</option><option>Spouse</option><option>Child</option><option>Parent</option></select></label><label>Related member name<input name="related_service_member_name"></label><label>Related member service ID<input name="related_service_identifier"></label><label>Country<select name="country_id" id="country-select" required></select></label><label>Address line 1<input name="line1" required></label><label>Postal code<input name="postal_code_text"></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create patient</button></footer></form>`);
+  showModal("Register patient", `<form id="patient-form"><div class="live-banner">UNIN is generated automatically once and is permanent. MRN belongs to the registering facility.</div><label>Patient type<select name="patient_type" id="patient-type" required><option>Standard Patient</option><option>Military</option><option>Military Dependent</option><option>Police</option><option>Police Dependent</option><option>Public Servant / Fonctionnaire</option><option>Public Servant / Fonctionnaire Dependent</option><option>Personnel CIVIL (PERCI) / Civilian Personnel</option><option>Personnel CIVIL (PERCI) / Civilian Personnel Dependent</option></select></label><label>First name<input name="first_name" required></label><label>Middle name<input name="middle_name"></label><label>Last name<input name="last_name" required></label><label>Facility MRN<input name="mrn"></label><label>Date of birth<input type="date" name="date_of_birth"></label><label>Gender<select name="gender_identity" id="patient-gender"><option value="">Not specified</option><option>Male</option><option>Female</option><option>Other</option></select></label><label id="patient-gender-other" hidden>Other gender<input name="gender_other"></label><label>Ethnicity<select name="ethnicity" id="patient-ethnicity"><option value="">Not specified</option><option>Black</option><option>White</option><option>Arab</option><option>Asian</option><option>Latino</option><option>Other</option></select></label><label id="patient-ethnicity-other" hidden>Other ethnicity<input name="ethnicity_other"></label><label>Preferred language<input name="preferred_language" placeholder="Language"></label><label>Primary phone<div class="phone-grid"><input name="country_calling_code" placeholder="Country code, e.g. +243"><input name="phone" type="tel"></div></label><label>Service / matricule ID<input name="service_identifier"></label><label id="rank-label">Rank / function<select name="service_rank" id="service-rank"><option value="">Select patient type and country</option></select></label><label id="rank-custom-label" hidden>Rank / function not listed<input name="service_rank_custom"></label><label id="unit-label">Unit<select name="service_unit" id="service-unit"><option value="">Select patient type and country</option></select></label><label id="unit-custom-label" hidden>Unit not listed<input name="service_unit_custom"></label><label>Dependent relationship<select name="dependent_relationship"><option value="">Not a dependent</option><option>Spouse</option><option>Child</option><option>Parent</option></select></label><label>Related member name<input name="related_service_member_name"></label><label>Related member service ID<input name="related_service_identifier"></label><label>Country<select name="country_id" id="country-select" required></select></label><label>Address line 1<input name="line1" required></label><label>Postal code<input name="postal_code_text"></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create patient</button></footer></form>`);
   modal.querySelector("[data-cancel]").addEventListener("click",closeModal);
   await loadCountries(modal.querySelector("#country-select"));
+  const refreshAffiliations=async()=>{
+    const type=modal.querySelector("#patient-type").value.toLowerCase();
+    const organizationType=type.includes("military")?"military":type.includes("police")?"police":type.includes("civil")||type.includes("fonctionnaire")?"civilian":null;
+    const countryId=modal.querySelector("#country-select").value;
+    const rank=modal.querySelector("#service-rank"),unit=modal.querySelector("#service-unit");
+    if(!organizationType||!countryId){rank.innerHTML=unit.innerHTML='<option value="">Not applicable</option>';return;}
+    const {data,error}=await supabase.from("service_affiliation_catalog").select("entry_type,name").eq("country_id",Number(countryId)).eq("organization_type",organizationType).eq("active",true).order("name");
+    if(error){notify(error.message);return;}
+    const rankKind=organizationType==="civilian"?"function":"rank";
+    const choices=kind=>`<option value="">Select</option>`+(data||[]).filter(item=>item.entry_type===kind).map(item=>`<option value="${safe(item.name)}">${safe(item.name)}</option>`).join("")+`<option value="__other__">Other / not listed</option>`;
+    rank.innerHTML=choices(rankKind);unit.innerHTML=organizationType==="civilian"?'<option value="">Not applicable</option>':choices("unit");
+  };
+  modal.querySelector("#patient-type").addEventListener("change",refreshAffiliations);
+  modal.querySelector("#country-select").addEventListener("change",refreshAffiliations);
+  for(const [selectId,labelId] of [["#service-rank","#rank-custom-label"],["#service-unit","#unit-custom-label"]]) modal.querySelector(selectId).addEventListener("change",event=>modal.querySelector(labelId).hidden=event.target.value!=="__other__");
   for(const [selectId,otherId] of [["#patient-gender","#patient-gender-other"],["#patient-ethnicity","#patient-ethnicity-other"]]){const select=modal.querySelector(selectId),other=modal.querySelector(otherId),input=other.querySelector("input");select.addEventListener("change",()=>{const show=select.value==="Other";other.hidden=!show;input.required=show;if(!show)input.value=""})}
   modal.querySelector("#patient-form").addEventListener("submit", async event => {
     event.preventDefault();
     const values = Object.fromEntries(new FormData(event.target));
     const { data: address, error: addressError } = await supabase.from("addresses").insert({ line1: values.line1, country_id: Number(values.country_id),postal_code_text:values.postal_code_text||null }).select("id").single();
     if (addressError) return notify(addressError.message);
-    const patient = {first_name:values.first_name,last_name:values.last_name,middle_name:values.middle_name||null,date_of_birth:values.date_of_birth||null,sex:values.gender_identity==="Male"?"M":values.gender_identity==="Female"?"F":values.gender_identity?"X":null,gender_identity:values.gender_identity||null,gender_other:values.gender_other||null,ethnicity:values.ethnicity||null,ethnicity_other:values.ethnicity_other||null,preferred_language:values.preferred_language||null,patient_type:values.patient_type,service_identifier:values.service_identifier||null,service_rank:values.service_rank||null,service_unit:values.service_unit||null,dependent_relationship:values.dependent_relationship||null,related_service_member_name:values.related_service_member_name||null,related_service_identifier:values.related_service_identifier||null,primary_address_id:address.id,facility_id:membership?.facility_id||null};
+    const patient = {first_name:values.first_name,last_name:values.last_name,middle_name:values.middle_name||null,date_of_birth:values.date_of_birth||null,sex:values.gender_identity==="Male"?"M":values.gender_identity==="Female"?"F":values.gender_identity?"X":null,gender_identity:values.gender_identity||null,gender_other:values.gender_other||null,ethnicity:values.ethnicity||null,ethnicity_other:values.ethnicity_other||null,preferred_language:values.preferred_language||null,patient_type:values.patient_type,service_identifier:values.service_identifier||null,service_rank:(values.service_rank==="__other__"?values.service_rank_custom:values.service_rank)||null,service_unit:(values.service_unit==="__other__"?values.service_unit_custom:values.service_unit)||null,dependent_relationship:values.dependent_relationship||null,related_service_member_name:values.related_service_member_name||null,related_service_identifier:values.related_service_identifier||null,primary_address_id:address.id,facility_id:membership?.facility_id||null};
     const { data:created,error } = await supabase.from("patients").insert(patient).select("id,snau").single();
     if (error) return notify(error.message);
     if(values.mrn&&membership?.facility_id){const {error:mrnError}=await supabase.from("facility_patient_mrns").insert({facility_id:membership.facility_id,patient_id:created.id,mrn:values.mrn});if(mrnError)return notify(mrnError.message);}
@@ -102,6 +142,84 @@ async function hydrateLivePatients() {
   table.innerHTML = data.length ? data.map(p => `<tr><td><div class="patient-cell"><span class="patient-avatar">${(p.first_name?.[0]||"")+(p.last_name?.[0]||"")}</span><span><strong>${p.first_name} ${p.last_name}</strong><small>${p.mrn||"No MRN"}</small></span></div></td><td>${p.date_of_birth||"—"}</td><td>${p.snau||"UNIN not assigned"}</td><td>${p.sex||"—"}</td><td><span class="status active">${p.life_status||"active"}</span></td><td>Live</td></tr>`).join("") : `<tr><td colspan="6" class="empty">No live patients yet. Use “Register patient”.</td></tr>`;
 }
 
+async function hydrateClinicalView(viewName) {
+  if(!session) return;
+  const table=document.querySelector("#view tbody");
+  if(!table) return;
+  let data,error,rows=[];
+  if(viewName==="encounters"){
+    ({data,error}=await supabase.from("encounters").select("id,encounter_type,start_at,status,patients(first_name,last_name),services(name)").order("start_at",{ascending:false}).limit(100));
+    rows=(data||[]).map(item=>[item.encounter_type,`${item.patients?.first_name||""} ${item.patients?.last_name||""} · ${new Date(item.start_at).toLocaleString()}`,item.status]);
+  } else if(viewName==="orders"){
+    ({data,error}=await supabase.from("orders").select("id,order_type,status,created_at,patients(first_name,last_name),services(name)").order("created_at",{ascending:false}).limit(100));
+    rows=(data||[]).map(item=>[`${item.order_type}${item.services?.name?` · ${item.services.name}`:""}`,`${item.patients?.first_name||""} ${item.patients?.last_name||""} · ${new Date(item.created_at).toLocaleString()}`,item.status]);
+  } else if(viewName==="medications"){
+    ({data,error}=await supabase.from("medication_orders").select("id,dose,route,frequency,status,patients(first_name,last_name),medications(name,strength)").order("id",{ascending:false}).limit(100));
+    rows=(data||[]).map(item=>[`${item.medications?.name||"Medication"} ${item.medications?.strength||""}`.trim(),`${item.patients?.first_name||""} ${item.patients?.last_name||""} · ${item.dose} ${item.route||""} ${item.frequency||""}`.trim(),item.status]);
+  } else if(viewName==="notes"){
+    ({data,error}=await supabase.from("clinical_notes").select("id,note_type,status,created_at,patients(first_name,last_name)").order("created_at",{ascending:false}).limit(100));
+    rows=(data||[]).map(item=>[item.note_type,`${item.patients?.first_name||""} ${item.patients?.last_name||""} · ${new Date(item.created_at).toLocaleString()}`,item.status]);
+  } else return;
+  if(error){table.innerHTML=`<tr><td colspan="3" class="empty">${safe(error.message)}</td></tr>`;return;}
+  table.innerHTML=rows.length?rows.map(row=>`<tr>${row.map((cell,index)=>`<td>${index===2?`<span class="status ${safe(cell).toLowerCase()}">${safe(cell)}</span>`:safe(cell)}</td>`).join("")}</tr>`).join(""):`<tr><td colspan="3" class="empty">No live records yet.</td></tr>`;
+  document.querySelector("#view .alert")?.remove();
+}
+
+async function hydrateDashboard(){
+  if(!session||!document.querySelector("#view .metrics"))return;
+  const dayStart=new Date();dayStart.setHours(0,0,0,0);
+  const [{count:encounters},{count:orders},{count:results},{count:patients},{data:schedule}] = await Promise.all([
+    supabase.from("encounters").select("id",{count:"exact",head:true}).gte("start_at",dayStart.toISOString()),
+    supabase.from("orders").select("id",{count:"exact",head:true}).in("status",["pending","in_progress"]),
+    supabase.from("lab_results").select("id",{count:"exact",head:true}).eq("validation_status","validated").gte("validated_at",dayStart.toISOString()),
+    supabase.from("patients").select("id",{count:"exact",head:true}),
+    supabase.from("encounters").select("id,start_at,status,encounter_type,patients(first_name,last_name,date_of_birth),services(name)").gte("start_at",dayStart.toISOString()).order("start_at").limit(20)
+  ]);
+  const values=[encounters,orders,results,patients];document.querySelectorAll("#view .metric strong").forEach((element,index)=>element.textContent=values[index]??"0");
+  const table=document.querySelector("#view .grid-2 tbody");
+  if(table)table.innerHTML=(schedule||[]).length?(schedule||[]).map(item=>`<tr><td><strong>${safe(`${item.patients?.first_name||""} ${item.patients?.last_name||""}`.trim())}</strong></td><td>${safe(item.patients?.date_of_birth)}</td><td>${safe(item.services?.name||item.encounter_type)}</td><td>Assigned provider</td><td><span class="status ${safe(item.status).toLowerCase()}">${safe(item.status)}</span></td><td>${safe(new Date(item.start_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}))}</td></tr>`).join(""):`<tr><td colspan="6" class="empty">No encounters scheduled today.</td></tr>`;
+  const heading=document.querySelector("#view .page-head h1"),subtitle=document.querySelector("#view .page-head p");if(heading)heading.textContent="Healthcarology EHR";if(subtitle)subtitle.textContent="Internal EHR · Live operational data";
+}
+
+async function encounterForm(){
+  try{
+    const {patients,services}=await clinicalChoices();
+    showModal("Open encounter",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Encounter type<select name="encounter_type" required><option>Outpatient</option><option>Inpatient</option><option>Emergency</option><option>Observation</option><option>Telehealth</option></select></label><label>Service<select name="service_id">${optionList(services,s=>`${s.departments?.name||"Department"} · ${s.name}`,"No service")}</select></label><label>Start date and time<input type="datetime-local" name="start_at" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Open encounter</button></footer></form>`);
+    bindClinicalSubmit("encounters",values=>({patient_id:Number(values.patient_id),encounter_type:values.encounter_type,service_id:values.service_id?Number(values.service_id):null,start_at:new Date(values.start_at).toISOString(),attending_provider_id:currentProviderId,status:"open"}));
+  }catch(error){notify(error.message)}
+}
+
+async function orderForm(){
+  try{
+    const {patients,services}=await clinicalChoices();
+    showModal("Place order",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Order type<select name="order_type" required><option value="lab">Laboratory</option><option value="imaging">Imaging</option><option value="procedure">Procedure</option></select></label><label>Requested service<select name="service_id">${optionList(services,s=>`${s.departments?.name||"Department"} · ${s.name}`,"No service")}</select></label><label>Test / modality / procedure code<input name="requested_code" required></label><label>Priority<select name="priority"><option>Routine</option><option>Urgent</option><option>STAT</option></select></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Place order</button></footer></form>`);
+    const form=modal.querySelector("#clinical-form");modal.querySelector("[data-cancel]").addEventListener("click",closeModal);
+    form.addEventListener("submit",async event=>{event.preventDefault();const values=Object.fromEntries(new FormData(form));const {data:order,error}=await supabase.from("orders").insert({patient_id:Number(values.patient_id),ordering_provider_id:currentProviderId,order_type:values.order_type,service_id:values.service_id?Number(values.service_id):null,status:"pending"}).select("id").single();if(error)return notify(error.message);const details=values.order_type==="lab"?{order_id:order.id,test_code:values.requested_code,priority:values.priority}:values.order_type==="imaging"?{order_id:order.id,modality:values.requested_code,contrast:false}:{order_id:order.id,procedure_code:values.requested_code};const {error:detailError}=await supabase.from(`${values.order_type}_orders`).insert(details);if(detailError)return notify(detailError.message);closeModal();notify("Order placed and recorded.");await hydrateClinicalView("orders")});
+  }catch(error){notify(error.message)}
+}
+
+async function medicationOrderForm(){
+  try{
+    const {patients,medications}=await clinicalChoices();
+    showModal("New medication order",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Medication<select name="medication_id" required>${optionList(medications,m=>`${m.name}${m.strength?` · ${m.strength}`:""}`)}</select></label><label>Dose<input name="dose" required></label><label>Route<input name="route" required></label><label>Frequency<input name="frequency" required></label><label>Start date<input type="date" name="start_at"></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Prescribe</button></footer></form>`);
+    bindClinicalSubmit("medication_orders",values=>({patient_id:Number(values.patient_id),prescriber_id:currentProviderId,medication_id:Number(values.medication_id),dose:values.dose,route:values.route,frequency:values.frequency,start_at:values.start_at?new Date(`${values.start_at}T00:00:00`).toISOString():null,status:"active"}),"medications");
+  }catch(error){notify(error.message)}
+}
+
+async function noteForm(){
+  if(!currentProviderId)return notify("This account must be linked to a provider before authoring clinical notes.");
+  try{
+    const {patients}=await clinicalChoices();
+    showModal("Write clinical note",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Note type<select name="note_type"><option>Progress note</option><option>Consult note</option><option>Nursing note</option><option>Discharge note</option><option>Operative note</option></select></label><label>Clinical note<textarea name="content" rows="10" required></textarea></label><label>Status<select name="status"><option value="draft">Draft</option><option value="signed">Signed</option></select></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Save note</button></footer></form>`);
+    bindClinicalSubmit("clinical_notes",values=>({patient_id:Number(values.patient_id),author_provider_id:currentProviderId,note_type:values.note_type,content:values.content,status:values.status,signed_at:values.status==="signed"?new Date().toISOString():null}),"notes");
+  }catch(error){notify(error.message)}
+}
+
+function bindClinicalSubmit(tableName,buildRow,viewName=tableName){
+  const form=modal.querySelector("#clinical-form");modal.querySelector("[data-cancel]").addEventListener("click",closeModal);
+  form.addEventListener("submit",async event=>{event.preventDefault();const values=Object.fromEntries(new FormData(form));const {error}=await supabase.from(tableName).insert(buildRow(values));if(error)return notify(error.message);closeModal();notify("Saved to the live health record.");await hydrateClinicalView(viewName)});
+}
+
 async function setSignedInUser() {
   if (!session) return;
   const { data: profile } = await supabase.from("profiles").select("display_name,email").eq("user_id",session.user.id).maybeSingle();
@@ -119,13 +237,25 @@ document.addEventListener("click", event => {
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "new-patient") { event.preventDefault(); event.stopImmediatePropagation(); patientForm(); }
   if (action === "review-access") { event.preventDefault(); event.stopImmediatePropagation(); userForm(); }
+  if (action === "module-create") {
+    event.preventDefault();event.stopImmediatePropagation();
+    const title=document.querySelector("#view h1")?.textContent;
+    if(title==="Encounters") encounterForm();
+    else if(title==="Orders & results") orderForm();
+    else if(title==="Medications") medicationOrderForm();
+    else if(title==="Clinical notes") noteForm();
+  }
 }, true);
 
-document.addEventListener("hc:view-rendered", () => hydrateLivePatients());
+document.addEventListener("hc:view-rendered", event => {
+  hydrateLivePatients();
+  hydrateClinicalView(event.detail?.view);
+  if(event.detail?.view==="dashboard")hydrateDashboard();
+});
 
 const { data } = await supabase.auth.getSession();
 session = data.session;
-if (!session) authGate(); else if(session.user.app_metadata?.must_change_password===true) passwordChangeGate(); else { await setSignedInUser(); await hydrateLivePatients(); }
+if (!session) authGate(); else if(session.user.app_metadata?.must_change_password===true) passwordChangeGate(); else { await loadClinicalContext(); await setSignedInUser(); await hydrateLivePatients(); await hydrateDashboard(); }
 supabase.auth.onAuthStateChange((event,newSession)=>{
   const previousUserId = session?.user?.id;
   session = newSession;

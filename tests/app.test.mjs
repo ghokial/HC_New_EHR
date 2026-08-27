@@ -173,7 +173,22 @@ test("attached EHR documents drive intake and hospital service gaps", async () =
   assert.match(live,/Military Dependent/);
   assert.match(live,/preferred_language/);
   assert.match(live,/patient_contact_methods/);
+  assert.match(live,/service_affiliation_catalog/);
+  assert.match(live,/service_rank_custom/);
   assert.match(services,/Primary Care & Ambulatory Services/);
   assert.match(services,/Institutional Review Board \(IRB\)/);
   assert.match(services,/Sterile Processing Department \(SPD\)/);
+});
+
+test("core clinical screens use live CRUD instead of prototype-only actions", async () => {
+  const live = await read("live.js");
+  const app = await read("app.js");
+  const policies = await read("supabase/migrations/20260827193000_secure_core_clinical_crud.sql");
+  for(const form of ["encounterForm","orderForm","medicationOrderForm","noteForm"]) assert.match(live,new RegExp(`function ${form}`));
+  for(const table of ["encounters","orders","medication_orders","clinical_notes"]) assert.match(live,new RegExp(`from\\(\\\"${table}\\\"\\)`));
+  assert.match(app,/"Open encounter"/);
+  assert.match(policies,/private\.can_write_patient_record/);
+  assert.match(policies,/private\.is_aal2\(\)/);
+  assert.match(live,/function hydrateDashboard/);
+  assert.match(live,/Live operational data/);
 });
