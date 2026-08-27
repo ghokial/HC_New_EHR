@@ -16,6 +16,7 @@ Deno.serve(async (req) => {
     const {data:rootRole}=await admin.from("user_roles").select("roles!inner(role_code)").eq("user_id",user.id).eq("roles.role_code","root").maybeSingle();
     const {data:membership}=body.facility_id?await admin.from("facility_memberships").select("is_owner,roles!inner(role_code)").eq("facility_id",body.facility_id).eq("user_id",user.id).eq("active",true).maybeSingle():{data:null};
     if(!rootRole&&!membership?.is_owner&&!(["sysadmin"].includes(membership?.roles?.role_code))) throw new Error("Facility owner or administrator access required");
+    if(body.role_code==="root"||body.role_code==="platform_agent") throw new Error("Platform roles cannot be assigned from a facility account");
     const random=new Uint8Array(18); crypto.getRandomValues(random);
     const temporaryPassword=`Hc!${Array.from(random,b=>b.toString(36).padStart(2,"0")).join("")}9a`;
     const {data:invite,error:inviteError}=await admin.auth.admin.createUser({email:body.email,password:temporaryPassword,email_confirm:true,user_metadata:{display_name:body.display_name||body.email.split("@")[0]},app_metadata:{must_change_password:true}});

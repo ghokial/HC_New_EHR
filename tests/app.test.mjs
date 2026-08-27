@@ -81,3 +81,20 @@ test("clinical standards foundation is versioned and branded", async () => {
   assert.match(portal, /value="ln"/);
   assert.match(theme, /--brand-red:#d90000/);
 });
+
+test("operational workflows enforce requested release and lifecycle rules", async () => {
+  const sql = await read("supabase/migrations/20260827030209_operational_clinical_workflows.sql");
+  const secure = await read("supabase/migrations/20260827031007_secure_operational_access.sql");
+  const portal = await read("portal.js");
+  assert.match(sql, /facility_number/);
+  assert.match(sql, /prescribed','awaiting','dispensed/);
+  assert.match(sql, /medication_adherence_events/);
+  assert.match(sql, /provider_availability_slots/);
+  assert.match(sql, /clinical_status in \('active','healed','closed','entered_in_error'\)/);
+  assert.match(sql, /validation_status='validated'/);
+  assert.match(sql, /dialysis_sessions/);
+  assert.match(sql, /surgical_checklist_items/);
+  assert.match(secure, /has_facility_role/);
+  assert.match(portal, /Report missed dose/);
+  assert.match(portal, /Book an appointment/);
+});
