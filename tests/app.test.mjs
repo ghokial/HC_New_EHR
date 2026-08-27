@@ -123,3 +123,14 @@ test("department, MFA, community, sharing, and mobile foundations are present", 
   assert.match(server, /shared-record\.html/);
   assert.match(mobile, /com\.healthcarology\.patient/);
 });
+
+test("patient portal keeps MFA optional until the user shares data", async () => {
+  const portal = await read("portal.js");
+  const features = await read("portal-features.js");
+  const migration = await read("supabase/migrations/20260827145500_patient_mfa_only_for_sharing.sql");
+  assert.match(portal, /path==="patient"\|\|await requireMfa/);
+  assert.match(features, /share-pdf[^;]+requireMfa/s);
+  assert.match(features, /access-share-form[^;]+requireMfa/s);
+  assert.match(migration, /pa\.user_id=\(select auth\.uid\(\)\) and pa\.patient_id=diagnoses\.patient_id/);
+  assert.match(migration, /shares_grantor_create/);
+});
