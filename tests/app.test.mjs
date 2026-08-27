@@ -22,3 +22,25 @@ test("UI declares demonstration-data boundary", async () => {
   assert.match(html,/Demonstration data only/i);
   assert.match(js,/Demonstration only/i);
 });
+
+test("live authentication enforces temporary-password replacement", async () => {
+  const live = await read("live.js");
+  const createUser = await read("supabase/functions/create-user/index.ts");
+  const changePassword = await read("supabase/functions/complete-password-change/index.ts");
+  assert.match(createUser, /crypto\.getRandomValues/);
+  assert.match(createUser, /must_change_password:true/);
+  assert.match(live, /signInWithPassword/);
+  assert.match(live, /passwordChangeGate/);
+  assert.match(live, /resetPasswordForEmail/);
+  assert.match(live, /PASSWORD_RECOVERY/);
+  assert.match(changePassword, /updateUserById/);
+  assert.match(changePassword, /must_change_password:false/);
+});
+
+test("direct file opening provides launcher guidance", async () => {
+  const html = await read("index.html");
+  const launcher = await read("Start Healthcarology EHR.cmd");
+  assert.match(html, /location\.protocol === "file:"/);
+  assert.match(html, /Start Healthcarology EHR\.cmd/);
+  assert.match(launcher, /http:\/\/127\.0\.0\.1:4173\//);
+});

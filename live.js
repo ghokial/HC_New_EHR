@@ -22,13 +22,34 @@ const showModal = (title, body) => {
 function authGate() {
   const gate = document.createElement("div");
   gate.className = "auth-gate";
-  gate.innerHTML = `<section class="auth-card"><p class="eyebrow">Secure access</p><h1>Healthcarology EHR</h1><p>Sign in with a magic link. The verified account using the privately configured Root email is assigned the Root role by the database.</p><form id="magic-form"><input type="email" name="email" autocomplete="email" placeholder="Authorized email" required aria-label="Email"><button class="button primary">Send secure sign-in link</button></form><p id="auth-message">Authorized users only. All access is auditable.</p></section>`;
+  gate.innerHTML = `<section class="auth-card"><p class="eyebrow">Secure access</p><h1>Healthcarology EHR</h1><p>Sign in with your email and password. New accounts must replace their temporary password before accessing the platform.</p><form id="login-form"><input type="email" name="email" autocomplete="email" placeholder="Authorized email" required aria-label="Email"><input type="password" name="password" autocomplete="current-password" placeholder="Password" required aria-label="Password"><button class="button primary">Sign in</button><button type="button" class="button secondary" id="reset-password">Set or reset password</button></form><p id="auth-message">Authorized users only. All access is auditable.</p></section>`;
   document.body.append(gate);
   gate.querySelector("form").addEventListener("submit", async event => {
     event.preventDefault();
-    const email = new FormData(event.target).get("email");
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split("#")[0] } });
-    gate.querySelector("#auth-message").textContent = error ? error.message : `A secure sign-in link was sent to ${email}.`;
+    const form = new FormData(event.target);
+    const { error } = await supabase.auth.signInWithPassword({ email: form.get("email"), password: form.get("password") });
+    gate.querySelector("#auth-message").textContent = error ? error.message : "Signed in securely.";
+  });
+  gate.querySelector("#reset-password").addEventListener("click", async () => {
+    const email = gate.querySelector('input[name="email"]').value.trim();
+    if (!email) { gate.querySelector("#auth-message").textContent = "Enter your authorized email first."; return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.href });
+    gate.querySelector("#auth-message").textContent = error ? error.message : "Check your email for the secure password link.";
+  });
+}
+
+function passwordChangeGate() {
+  const gate=document.createElement("div");
+  gate.className="auth-gate";
+  gate.innerHTML=`<section class="auth-card"><p class="eyebrow">Required security step</p><h1>Change temporary password</h1><p>You cannot access patient or administrative data until your temporary password is replaced.</p><form id="password-form"><input type="password" name="password" minlength="12" autocomplete="new-password" placeholder="New password (12+ characters)" required><input type="password" name="confirm" minlength="12" autocomplete="new-password" placeholder="Confirm new password" required><button class="button primary">Change password and continue</button></form><p id="password-message"></p></section>`;
+  document.body.append(gate);
+  gate.querySelector("form").addEventListener("submit",async event=>{
+    event.preventDefault();
+    const form=new FormData(event.target); const password=form.get("password");
+    if(password!==form.get("confirm")){gate.querySelector("#password-message").textContent="Passwords do not match.";return;}
+    const {data,error}=await supabase.functions.invoke("complete-password-change",{body:{password}});
+    if(error||data?.error){gate.querySelector("#password-message").textContent=error?.message||data.error;return;}
+    await supabase.auth.refreshSession(); location.reload();
   });
 }
 
@@ -57,14 +78,15 @@ async function patientForm() {
 async function userForm() {
   const { data: roles, error } = await supabase.from("roles").select("role_code,role_name").order("access_level");
   if (error) return notify(error.message);
-  showModal("Invite user", `<form id="user-form"><div class="live-banner">The user receives an email invitation. Passwords are never handled by this application.</div><label>Email<input type="email" name="email" required></label><label>Display name<input name="display_name" required></label><label>Role<select name="role_code" required>${roles.map(r=>`<option value="${r.role_code}">${r.role_name}</option>`).join("")}</select></label><label>Scope<input name="scope" value="hospital_main" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Send invitation</button></footer></form>`);
+  showModal("Create user", `<form id="user-form"><div class="live-banner">A strong temporary password will be generated and shown once.</div><label>Email<input type="email" name="email" required></label><label>Display name<input name="display_name" required></label><label>Role<select name="role_code" required>${roles.map(r=>`<option value="${r.role_code}">${r.role_name}</option>`).join("")}</select></label><label>Scope<input name="scope" value="hospital_main" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create account</button></footer></form>`);
   modal.querySelector("[data-cancel]").addEventListener("click",closeModal);
   modal.querySelector("#user-form").addEventListener("submit", async event => {
     event.preventDefault();
     const body = Object.fromEntries(new FormData(event.target));
-    const { error: invokeError } = await supabase.functions.invoke("create-user", { body });
-    if (invokeError) return notify(invokeError.message);
-    closeModal(); notify(`Invitation sent to ${body.email}.`);
+    const { data, error: invokeError } = await supabase.functions.invoke("create-user", { body });
+    if (invokeError || data?.error) return notify(invokeError?.message || data.error);
+    modal.querySelector("#user-form").innerHTML=`<div class="live-banner">Account created. Copy this temporary password now; it is shown only once.</div><label>Email<input value="${body.email}" readonly></label><label>Temporary password<input value="${data.temporary_password}" readonly id="temporary-password"></label><p class="alert">The user must change this password at first login.</p><footer><button type="button" class="button primary" data-done>Done</button></footer>`;
+    modal.querySelector("[data-done]").addEventListener("click",closeModal);
   });
 }
 
@@ -85,6 +107,8 @@ async function setSignedInUser() {
   const menu = document.querySelector(".user-menu");
   menu.innerHTML = `<span class="avatar">${name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase()}</span><span><strong>${name}</strong><small>${roleName}</small></span><span>⌄</span>`;
   menu.addEventListener("click", async()=>{await supabase.auth.signOut();location.reload()});
+  const sourceNote = document.querySelector(".source-note");
+  if (sourceNote) sourceNote.innerHTML = `<span class="status-dot"></span><div><strong>Live database</strong><small>Connected securely</small></div>`;
 }
 
 document.addEventListener("click", event => {
@@ -97,5 +121,5 @@ new MutationObserver(() => hydrateLivePatients()).observe(document.querySelector
 
 const { data } = await supabase.auth.getSession();
 session = data.session;
-if (!session) authGate(); else { await setSignedInUser(); await hydrateLivePatients(); }
-supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;if(newSession) location.reload()});
+if (!session) authGate(); else if(session.user.app_metadata?.must_change_password===true) passwordChangeGate(); else { await setSignedInUser(); await hydrateLivePatients(); }
+supabase.auth.onAuthStateChange((event,newSession)=>{session=newSession;if(event==="PASSWORD_RECOVERY"){document.querySelector(".auth-gate")?.remove();passwordChangeGate();return;}if(newSession) location.reload()});

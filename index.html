@@ -9,6 +9,13 @@
   <link rel="stylesheet" href="live.css" />
 </head>
 <body>
+  <script>
+    if (location.protocol === "file:") {
+      document.addEventListener("DOMContentLoaded", function () {
+        document.body.innerHTML = '<main style="font-family:Segoe UI,Arial;padding:48px;max-width:760px;margin:auto"><h1>Start Healthcarology EHR correctly</h1><p>This live platform cannot run by opening <code>index.html</code> directly.</p><p>Close this tab and double-click <strong>Start Healthcarology EHR.cmd</strong> in the project folder. It will open the required local web address automatically.</p></main>';
+      });
+    }
+  </script>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark">H</span><span><strong>Healthcarology</strong><small>Electronic Health Record</small></span></div>
