@@ -37,6 +37,18 @@ test("live authentication enforces temporary-password replacement", async () => 
   assert.match(changePassword, /must_change_password:false/);
 });
 
+test("live shell does not reload on the normal initial auth event", async () => {
+  const html = await read("index.html");
+  const app = await read("app.js");
+  const live = await read("live.js");
+  assert.match(html, /vendor\/supabase\.js/);
+  assert.doesNotMatch(live, /https:\/\/esm\.sh/);
+  assert.match(live, /event==="SIGNED_IN" && newSession\?\.user\?\.id !== previousUserId/);
+  assert.match(live, /hc:view-rendered/);
+  assert.match(app, /hc:view-rendered/);
+  assert.doesNotMatch(live, /new MutationObserver/);
+});
+
 test("direct file opening provides launcher guidance", async () => {
   const html = await read("index.html");
   const launcher = await read("Start Healthcarology EHR.cmd");
@@ -151,4 +163,17 @@ test("facility types, training hospital, workforce, and messaging are durable", 
   assert.match(features, /Task assignment/);
   assert.match(messaging, /create table public\.message_threads/);
   assert.match(messaging, /create table public\.messages/);
+});
+
+test("attached EHR documents drive intake and hospital service gaps", async () => {
+  const intake = await read("supabase/migrations/20260827173500_document_gap_clinical_intake.sql");
+  const services = await read("supabase/migrations/20260827174500_complete_major_hospital_services.sql");
+  const live = await read("live.js");
+  for (const entity of ["patient_contact_methods","insurance_organizations","vital_sign_observations","care_queue_entries","encounter_contributors","ambulance_transports","prenatal_episodes","data_export_audit"]) assert.match(intake,new RegExp(entity));
+  assert.match(live,/Military Dependent/);
+  assert.match(live,/preferred_language/);
+  assert.match(live,/patient_contact_methods/);
+  assert.match(services,/Primary Care & Ambulatory Services/);
+  assert.match(services,/Institutional Review Board \(IRB\)/);
+  assert.match(services,/Sterile Processing Department \(SPD\)/);
 });

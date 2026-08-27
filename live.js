@@ -1,7 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const supabase = globalThis.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const modal = document.querySelector("#live-modal");
 let session = null;
 
@@ -62,18 +61,20 @@ async function loadCountries(select) {
 
 async function patientForm() {
   const {data:membership}=await supabase.from("facility_memberships").select("facility_id").eq("user_id",session.user.id).eq("active",true).limit(1).maybeSingle();
-  showModal("Register patient", `<form id="patient-form"><div class="live-banner">UNIN is generated automatically once and is permanent. MRN belongs to the registering facility.</div><label>First name<input name="first_name" required></label><label>Middle name<input name="middle_name"></label><label>Last name<input name="last_name" required></label><label>Facility MRN<input name="mrn"></label><label>Date of birth<input type="date" name="date_of_birth"></label><label>Sex<select name="sex"><option value="">Not specified</option><option value="M">Male</option><option value="F">Female</option><option value="X">Other / X</option></select></label><label>Country<select name="country_id" id="country-select" required></select></label><label>Address line 1<input name="line1" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create patient</button></footer></form>`);
+  showModal("Register patient", `<form id="patient-form"><div class="live-banner">UNIN is generated automatically once and is permanent. MRN belongs to the registering facility.</div><label>Patient type<select name="patient_type" required><option>Standard Patient</option><option>Military</option><option>Military Dependent</option><option>Police</option><option>Police Dependent</option><option>Public Servant / Fonctionnaire</option><option>Public Servant / Fonctionnaire Dependent</option><option>Personnel CIVIL (PERCI) / Civilian Personnel</option><option>Personnel CIVIL (PERCI) / Civilian Personnel Dependent</option></select></label><label>First name<input name="first_name" required></label><label>Middle name<input name="middle_name"></label><label>Last name<input name="last_name" required></label><label>Facility MRN<input name="mrn"></label><label>Date of birth<input type="date" name="date_of_birth"></label><label>Gender<select name="gender_identity" id="patient-gender"><option value="">Not specified</option><option>Male</option><option>Female</option><option>Other</option></select></label><label id="patient-gender-other" hidden>Other gender<input name="gender_other"></label><label>Ethnicity<select name="ethnicity" id="patient-ethnicity"><option value="">Not specified</option><option>Black</option><option>White</option><option>Arab</option><option>Asian</option><option>Latino</option><option>Other</option></select></label><label id="patient-ethnicity-other" hidden>Other ethnicity<input name="ethnicity_other"></label><label>Preferred language<input name="preferred_language" placeholder="Language"></label><label>Primary phone<div class="phone-grid"><input name="country_calling_code" placeholder="Country code, e.g. +243"><input name="phone" type="tel"></div></label><label>Service / matricule ID<input name="service_identifier"></label><label>Rank<input name="service_rank"></label><label>Unit<input name="service_unit"></label><label>Dependent relationship<select name="dependent_relationship"><option value="">Not a dependent</option><option>Spouse</option><option>Child</option><option>Parent</option></select></label><label>Related member name<input name="related_service_member_name"></label><label>Related member service ID<input name="related_service_identifier"></label><label>Country<select name="country_id" id="country-select" required></select></label><label>Address line 1<input name="line1" required></label><label>Postal code<input name="postal_code_text"></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create patient</button></footer></form>`);
   modal.querySelector("[data-cancel]").addEventListener("click",closeModal);
   await loadCountries(modal.querySelector("#country-select"));
+  for(const [selectId,otherId] of [["#patient-gender","#patient-gender-other"],["#patient-ethnicity","#patient-ethnicity-other"]]){const select=modal.querySelector(selectId),other=modal.querySelector(otherId),input=other.querySelector("input");select.addEventListener("change",()=>{const show=select.value==="Other";other.hidden=!show;input.required=show;if(!show)input.value=""})}
   modal.querySelector("#patient-form").addEventListener("submit", async event => {
     event.preventDefault();
     const values = Object.fromEntries(new FormData(event.target));
-    const { data: address, error: addressError } = await supabase.from("addresses").insert({ line1: values.line1, country_id: Number(values.country_id) }).select("id").single();
+    const { data: address, error: addressError } = await supabase.from("addresses").insert({ line1: values.line1, country_id: Number(values.country_id),postal_code_text:values.postal_code_text||null }).select("id").single();
     if (addressError) return notify(addressError.message);
-    const patient = {first_name:values.first_name,last_name:values.last_name,middle_name:values.middle_name||null,date_of_birth:values.date_of_birth||null,sex:values.sex||null,primary_address_id:address.id,facility_id:membership?.facility_id||null};
+    const patient = {first_name:values.first_name,last_name:values.last_name,middle_name:values.middle_name||null,date_of_birth:values.date_of_birth||null,sex:values.gender_identity==="Male"?"M":values.gender_identity==="Female"?"F":values.gender_identity?"X":null,gender_identity:values.gender_identity||null,gender_other:values.gender_other||null,ethnicity:values.ethnicity||null,ethnicity_other:values.ethnicity_other||null,preferred_language:values.preferred_language||null,patient_type:values.patient_type,service_identifier:values.service_identifier||null,service_rank:values.service_rank||null,service_unit:values.service_unit||null,dependent_relationship:values.dependent_relationship||null,related_service_member_name:values.related_service_member_name||null,related_service_identifier:values.related_service_identifier||null,primary_address_id:address.id,facility_id:membership?.facility_id||null};
     const { data:created,error } = await supabase.from("patients").insert(patient).select("id,snau").single();
     if (error) return notify(error.message);
     if(values.mrn&&membership?.facility_id){const {error:mrnError}=await supabase.from("facility_patient_mrns").insert({facility_id:membership.facility_id,patient_id:created.id,mrn:values.mrn});if(mrnError)return notify(mrnError.message);}
+    if(values.phone){const {error:phoneError}=await supabase.from("patient_contact_methods").insert({patient_id:created.id,contact_type:"phone",country_calling_code:values.country_calling_code||null,contact_value:values.phone,primary_contact:true});if(phoneError)return notify(phoneError.message);}
     closeModal(); notify(`Patient created. Permanent UNIN: ${created.snau}`); await hydrateLivePatients();
   });
 }
@@ -120,9 +121,19 @@ document.addEventListener("click", event => {
   if (action === "review-access") { event.preventDefault(); event.stopImmediatePropagation(); userForm(); }
 }, true);
 
-new MutationObserver(() => hydrateLivePatients()).observe(document.querySelector("#view"), {childList:true,subtree:true});
+document.addEventListener("hc:view-rendered", () => hydrateLivePatients());
 
 const { data } = await supabase.auth.getSession();
 session = data.session;
 if (!session) authGate(); else if(session.user.app_metadata?.must_change_password===true) passwordChangeGate(); else { await setSignedInUser(); await hydrateLivePatients(); }
-supabase.auth.onAuthStateChange((event,newSession)=>{session=newSession;if(event==="PASSWORD_RECOVERY"){document.querySelector(".auth-gate")?.remove();passwordChangeGate();return;}if(newSession) location.reload()});
+supabase.auth.onAuthStateChange((event,newSession)=>{
+  const previousUserId = session?.user?.id;
+  session = newSession;
+  if(event==="PASSWORD_RECOVERY"){
+    document.querySelector(".auth-gate")?.remove();
+    passwordChangeGate();
+    return;
+  }
+  if(event==="SIGNED_IN" && newSession?.user?.id !== previousUserId) location.reload();
+  if(event==="SIGNED_OUT") location.reload();
+});

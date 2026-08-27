@@ -101,6 +101,7 @@ function render(){
   bindView();
   document.querySelector(".sidebar").classList.remove("open");
   window.scrollTo({top:0,behavior:"smooth"});
+  document.dispatchEvent(new CustomEvent("hc:view-rendered", { detail: { view: active } }));
 }
 
 function toast(message){const el=document.querySelector("#toast");el.textContent=message;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2400)}
