@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Healthcarology EHR prototype based on the supplied requirements." />
+  <title>Healthcarology EHR</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="live.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">H</span><span><strong>Healthcarology</strong><small>Electronic Health Record</small></span></div>
+      <nav id="primary-nav" aria-label="Primary navigation"></nav>
+      <div class="source-note"><span class="status-dot"></span><div><strong>Prototype mode</strong><small>Demonstration data only</small></div></div>
+    </aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobile-menu" aria-label="Open navigation">☰</button>
+        <div class="search-wrap"><span>⌕</span><input id="global-search" aria-label="Search patients by name, MRN, or UNIN" placeholder="Search patient, MRN, or UNIN…" /></div>
+        <div class="top-actions">
+          <button class="icon-button" aria-label="Notifications">◔<span class="badge">3</span></button>
+          <button class="user-menu"><span class="avatar">JD</span><span><strong>Dr. Jane Doe</strong><small>Attending Physician</small></span><span>⌄</span></button>
+        </div>
+      </header>
+      <div id="view" class="view" aria-live="polite"></div>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <div id="live-modal" class="live-modal" hidden></div>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="live.js"></script>
+</body>
+</html>

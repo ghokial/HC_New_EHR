@@ -1,0 +1,4 @@
+create policy addresses_staff_read on public.addresses for select to authenticated using(public.current_role_code() in ('root','registration','physician','resident','nurse','advanced_practice','him','sysadmin'));
+create policy addresses_staff_insert on public.addresses for insert to authenticated with check(public.current_role_code() in ('root','registration','physician','resident','nurse','advanced_practice','him','sysadmin'));
+create policy addresses_staff_update on public.addresses for update to authenticated using(public.current_role_code() in ('root','registration','physician','resident','nurse','advanced_practice','him','sysadmin')) with check(public.current_role_code() in ('root','registration','physician','resident','nurse','advanced_practice','him','sysadmin'));
+grant select,insert,update on public.addresses to authenticated;
