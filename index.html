@@ -7,6 +7,7 @@
   <title>Healthcarology EHR</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="live.css" />
+  <link rel="stylesheet" href="theme.css" />
 </head>
 <body>
   <script>
@@ -18,7 +19,7 @@
   </script>
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="brand"><span class="brand-mark">H</span><span><strong>Healthcarology</strong><small>Electronic Health Record</small></span></div>
+      <div class="brand"><img class="brand-logo" src="/assets/images/healthcarology-logo.png" alt="Healthcarology"><span><strong>Healthcarology</strong><small>Electronic Health Record</small></span></div>
       <nav id="primary-nav" aria-label="Primary navigation"></nav>
       <div class="source-note"><span class="status-dot"></span><div><strong>Prototype mode</strong><small>Demonstration data only</small></div></div>
     </aside>
@@ -28,7 +29,7 @@
         <div class="search-wrap"><span>⌕</span><input id="global-search" aria-label="Search patients by name, MRN, or UNIN" placeholder="Search patient, MRN, or UNIN…" /></div>
         <div class="top-actions">
           <button class="icon-button" aria-label="Notifications">◔<span class="badge">3</span></button>
-          <button class="user-menu"><span class="avatar">JD</span><span><strong>Dr. Jane Doe</strong><small>Attending Physician</small></span><span>⌄</span></button>
+          <button class="user-menu"><span class="avatar">--</span><span><strong>Signed-in user</strong><small>Loading assigned role…</small></span><span>⌄</span></button>
         </div>
       </header>
       <div id="view" class="view" aria-live="polite"></div>

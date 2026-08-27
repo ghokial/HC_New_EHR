@@ -22,7 +22,8 @@ const showModal = (title, body) => {
 function authGate() {
   const gate = document.createElement("div");
   gate.className = "auth-gate";
-  gate.innerHTML = `<section class="auth-card"><p class="eyebrow">Secure access</p><h1>Healthcarology EHR</h1><p>Sign in with your email and password. New accounts must replace their temporary password before accessing the platform.</p><form id="login-form"><input type="email" name="email" autocomplete="email" placeholder="Authorized email" required aria-label="Email"><input type="password" name="password" autocomplete="current-password" placeholder="Password" required aria-label="Password"><button class="button primary">Sign in</button><button type="button" class="button secondary" id="reset-password">Set or reset password</button></form><p id="auth-message">Authorized users only. All access is auditable.</p></section>`;
+  gate.innerHTML = `<section class="auth-card"><img class="portal-logo" src="/assets/images/healthcarology-logo.png" alt="Healthcarology"><p class="eyebrow">Secure access</p><h1>Healthcarology EHR</h1><p>Sign in with your email and password. New accounts must replace their temporary password before accessing the platform.</p><form id="login-form"><label>Language<select id="login-language"><option value="en">English</option><option value="fr">Français</option><option value="am">አማርኛ</option><option value="pt">Português</option><option value="es">Español</option><option value="bn">বাংলা</option><option value="kg">Kikongo</option><option value="lua">Tshiluba</option><option value="sw">Kiswahili</option><option value="ln">Lingála</option></select></label><input type="email" name="email" autocomplete="email" placeholder="Authorized email" required aria-label="Email"><input type="password" name="password" autocomplete="current-password" placeholder="Password" required aria-label="Password"><button class="button primary">Sign in</button><button type="button" class="button secondary" id="reset-password">Set or reset password</button></form><p id="auth-message">Authorized users only. All access is auditable.</p></section>`;
+  const language=gate.querySelector("#login-language");language.value=localStorage.getItem("hc_locale")||"en";language.addEventListener("change",()=>{localStorage.setItem("hc_locale",language.value);document.documentElement.lang=language.value});
   document.body.append(gate);
   gate.querySelector("form").addEventListener("submit", async event => {
     event.preventDefault();
@@ -60,7 +61,8 @@ async function loadCountries(select) {
 }
 
 async function patientForm() {
-  showModal("Register patient", `<form id="patient-form"><div class="live-banner">Writes directly to the live Healthcarology PostgreSQL database.</div><label>First name<input name="first_name" required></label><label>Middle name<input name="middle_name"></label><label>Last name<input name="last_name" required></label><label>MRN<input name="mrn"></label><label>UNIN / SNAU<input name="snau"></label><label>Date of birth<input type="date" name="date_of_birth"></label><label>Sex<select name="sex"><option value="">Not specified</option><option value="M">Male</option><option value="F">Female</option><option value="X">Other / X</option></select></label><label>Country<select name="country_id" id="country-select" required></select></label><label>Address line 1<input name="line1" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create patient</button></footer></form>`);
+  const {data:membership}=await supabase.from("facility_memberships").select("facility_id").eq("user_id",session.user.id).eq("active",true).limit(1).maybeSingle();
+  showModal("Register patient", `<form id="patient-form"><div class="live-banner">UNIN is generated automatically once and is permanent. MRN belongs to the registering facility.</div><label>First name<input name="first_name" required></label><label>Middle name<input name="middle_name"></label><label>Last name<input name="last_name" required></label><label>Facility MRN<input name="mrn"></label><label>Date of birth<input type="date" name="date_of_birth"></label><label>Sex<select name="sex"><option value="">Not specified</option><option value="M">Male</option><option value="F">Female</option><option value="X">Other / X</option></select></label><label>Country<select name="country_id" id="country-select" required></select></label><label>Address line 1<input name="line1" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create patient</button></footer></form>`);
   modal.querySelector("[data-cancel]").addEventListener("click",closeModal);
   await loadCountries(modal.querySelector("#country-select"));
   modal.querySelector("#patient-form").addEventListener("submit", async event => {
@@ -68,10 +70,11 @@ async function patientForm() {
     const values = Object.fromEntries(new FormData(event.target));
     const { data: address, error: addressError } = await supabase.from("addresses").insert({ line1: values.line1, country_id: Number(values.country_id) }).select("id").single();
     if (addressError) return notify(addressError.message);
-    const patient = {first_name:values.first_name,last_name:values.last_name,middle_name:values.middle_name||null,mrn:values.mrn||null,snau:values.snau||null,date_of_birth:values.date_of_birth||null,sex:values.sex||null,primary_address_id:address.id};
-    const { error } = await supabase.from("patients").insert(patient);
+    const patient = {first_name:values.first_name,last_name:values.last_name,middle_name:values.middle_name||null,date_of_birth:values.date_of_birth||null,sex:values.sex||null,primary_address_id:address.id,facility_id:membership?.facility_id||null};
+    const { data:created,error } = await supabase.from("patients").insert(patient).select("id,snau").single();
     if (error) return notify(error.message);
-    closeModal(); notify("Patient created in the live database."); await hydrateLivePatients();
+    if(values.mrn&&membership?.facility_id){const {error:mrnError}=await supabase.from("facility_patient_mrns").insert({facility_id:membership.facility_id,patient_id:created.id,mrn:values.mrn});if(mrnError)return notify(mrnError.message);}
+    closeModal(); notify(`Patient created. Permanent UNIN: ${created.snau}`); await hydrateLivePatients();
   });
 }
 

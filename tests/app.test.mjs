@@ -44,3 +44,40 @@ test("direct file opening provides launcher guidance", async () => {
   assert.match(html, /Start Healthcarology EHR\.cmd/);
   assert.match(launcher, /http:\/\/127\.0\.0\.1:4173\//);
 });
+
+test("facility and patient portals are tenant-aware", async () => {
+  const server = await read("server.mjs");
+  const portal = await read("portal.js");
+  const migration = await read("supabase/migrations/20260827005747_facility_and_patient_portals.sql");
+  assert.match(server, /pathname === "\/admin"/);
+  assert.match(server, /pathname === "\/patient"/);
+  assert.match(portal, /create-facility/);
+  assert.match(portal, /invite_patient_link/);
+  assert.match(portal, /respond_patient_link/);
+  assert.match(migration, /create table public\.facilities/i);
+  assert.match(migration, /public\.is_facility_member\(facility_id\)/i);
+});
+
+test("placeholder doctor identity is not rendered", async () => {
+  assert.doesNotMatch(await read("index.html"), /Dr\. Jane Doe/);
+  assert.doesNotMatch(await read("app.js"), /Dr\. Jane Doe/);
+});
+
+test("clinical standards foundation is versioned and branded", async () => {
+  const sql = await read("supabase/migrations/20260827022440_clinical_standards_and_interoperability.sql");
+  const live = await read("live.js");
+  const portal = await read("portal.js");
+  const theme = await read("theme.css");
+  assert.match(sql, /prevent_unin_change/);
+  assert.match(sql, /facility_patient_mrns/);
+  assert.match(sql, /interpretation in \('normal','out_of_range','dangerously_abnormal'\)/);
+  assert.match(sql, /prescription_interaction_alerts/);
+  assert.match(sql, /WHO Model List of Essential Medicines/);
+  assert.match(sql, /ICD-11 MMS/);
+  assert.match(sql, /dhis2_fhir/);
+  assert.match(sql, /dicomweb_qido/);
+  assert.doesNotMatch(live, /name="snau"/);
+  assert.match(portal, /value="am"/);
+  assert.match(portal, /value="ln"/);
+  assert.match(theme, /--brand-red:#d90000/);
+});

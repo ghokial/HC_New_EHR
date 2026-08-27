@@ -1,0 +1,1735 @@
+{
+  "source": "C:\\Users\\ghoki\\OneDrive\\Documents\\ChatGPT\\HC_NEW_EHR\\source_docs\\Healthcarology UNIN Registry.docx",
+  "paragraph_count": 308,
+  "table_count": 0,
+  "blocks": [
+    {
+      "kind": "paragraph",
+      "index": 1,
+      "style": "Normal",
+      "text": "Healthcarology UNIN Registry"
+    },
+    {
+      "kind": "paragraph",
+      "index": 2,
+      "style": "Normal",
+      "text": "English version of the architecture document, followed by example API code for the Unique National Identity Number registry. Apply the same logic for every country in the world."
+    },
+    {
+      "kind": "paragraph",
+      "index": 3,
+      "style": "Normal",
+      "text": "1. National Healthcarology Registry"
+    },
+    {
+      "kind": "paragraph",
+      "index": 4,
+      "style": "Normal",
+      "text": "Functional and Technical Architecture"
+    },
+    {
+      "kind": "paragraph",
+      "index": 5,
+      "style": "Normal",
+      "text": "1. Vision and objectives of the national registry"
+    },
+    {
+      "kind": "paragraph",
+      "index": 6,
+      "style": "Normal",
+      "text": "1.1. Overall vision The National ONIP–Healthcarology Registry aims to provide the DRC with a unique, stable, and interoperable identifier for every individual, based on the SNAU model:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 7,
+      "style": "Normal",
+      "text": "“Health Carology proposed the SNAU using the following model: 243 – (10 + L) – (M + 972) – (0 + 0003)” This identifier becomes the reference key for all public and private systems (civil registry, health, education, social security, taxation, etc.)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 8,
+      "style": "Normal",
+      "text": "1.2. Main objectives"
+    },
+    {
+      "kind": "paragraph",
+      "index": 9,
+      "style": "Normal",
+      "text": "Uniqueness: ensure that each person has only one national identifier."
+    },
+    {
+      "kind": "paragraph",
+      "index": 10,
+      "style": "Normal",
+      "text": "Traceability: enable tracking of life events (birth, death, migration, status)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 11,
+      "style": "Normal",
+      "text": "Interoperability: serve as a join key between ONIP, ministries, and sector systems."
+    },
+    {
+      "kind": "paragraph",
+      "index": 12,
+      "style": "Normal",
+      "text": "Security and compliance: meet personal data protection requirements."
+    },
+    {
+      "kind": "paragraph",
+      "index": 13,
+      "style": "Normal",
+      "text": "Steering: provide reliable indicators for public policy."
+    },
+    {
+      "kind": "paragraph",
+      "index": 14,
+      "style": "Normal",
+      "text": "2. Data model centered on SNAU"
+    },
+    {
+      "kind": "paragraph",
+      "index": 15,
+      "style": "Normal",
+      "text": "2.1. SNAU structure Generic format: 243-PPCC-SXYYY-CTUUUU"
+    },
+    {
+      "kind": "paragraph",
+      "index": 16,
+      "style": "Normal",
+      "text": "243: country code (DRC)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 17,
+      "style": "Normal",
+      "text": "PP: province code (Table 1)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 18,
+      "style": "Normal",
+      "text": "CC: commune or sector code (Table 2 for Kinshasa)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 19,
+      "style": "Normal",
+      "text": "SX: sex (M or F)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 20,
+      "style": "Normal",
+      "text": "YYY: last three digits of year of birth."
+    },
+    {
+      "kind": "paragraph",
+      "index": 21,
+      "style": "Normal",
+      "text": "CT: categorization code (general population, military, civil servant, police, naturalized, foreign resident, etc.)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 22,
+      "style": "Normal",
+      "text": "UUUU: unique sequential number for the individual."
+    },
+    {
+      "kind": "paragraph",
+      "index": 23,
+      "style": "Normal",
+      "text": "Example from the report:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 24,
+      "style": "Normal",
+      "text": "“Example of unique identifier: 243-10L-M192-00003”"
+    },
+    {
+      "kind": "paragraph",
+      "index": 25,
+      "style": "Normal",
+      "text": "2.2. Reference tables"
+    },
+    {
+      "kind": "paragraph",
+      "index": 26,
+      "style": "Normal",
+      "text": "2.2.1. PROVINCE table"
+    },
+    {
+      "kind": "paragraph",
+      "index": 27,
+      "style": "Normal",
+      "text": "id_province (PK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 28,
+      "style": "Normal",
+      "text": "code_province (01–26, e.g. “10” for Kinshasa)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 29,
+      "style": "Normal",
+      "text": "name_province"
+    },
+    {
+      "kind": "paragraph",
+      "index": 30,
+      "style": "Normal",
+      "text": "2.2.2. COMMUNE / SECTOR table"
+    },
+    {
+      "kind": "paragraph",
+      "index": 31,
+      "style": "Normal",
+      "text": "id_commune (PK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 32,
+      "style": "Normal",
+      "text": "code_commune (A–Z, e.g. “L” for Limeté)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 33,
+      "style": "Normal",
+      "text": "name_commune"
+    },
+    {
+      "kind": "paragraph",
+      "index": 34,
+      "style": "Normal",
+      "text": "id_province (FK → PROVINCE)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 35,
+      "style": "Normal",
+      "text": "2.2.3. PERSON_CATEGORY table"
+    },
+    {
+      "kind": "paragraph",
+      "index": 36,
+      "style": "Normal",
+      "text": "id_category (PK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 37,
+      "style": "Normal",
+      "text": "code_category (0, M, F, P, N, E…)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 38,
+      "style": "Normal",
+      "text": "description (General population, Military, Civil servant, Police, Naturalized, Foreign resident…)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 39,
+      "style": "Normal",
+      "text": "Examples from the document:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 40,
+      "style": "Normal",
+      "text": "“Group 6: M → Military” “Group 6: F → Civil servant” “Group 6: P → Police” “Group 6: N → Congolese by origin having acquired another nationality” “Group 6: E → Foreign resident in DRC”"
+    },
+    {
+      "kind": "paragraph",
+      "index": 41,
+      "style": "Normal",
+      "text": "2.3. PERSON table"
+    },
+    {
+      "kind": "paragraph",
+      "index": 42,
+      "style": "Normal",
+      "text": "id_person (PK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 43,
+      "style": "Normal",
+      "text": "snau (full SNAU, unique, indexed)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 44,
+      "style": "Normal",
+      "text": "last_name, middle_name, first_name"
+    },
+    {
+      "kind": "paragraph",
+      "index": 45,
+      "style": "Normal",
+      "text": "sex (M/F)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 46,
+      "style": "Normal",
+      "text": "date_of_birth"
+    },
+    {
+      "kind": "paragraph",
+      "index": 47,
+      "style": "Normal",
+      "text": "id_birth_province (FK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 48,
+      "style": "Normal",
+      "text": "id_birth_commune (FK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 49,
+      "style": "Normal",
+      "text": "id_category (FK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 50,
+      "style": "Normal",
+      "text": "life_status (alive, deceased, missing, emigrated…)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 51,
+      "style": "Normal",
+      "text": "meta_registration_source (ONIP, ministry, Healthcarology portal, etc.)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 52,
+      "style": "Normal",
+      "text": "created_at, updated_at"
+    },
+    {
+      "kind": "paragraph",
+      "index": 53,
+      "style": "Normal",
+      "text": "2.4. DEPENDENT / FAMILY_LINKS table"
+    },
+    {
+      "kind": "paragraph",
+      "index": 54,
+      "style": "Normal",
+      "text": "id_link (PK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 55,
+      "style": "Normal",
+      "text": "id_main_person (FK → PERSON)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 56,
+      "style": "Normal",
+      "text": "id_dependent (FK → PERSON)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 57,
+      "style": "Normal",
+      "text": "link_type (spouse, child, parent, other)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 58,
+      "style": "Normal",
+      "text": "dependent_code (1 = main agent, 2 = dependent, as in military/police examples)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 59,
+      "style": "Normal",
+      "text": "From the report:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 60,
+      "style": "Normal",
+      "text": "“Code 1 (if it was the agent himself) or 2 for a dependent”"
+    },
+    {
+      "kind": "paragraph",
+      "index": 61,
+      "style": "Normal",
+      "text": "2.5. AUDIT_LOG table"
+    },
+    {
+      "kind": "paragraph",
+      "index": 62,
+      "style": "Normal",
+      "text": "id_log (PK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 63,
+      "style": "Normal",
+      "text": "id_person (FK)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 64,
+      "style": "Normal",
+      "text": "action_type (create, update, view, logical delete)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 65,
+      "style": "Normal",
+      "text": "actor (user, system, service)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 66,
+      "style": "Normal",
+      "text": "timestamp"
+    },
+    {
+      "kind": "paragraph",
+      "index": 67,
+      "style": "Normal",
+      "text": "context (portal, API, batch, etc.)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 68,
+      "style": "Normal",
+      "text": "3. System architecture"
+    },
+    {
+      "kind": "paragraph",
+      "index": 69,
+      "style": "Normal",
+      "text": "3.1. Logical layers"
+    },
+    {
+      "kind": "paragraph",
+      "index": 70,
+      "style": "Normal",
+      "text": "Presentation layer (Portals)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 71,
+      "style": "Normal",
+      "text": "Healthcarology portals (education, senior, health, etc.)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 72,
+      "style": "Normal",
+      "text": "ONIP portal for administration and mass operations."
+    },
+    {
+      "kind": "paragraph",
+      "index": 73,
+      "style": "Normal",
+      "text": "Specialized interfaces for ministries (health, education, interior, defense)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 74,
+      "style": "Normal",
+      "text": "API layer (Registry access services)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 75,
+      "style": "Normal",
+      "text": "Secure REST API for:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 76,
+      "style": "Normal",
+      "text": "creating/updating persons,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 77,
+      "style": "Normal",
+      "text": "generating and validating SNAU,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 78,
+      "style": "Normal",
+      "text": "searching by SNAU or attributes (name, date of birth, province, etc.),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 79,
+      "style": "Normal",
+      "text": "connecting to external systems."
+    },
+    {
+      "kind": "paragraph",
+      "index": 80,
+      "style": "Normal",
+      "text": "Business services layer"
+    },
+    {
+      "kind": "paragraph",
+      "index": 81,
+      "style": "Normal",
+      "text": "SNAU Service: generation, validation, parsing of SNAU."
+    },
+    {
+      "kind": "paragraph",
+      "index": 82,
+      "style": "Normal",
+      "text": "Enrollment Service: initial registration workflow."
+    },
+    {
+      "kind": "paragraph",
+      "index": 83,
+      "style": "Normal",
+      "text": "Update Service: status changes, migration, corrections."
+    },
+    {
+      "kind": "paragraph",
+      "index": 84,
+      "style": "Normal",
+      "text": "Verification Service: identity checks for third-party systems."
+    },
+    {
+      "kind": "paragraph",
+      "index": 85,
+      "style": "Normal",
+      "text": "Reporting Service: statistics and dashboards."
+    },
+    {
+      "kind": "paragraph",
+      "index": 86,
+      "style": "Normal",
+      "text": "Database layer"
+    },
+    {
+      "kind": "paragraph",
+      "index": 87,
+      "style": "Normal",
+      "text": "Relational database (e.g. PostgreSQL) hosting PROVINCE, COMMUNE, PERSON_CATEGORY, PERSON, DEPENDENT, AUDIT_LOG."
+    },
+    {
+      "kind": "paragraph",
+      "index": 88,
+      "style": "Normal",
+      "text": "Indexes on snau, name + date_of_birth, id_province, id_category."
+    },
+    {
+      "kind": "paragraph",
+      "index": 89,
+      "style": "Normal",
+      "text": "Integration layer"
+    },
+    {
+      "kind": "paragraph",
+      "index": 90,
+      "style": "Normal",
+      "text": "Connectors to ONIP (base registry)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 91,
+      "style": "Normal",
+      "text": "Connectors to sector systems:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 92,
+      "style": "Normal",
+      "text": "Health (medical records, DocMyDay, hospitals)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 93,
+      "style": "Normal",
+      "text": "Education (student IDs)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 94,
+      "style": "Normal",
+      "text": "Social security, taxation, justice, etc."
+    },
+    {
+      "kind": "paragraph",
+      "index": 95,
+      "style": "Normal",
+      "text": "Integration bus (ESB or message broker) for asynchronous synchronization."
+    },
+    {
+      "kind": "paragraph",
+      "index": 96,
+      "style": "Normal",
+      "text": "4. Governance and roles"
+    },
+    {
+      "kind": "paragraph",
+      "index": 97,
+      "style": "Normal",
+      "text": "4.1. ONIP"
+    },
+    {
+      "kind": "paragraph",
+      "index": 98,
+      "style": "Normal",
+      "text": "Owner of the national registry."
+    },
+    {
+      "kind": "paragraph",
+      "index": 99,
+      "style": "Normal",
+      "text": "Defines coding standards (provinces, communes, categories)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 100,
+      "style": "Normal",
+      "text": "Validates SNAU generation rules."
+    },
+    {
+      "kind": "paragraph",
+      "index": 101,
+      "style": "Normal",
+      "text": "Oversees data quality and audits."
+    },
+    {
+      "kind": "paragraph",
+      "index": 102,
+      "style": "Normal",
+      "text": "4.2. Healthcarology"
+    },
+    {
+      "kind": "paragraph",
+      "index": 103,
+      "style": "Normal",
+      "text": "Technology operator for portals and digital services."
+    },
+    {
+      "kind": "paragraph",
+      "index": 104,
+      "style": "Normal",
+      "text": "Designs and maintains portals (health, education, senior, etc.)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 105,
+      "style": "Normal",
+      "text": "Implements SNAU in Healthcarology applications."
+    },
+    {
+      "kind": "paragraph",
+      "index": 106,
+      "style": "Normal",
+      "text": "4.3. Sector ministries"
+    },
+    {
+      "kind": "paragraph",
+      "index": 107,
+      "style": "Normal",
+      "text": "Integrate SNAU into their systems (health, education, defense, interior, finance)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 108,
+      "style": "Normal",
+      "text": "Define sector use cases (patient record, student, military, police, etc.)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 109,
+      "style": "Normal",
+      "text": "4.4. Operational roles"
+    },
+    {
+      "kind": "paragraph",
+      "index": 110,
+      "style": "Normal",
+      "text": "Data Controllers (ONIP + ministries): legal responsibility for data."
+    },
+    {
+      "kind": "paragraph",
+      "index": 111,
+      "style": "Normal",
+      "text": "Data Processors (Healthcarology, providers): technical responsibility for processing."
+    },
+    {
+      "kind": "paragraph",
+      "index": 112,
+      "style": "Normal",
+      "text": "System administrators: manage permissions, technical supervision."
+    },
+    {
+      "kind": "paragraph",
+      "index": 113,
+      "style": "Normal",
+      "text": "Authorized users: enrollment agents, update operators, controllers."
+    },
+    {
+      "kind": "paragraph",
+      "index": 114,
+      "style": "Normal",
+      "text": "5. Security, privacy, and compliance"
+    },
+    {
+      "kind": "paragraph",
+      "index": 115,
+      "style": "Normal",
+      "text": "5.1. Security principles"
+    },
+    {
+      "kind": "paragraph",
+      "index": 116,
+      "style": "Normal",
+      "text": "Strong authentication (MFA) for sensitive users."
+    },
+    {
+      "kind": "paragraph",
+      "index": 117,
+      "style": "Normal",
+      "text": "Role-based access control (RBAC)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 118,
+      "style": "Normal",
+      "text": "Encryption in transit (TLS) and at rest (disk/column encryption)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 119,
+      "style": "Normal",
+      "text": "Comprehensive logging (AUDIT_LOG) of access and changes."
+    },
+    {
+      "kind": "paragraph",
+      "index": 120,
+      "style": "Normal",
+      "text": "5.2. Personal data protection"
+    },
+    {
+      "kind": "paragraph",
+      "index": 121,
+      "style": "Normal",
+      "text": "Data minimization."
+    },
+    {
+      "kind": "paragraph",
+      "index": 122,
+      "style": "Normal",
+      "text": "Possible pseudonymization for some statistical uses."
+    },
+    {
+      "kind": "paragraph",
+      "index": 123,
+      "style": "Normal",
+      "text": "Individual rights: access, rectification, objection, deletion (per national law)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 124,
+      "style": "Normal",
+      "text": "5.3. Regulatory compliance"
+    },
+    {
+      "kind": "paragraph",
+      "index": 125,
+      "style": "Normal",
+      "text": "Alignment with Congolese data protection law."
+    },
+    {
+      "kind": "paragraph",
+      "index": 126,
+      "style": "Normal",
+      "text": "Inspiration from international best practices (e.g. GDPR)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 127,
+      "style": "Normal",
+      "text": "Data retention and archiving policies."
+    },
+    {
+      "kind": "paragraph",
+      "index": 128,
+      "style": "Normal",
+      "text": "6. Deployment and scalability"
+    },
+    {
+      "kind": "paragraph",
+      "index": 129,
+      "style": "Normal",
+      "text": "6.1. Deployment options"
+    },
+    {
+      "kind": "paragraph",
+      "index": 130,
+      "style": "Normal",
+      "text": "Public cloud (managed platform):"
+    },
+    {
+      "kind": "paragraph",
+      "index": 131,
+      "style": "Normal",
+      "text": "Pros: elasticity, high availability, managed services."
+    },
+    {
+      "kind": "paragraph",
+      "index": 132,
+      "style": "Normal",
+      "text": "Private cloud / On-premise (state datacenter):"
+    },
+    {
+      "kind": "paragraph",
+      "index": 133,
+      "style": "Normal",
+      "text": "Pros: full control, data sovereignty."
+    },
+    {
+      "kind": "paragraph",
+      "index": 134,
+      "style": "Normal",
+      "text": "Hybrid architecture:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 135,
+      "style": "Normal",
+      "text": "Central registry on-premise, portals and services in the cloud."
+    },
+    {
+      "kind": "paragraph",
+      "index": 136,
+      "style": "Normal",
+      "text": "6.2. Scalability"
+    },
+    {
+      "kind": "paragraph",
+      "index": 137,
+      "style": "Normal",
+      "text": "Service-oriented architecture (microservices or modular services)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 138,
+      "style": "Normal",
+      "text": "Horizontal scaling of APIs and databases (replication, sharding if needed)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 139,
+      "style": "Normal",
+      "text": "Caching for frequent queries (SNAU validation, basic search)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 140,
+      "style": "Normal",
+      "text": "6.3. Resilience"
+    },
+    {
+      "kind": "paragraph",
+      "index": 141,
+      "style": "Normal",
+      "text": "Regular backups and restore tests."
+    },
+    {
+      "kind": "paragraph",
+      "index": 142,
+      "style": "Normal",
+      "text": "Disaster recovery (DR) and business continuity plans (BCP)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 143,
+      "style": "Normal",
+      "text": "Monitoring and alerts (performance, security, availability)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 144,
+      "style": "Normal",
+      "text": "7. Example workflows"
+    },
+    {
+      "kind": "paragraph",
+      "index": 145,
+      "style": "Normal",
+      "text": "7.1. Enrollment workflow"
+    },
+    {
+      "kind": "paragraph",
+      "index": 146,
+      "style": "Normal",
+      "text": "ONIP or Healthcarology agent opens the enrollment portal."
+    },
+    {
+      "kind": "paragraph",
+      "index": 147,
+      "style": "Normal",
+      "text": "Enters civil data (name, date of birth, sex, province, commune, category)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 148,
+      "style": "Normal",
+      "text": "The SNAU Service generates the identifier according to the model:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 149,
+      "style": "Normal",
+      "text": "“243 – (10 + L) – (M + 972) – (0 + 0003)”"
+    },
+    {
+      "kind": "paragraph",
+      "index": 150,
+      "style": "Normal",
+      "text": "Uniqueness check (search on snau and on name + date + place combination)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 151,
+      "style": "Normal",
+      "text": "Record saved in PERSON and entry created in AUDIT_LOG."
+    },
+    {
+      "kind": "paragraph",
+      "index": 152,
+      "style": "Normal",
+      "text": "Identifier given to the person (card, certificate, QR code, etc.)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 153,
+      "style": "Normal",
+      "text": "7.2. Update workflow"
+    },
+    {
+      "kind": "paragraph",
+      "index": 154,
+      "style": "Normal",
+      "text": "Authorized agent logs into the portal."
+    },
+    {
+      "kind": "paragraph",
+      "index": 155,
+      "style": "Normal",
+      "text": "Searches for the person by SNAU or attributes."
+    },
+    {
+      "kind": "paragraph",
+      "index": 156,
+      "style": "Normal",
+      "text": "Modifies allowed fields (status, address, category, etc.)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 157,
+      "style": "Normal",
+      "text": "Validates and saves."
+    },
+    {
+      "kind": "paragraph",
+      "index": 158,
+      "style": "Normal",
+      "text": "Logged in AUDIT_LOG and optionally notifies sector systems."
+    },
+    {
+      "kind": "paragraph",
+      "index": 159,
+      "style": "Normal",
+      "text": "7.3. Inter-system verification workflow"
+    },
+    {
+      "kind": "paragraph",
+      "index": 160,
+      "style": "Normal",
+      "text": "External system (hospital, school, tax service) calls the verification API with a SNAU."
+    },
+    {
+      "kind": "paragraph",
+      "index": 161,
+      "style": "Normal",
+      "text": "API returns authorized identity data (name, date of birth, category, status)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 162,
+      "style": "Normal",
+      "text": "External system links SNAU to its internal ID."
+    },
+    {
+      "kind": "paragraph",
+      "index": 163,
+      "style": "Normal",
+      "text": "Events (view, update) are logged in AUDIT_LOG."
+    },
+    {
+      "kind": "paragraph",
+      "index": 164,
+      "style": "Normal",
+      "text": "7.4. Statistical queries workflow"
+    },
+    {
+      "kind": "paragraph",
+      "index": 165,
+      "style": "Normal",
+      "text": "Authorized analyst uses a reporting tool connected to the registry."
+    },
+    {
+      "kind": "paragraph",
+      "index": 166,
+      "style": "Normal",
+      "text": "Runs aggregate queries (by province, category, age group, etc.)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 167,
+      "style": "Normal",
+      "text": "Exports tables and charts for ministries and ONIP."
+    },
+    {
+      "kind": "paragraph",
+      "index": 168,
+      "style": "Normal",
+      "text": "8. Conclusion"
+    },
+    {
+      "kind": "paragraph",
+      "index": 169,
+      "style": "Normal",
+      "text": "This architecture for the National ONIP–Healthcarology Registry, built around SNAU as the pivot identifier, enables:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 170,
+      "style": "Normal",
+      "text": "unified identity management for people in DRC,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 171,
+      "style": "Normal",
+      "text": "strong interoperability between ONIP, Healthcarology, and sector systems,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 172,
+      "style": "Normal",
+      "text": "clear data governance,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 173,
+      "style": "Normal",
+      "text": "security and compliance aligned with national stakes."
+    },
+    {
+      "kind": "paragraph",
+      "index": 174,
+      "style": "Normal",
+      "text": "Example API code for the SNAU registry"
+    },
+    {
+      "kind": "paragraph",
+      "index": 175,
+      "style": "Normal",
+      "text": "Below is a simple REST API example in Node.js (Express) + PostgreSQL style to manage SNAU generation and person records."
+    },
+    {
+      "kind": "paragraph",
+      "index": 176,
+      "style": "Normal",
+      "text": "js"
+    },
+    {
+      "kind": "paragraph",
+      "index": 177,
+      "style": "Normal",
+      "text": "// snau-service.js"
+    },
+    {
+      "kind": "paragraph",
+      "index": 178,
+      "style": "Normal",
+      "text": "const PROVINCES = {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 179,
+      "style": "Normal",
+      "text": "\"Kinshasa\": \"10\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 180,
+      "style": "Normal",
+      "text": "// ... other provinces"
+    },
+    {
+      "kind": "paragraph",
+      "index": 181,
+      "style": "Normal",
+      "text": "};"
+    },
+    {
+      "kind": "paragraph",
+      "index": 183,
+      "style": "Normal",
+      "text": "const COMMUNES_KIN = {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 184,
+      "style": "Normal",
+      "text": "\"Limeté\": \"L\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 185,
+      "style": "Normal",
+      "text": "\"Barumbu\": \"B\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 186,
+      "style": "Normal",
+      "text": "\"Masina\": \"P\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 187,
+      "style": "Normal",
+      "text": "// ... other communes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 188,
+      "style": "Normal",
+      "text": "};"
+    },
+    {
+      "kind": "paragraph",
+      "index": 190,
+      "style": "Normal",
+      "text": "const CATEGORIES = {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 191,
+      "style": "Normal",
+      "text": "general: \"0\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 192,
+      "style": "Normal",
+      "text": "militaire: \"M\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 193,
+      "style": "Normal",
+      "text": "fonctionnaire: \"F\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 194,
+      "style": "Normal",
+      "text": "policier: \"P\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 195,
+      "style": "Normal",
+      "text": "naturalise: \"N\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 196,
+      "style": "Normal",
+      "text": "etranger: \"E\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 197,
+      "style": "Normal",
+      "text": "};"
+    },
+    {
+      "kind": "paragraph",
+      "index": 199,
+      "style": "Normal",
+      "text": "function generateSnau({"
+    },
+    {
+      "kind": "paragraph",
+      "index": 200,
+      "style": "Normal",
+      "text": "province,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 201,
+      "style": "Normal",
+      "text": "commune,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 202,
+      "style": "Normal",
+      "text": "sex,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 203,
+      "style": "Normal",
+      "text": "birthYear,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 204,
+      "style": "Normal",
+      "text": "category = \"general\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 205,
+      "style": "Normal",
+      "text": "dependentCode = null,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 206,
+      "style": "Normal",
+      "text": "uniqueNumber,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 207,
+      "style": "Normal",
+      "text": "}) {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 208,
+      "style": "Normal",
+      "text": "const countryCode = \"243\";"
+    },
+    {
+      "kind": "paragraph",
+      "index": 209,
+      "style": "Normal",
+      "text": "const provinceCode = PROVINCES[province];"
+    },
+    {
+      "kind": "paragraph",
+      "index": 210,
+      "style": "Normal",
+      "text": "const communeCode = COMMUNES_KIN[commune];"
+    },
+    {
+      "kind": "paragraph",
+      "index": 212,
+      "style": "Normal",
+      "text": "const sexCode = sex.toLowerCase() === \"male\" ? \"M\" : \"F\";"
+    },
+    {
+      "kind": "paragraph",
+      "index": 213,
+      "style": "Normal",
+      "text": "const yearCode = String(birthYear).slice(-3);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 215,
+      "style": "Normal",
+      "text": "const baseCat = CATEGORIES[category];"
+    },
+    {
+      "kind": "paragraph",
+      "index": 216,
+      "style": "Normal",
+      "text": "let catCode = baseCat;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 218,
+      "style": "Normal",
+      "text": "if ([\"militaire\", \"fonctionnaire\", \"policier\"].includes(category)) {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 219,
+      "style": "Normal",
+      "text": "if (![1, 2].includes(dependentCode)) {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 220,
+      "style": "Normal",
+      "text": "throw new Error(\"dependentCode must be 1 (agent) or 2 (dependent)\");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 221,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 222,
+      "style": "Normal",
+      "text": "catCode = `${baseCat}${dependentCode}`;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 223,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 225,
+      "style": "Normal",
+      "text": "const uniqueStr = String(uniqueNumber).padStart(4, \"0\");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 227,
+      "style": "Normal",
+      "text": "return `${countryCode}-${provinceCode}${communeCode}-${sexCode}${yearCode}-${catCode}${uniqueStr}`;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 228,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 230,
+      "style": "Normal",
+      "text": "module.exports = { generateSnau };"
+    },
+    {
+      "kind": "paragraph",
+      "index": 231,
+      "style": "Normal",
+      "text": "js"
+    },
+    {
+      "kind": "paragraph",
+      "index": 232,
+      "style": "Normal",
+      "text": "// api.js"
+    },
+    {
+      "kind": "paragraph",
+      "index": 233,
+      "style": "Normal",
+      "text": "const express = require(\"express\");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 234,
+      "style": "Normal",
+      "text": "const bodyParser = require(\"body-parser\");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 235,
+      "style": "Normal",
+      "text": "const { generateSnau } = require(\"./snau-service\");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 236,
+      "style": "Normal",
+      "text": "// Imagine a db client like pg or Prisma"
+    },
+    {
+      "kind": "paragraph",
+      "index": 237,
+      "style": "Normal",
+      "text": "const db = require(\"./db\");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 239,
+      "style": "Normal",
+      "text": "const app = express();"
+    },
+    {
+      "kind": "paragraph",
+      "index": 240,
+      "style": "Normal",
+      "text": "app.use(bodyParser.json());"
+    },
+    {
+      "kind": "paragraph",
+      "index": 242,
+      "style": "Normal",
+      "text": "// Create person + SNAU"
+    },
+    {
+      "kind": "paragraph",
+      "index": 243,
+      "style": "Normal",
+      "text": "app.post(\"/persons\", async (req, res) => {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 244,
+      "style": "Normal",
+      "text": "try {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 245,
+      "style": "Normal",
+      "text": "const {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 246,
+      "style": "Normal",
+      "text": "lastName,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 247,
+      "style": "Normal",
+      "text": "firstName,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 248,
+      "style": "Normal",
+      "text": "sex,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 249,
+      "style": "Normal",
+      "text": "birthYear,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 250,
+      "style": "Normal",
+      "text": "province,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 251,
+      "style": "Normal",
+      "text": "commune,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 252,
+      "style": "Normal",
+      "text": "category,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 253,
+      "style": "Normal",
+      "text": "dependentCode,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 254,
+      "style": "Normal",
+      "text": "} = req.body;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 256,
+      "style": "Normal",
+      "text": "// Get next unique number from DB sequence or table"
+    },
+    {
+      "kind": "paragraph",
+      "index": 257,
+      "style": "Normal",
+      "text": "const { rows } = await db.query(\"SELECT nextval('snau_unique_seq') AS num\");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 258,
+      "style": "Normal",
+      "text": "const uniqueNumber = rows[0].num;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 260,
+      "style": "Normal",
+      "text": "const snau = generateSnau({"
+    },
+    {
+      "kind": "paragraph",
+      "index": 261,
+      "style": "Normal",
+      "text": "province,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 262,
+      "style": "Normal",
+      "text": "commune,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 263,
+      "style": "Normal",
+      "text": "sex,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 264,
+      "style": "Normal",
+      "text": "birthYear,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 265,
+      "style": "Normal",
+      "text": "category,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 266,
+      "style": "Normal",
+      "text": "dependentCode,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 267,
+      "style": "Normal",
+      "text": "uniqueNumber,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 268,
+      "style": "Normal",
+      "text": "});"
+    },
+    {
+      "kind": "paragraph",
+      "index": 270,
+      "style": "Normal",
+      "text": "const insert = await db.query("
+    },
+    {
+      "kind": "paragraph",
+      "index": 271,
+      "style": "Normal",
+      "text": "`INSERT INTO person (snau, last_name, first_name, sex, birth_year, province, commune, category)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 272,
+      "style": "Normal",
+      "text": "VALUES ($1,$2,$3,$4,$5,$6,$7,$8)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 273,
+      "style": "Normal",
+      "text": "RETURNING *`,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 274,
+      "style": "Normal",
+      "text": "[snau, lastName, firstName, sex, birthYear, province, commune, category]"
+    },
+    {
+      "kind": "paragraph",
+      "index": 275,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 277,
+      "style": "Normal",
+      "text": "res.status(201).json(insert.rows[0]);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 278,
+      "style": "Normal",
+      "text": "} catch (err) {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 279,
+      "style": "Normal",
+      "text": "console.error(err);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 280,
+      "style": "Normal",
+      "text": "res.status(400).json({ error: err.message });"
+    },
+    {
+      "kind": "paragraph",
+      "index": 281,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 282,
+      "style": "Normal",
+      "text": "});"
+    },
+    {
+      "kind": "paragraph",
+      "index": 284,
+      "style": "Normal",
+      "text": "// Validate SNAU"
+    },
+    {
+      "kind": "paragraph",
+      "index": 285,
+      "style": "Normal",
+      "text": "app.get(\"/snau/validate/:snau\", async (req, res) => {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 286,
+      "style": "Normal",
+      "text": "const { snau } = req.params;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 287,
+      "style": "Normal",
+      "text": "// Basic pattern check"
+    },
+    {
+      "kind": "paragraph",
+      "index": 288,
+      "style": "Normal",
+      "text": "const pattern = /^243-\\d{2}[A-Z]-[MF]\\d{3}-[A-Z0-2]\\d{4}$/;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 289,
+      "style": "Normal",
+      "text": "const isValid = pattern.test(snau);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 290,
+      "style": "Normal",
+      "text": "res.json({ snau, isValid });"
+    },
+    {
+      "kind": "paragraph",
+      "index": 291,
+      "style": "Normal",
+      "text": "});"
+    },
+    {
+      "kind": "paragraph",
+      "index": 293,
+      "style": "Normal",
+      "text": "// Get person by SNAU"
+    },
+    {
+      "kind": "paragraph",
+      "index": 294,
+      "style": "Normal",
+      "text": "app.get(\"/persons/:snau\", async (req, res) => {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 295,
+      "style": "Normal",
+      "text": "const { snau } = req.params;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 296,
+      "style": "Normal",
+      "text": "const { rows } = await db.query(\"SELECT * FROM person WHERE snau = $1\", ["
+    },
+    {
+      "kind": "paragraph",
+      "index": 297,
+      "style": "Normal",
+      "text": "snau,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 298,
+      "style": "Normal",
+      "text": "]);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 299,
+      "style": "Normal",
+      "text": "if (!rows.length) return res.status(404).json({ error: \"Not found\" });"
+    },
+    {
+      "kind": "paragraph",
+      "index": 300,
+      "style": "Normal",
+      "text": "res.json(rows[0]);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 301,
+      "style": "Normal",
+      "text": "});"
+    },
+    {
+      "kind": "paragraph",
+      "index": 303,
+      "style": "Normal",
+      "text": "const PORT = process.env.PORT || 3000;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 304,
+      "style": "Normal",
+      "text": "app.listen(PORT, () => {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 305,
+      "style": "Normal",
+      "text": "console.log(`SNAU registry API running on port ${PORT}`);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 306,
+      "style": "Normal",
+      "text": "});"
+    }
+  ]
+}

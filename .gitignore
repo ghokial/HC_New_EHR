@@ -1,9 +1,2 @@
-node_modules/
-.env
-.env.*
-!.env.example
-.projects/
-requirements_extracted/
-source_docs/
-*.log
-*.docx
+supabase/.temp/
+tmp/

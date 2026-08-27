@@ -10,11 +10,12 @@ Deno.serve(async (req) => {
     const caller=createClient(url,Deno.env.get("SUPABASE_ANON_KEY")!,{global:{headers:{Authorization:auth}}});
     const {data:{user},error:userError}=await caller.auth.getUser();
     if(userError||!user) throw new Error("Invalid session");
-    const {data:roleRow,error:roleError}=await caller.from("user_roles").select("roles!inner(role_code)").eq("user_id",user.id).in("roles.role_code",["root","sysadmin"]).limit(1).maybeSingle();
-    if(roleError||!roleRow) throw new Error("Root or System Administrator access required");
     const body=await req.json();
     if(!body.email||!body.role_code) throw new Error("email and role_code are required");
     const admin=createClient(url,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const {data:rootRole}=await admin.from("user_roles").select("roles!inner(role_code)").eq("user_id",user.id).eq("roles.role_code","root").maybeSingle();
+    const {data:membership}=body.facility_id?await admin.from("facility_memberships").select("is_owner,roles!inner(role_code)").eq("facility_id",body.facility_id).eq("user_id",user.id).eq("active",true).maybeSingle():{data:null};
+    if(!rootRole&&!membership?.is_owner&&!(["sysadmin"].includes(membership?.roles?.role_code))) throw new Error("Facility owner or administrator access required");
     const random=new Uint8Array(18); crypto.getRandomValues(random);
     const temporaryPassword=`Hc!${Array.from(random,b=>b.toString(36).padStart(2,"0")).join("")}9a`;
     const {data:invite,error:inviteError}=await admin.auth.admin.createUser({email:body.email,password:temporaryPassword,email_confirm:true,user_metadata:{display_name:body.display_name||body.email.split("@")[0]},app_metadata:{must_change_password:true}});
@@ -23,6 +24,7 @@ Deno.serve(async (req) => {
     if(findRoleError) throw findRoleError;
     const {error:assignError}=await admin.from("user_roles").insert({user_id:invite.user.id,role_id:role.id,scope:body.scope||"hospital_main"});
     if(assignError) throw assignError;
+    if(body.facility_id){const {error:memberError}=await admin.from("facility_memberships").insert({facility_id:body.facility_id,user_id:invite.user.id,role_id:role.id});if(memberError)throw memberError;}
     return new Response(JSON.stringify({id:invite.user.id,email:invite.user.email,role_code:body.role_code,temporary_password:temporaryPassword}),{headers:{...cors,"Content-Type":"application/json"},status:201});
   } catch(error){return new Response(JSON.stringify({error:error.message}),{headers:{...cors,"Content-Type":"application/json"},status:400});}
 });

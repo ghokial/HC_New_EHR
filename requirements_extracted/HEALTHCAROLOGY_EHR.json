@@ -1,0 +1,6301 @@
+{
+  "source": "C:\\Users\\ghoki\\OneDrive\\Documents\\ChatGPT\\HC_NEW_EHR\\source_docs\\HEALTHCAROLOGY_EHR.docx",
+  "paragraph_count": 1108,
+  "table_count": 0,
+  "blocks": [
+    {
+      "kind": "paragraph",
+      "index": 0,
+      "style": "Normal",
+      "text": "HEALTHCAROLOGY_EHR"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1,
+      "style": "Normal",
+      "text": "1. Postgres schema for worldwide locations + translations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 2,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 3,
+      "style": "Normal",
+      "text": "-- Countries"
+    },
+    {
+      "kind": "paragraph",
+      "index": 4,
+      "style": "Normal",
+      "text": "CREATE TABLE public.countries ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 5,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 6,
+      "style": "Normal",
+      "text": "iso2 CHAR(2) UNIQUE NOT NULL,      -- e.g. US, CD"
+    },
+    {
+      "kind": "paragraph",
+      "index": 7,
+      "style": "Normal",
+      "text": "iso3 CHAR(3) UNIQUE NOT NULL,      -- e.g. USA, COD"
+    },
+    {
+      "kind": "paragraph",
+      "index": 8,
+      "style": "Normal",
+      "text": "numeric_code INTEGER,              -- optional ISO numeric"
+    },
+    {
+      "kind": "paragraph",
+      "index": 9,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,        -- canonical English name"
+    },
+    {
+      "kind": "paragraph",
+      "index": 10,
+      "style": "Normal",
+      "text": "active BOOLEAN DEFAULT TRUE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 11,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 13,
+      "style": "Normal",
+      "text": "-- Provinces / States / Regions"
+    },
+    {
+      "kind": "paragraph",
+      "index": 14,
+      "style": "Normal",
+      "text": "CREATE TABLE public.provinces ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 15,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 16,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 17,
+      "style": "Normal",
+      "text": "code TEXT,                         -- e.g. CA, TX, KIN"
+    },
+    {
+      "kind": "paragraph",
+      "index": 18,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 19,
+      "style": "Normal",
+      "text": "type TEXT                          -- state, province, region, territory"
+    },
+    {
+      "kind": "paragraph",
+      "index": 20,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 22,
+      "style": "Normal",
+      "text": "-- Cities"
+    },
+    {
+      "kind": "paragraph",
+      "index": 23,
+      "style": "Normal",
+      "text": "CREATE TABLE public.cities ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 24,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 25,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 26,
+      "style": "Normal",
+      "text": "province_id BIGINT REFERENCES public.provinces(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 27,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 28,
+      "style": "Normal",
+      "text": "latitude NUMERIC(9,6),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 29,
+      "style": "Normal",
+      "text": "longitude NUMERIC(9,6)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 30,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 32,
+      "style": "Normal",
+      "text": "-- Postal / ZIP codes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 33,
+      "style": "Normal",
+      "text": "CREATE TABLE public.postal_codes ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 34,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 35,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 36,
+      "style": "Normal",
+      "text": "province_id BIGINT REFERENCES public.provinces(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 37,
+      "style": "Normal",
+      "text": "city_id BIGINT REFERENCES public.cities(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 38,
+      "style": "Normal",
+      "text": "code TEXT NOT NULL,                -- e.g. 20001, SW1A 1AA"
+    },
+    {
+      "kind": "paragraph",
+      "index": 39,
+      "style": "Normal",
+      "text": "area_name TEXT                     -- optional local area name"
+    },
+    {
+      "kind": "paragraph",
+      "index": 40,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 42,
+      "style": "Normal",
+      "text": "-- Generic translations for any entity"
+    },
+    {
+      "kind": "paragraph",
+      "index": 43,
+      "style": "Normal",
+      "text": "CREATE TABLE public.translations ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 44,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 45,
+      "style": "Normal",
+      "text": "entity_type TEXT NOT NULL,         -- 'country', 'province', 'city', 'postal_code'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 46,
+      "style": "Normal",
+      "text": "entity_id BIGINT NOT NULL,         -- id in corresponding table"
+    },
+    {
+      "kind": "paragraph",
+      "index": 47,
+      "style": "Normal",
+      "text": "locale TEXT NOT NULL,              -- e.g. 'en', 'fr-CD', 'es-MX'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 48,
+      "style": "Normal",
+      "text": "name TEXT NOT NULL,                -- translated name"
+    },
+    {
+      "kind": "paragraph",
+      "index": 49,
+      "style": "Normal",
+      "text": "UNIQUE (entity_type, entity_id, locale)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 50,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 51,
+      "style": "Normal",
+      "text": "This gives you a clean global model: one translation table that can localize any geographic entity."
+    },
+    {
+      "kind": "paragraph",
+      "index": 52,
+      "style": "Normal",
+      "text": "2. API routes for the location module"
+    },
+    {
+      "kind": "paragraph",
+      "index": 53,
+      "style": "Normal",
+      "text": "Assuming REST style:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 54,
+      "style": "Normal",
+      "text": "Countries"
+    },
+    {
+      "kind": "paragraph",
+      "index": 55,
+      "style": "Normal",
+      "text": "GET /countries — list all countries (with optional locale query to return translated names)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 56,
+      "style": "Normal",
+      "text": "GET /countries/:id — country details."
+    },
+    {
+      "kind": "paragraph",
+      "index": 57,
+      "style": "Normal",
+      "text": "POST /countries — create country (admin only)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 58,
+      "style": "Normal",
+      "text": "PUT /countries/:id — update country."
+    },
+    {
+      "kind": "paragraph",
+      "index": 59,
+      "style": "Normal",
+      "text": "DELETE /countries/:id — soft delete or deactivate."
+    },
+    {
+      "kind": "paragraph",
+      "index": 60,
+      "style": "Normal",
+      "text": "Provinces"
+    },
+    {
+      "kind": "paragraph",
+      "index": 61,
+      "style": "Normal",
+      "text": "GET /countries/:countryId/provinces"
+    },
+    {
+      "kind": "paragraph",
+      "index": 62,
+      "style": "Normal",
+      "text": "GET /provinces/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 63,
+      "style": "Normal",
+      "text": "POST /countries/:countryId/provinces"
+    },
+    {
+      "kind": "paragraph",
+      "index": 64,
+      "style": "Normal",
+      "text": "PUT /provinces/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 65,
+      "style": "Normal",
+      "text": "DELETE /provinces/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 66,
+      "style": "Normal",
+      "text": "Cities"
+    },
+    {
+      "kind": "paragraph",
+      "index": 67,
+      "style": "Normal",
+      "text": "GET /countries/:countryId/cities"
+    },
+    {
+      "kind": "paragraph",
+      "index": 68,
+      "style": "Normal",
+      "text": "GET /provinces/:provinceId/cities"
+    },
+    {
+      "kind": "paragraph",
+      "index": 69,
+      "style": "Normal",
+      "text": "GET /cities/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 70,
+      "style": "Normal",
+      "text": "POST /provinces/:provinceId/cities"
+    },
+    {
+      "kind": "paragraph",
+      "index": 71,
+      "style": "Normal",
+      "text": "PUT /cities/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 72,
+      "style": "Normal",
+      "text": "DELETE /cities/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 73,
+      "style": "Normal",
+      "text": "Postal codes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 74,
+      "style": "Normal",
+      "text": "GET /countries/:countryId/postal-codes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 75,
+      "style": "Normal",
+      "text": "GET /cities/:cityId/postal-codes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 76,
+      "style": "Normal",
+      "text": "GET /postal-codes/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 77,
+      "style": "Normal",
+      "text": "POST /cities/:cityId/postal-codes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 78,
+      "style": "Normal",
+      "text": "PUT /postal-codes/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 79,
+      "style": "Normal",
+      "text": "DELETE /postal-codes/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 80,
+      "style": "Normal",
+      "text": "Translations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 81,
+      "style": "Normal",
+      "text": "GET /translations?entity_type=city&entity_id=123"
+    },
+    {
+      "kind": "paragraph",
+      "index": 82,
+      "style": "Normal",
+      "text": "POST /translations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 83,
+      "style": "Normal",
+      "text": "PUT /translations/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 84,
+      "style": "Normal",
+      "text": "DELETE /translations/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 85,
+      "style": "Normal",
+      "text": "You can also add a convenience route:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 86,
+      "style": "Normal",
+      "text": "GET /geo/resolve?country=US&postal=20001 → returns country, province, city, postal code in one shot."
+    },
+    {
+      "kind": "paragraph",
+      "index": 87,
+      "style": "Normal",
+      "text": "3. Mapping to Supabase"
+    },
+    {
+      "kind": "paragraph",
+      "index": 88,
+      "style": "Normal",
+      "text": "In Supabase:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 89,
+      "style": "Normal",
+      "text": "Create these tables in public schema exactly as above."
+    },
+    {
+      "kind": "paragraph",
+      "index": 90,
+      "style": "Normal",
+      "text": "Enable RLS on all tables."
+    },
+    {
+      "kind": "paragraph",
+      "index": 91,
+      "style": "Normal",
+      "text": "Policies:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 92,
+      "style": "Normal",
+      "text": "Read-only for anonymous/public (if you want open geo data)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 93,
+      "style": "Normal",
+      "text": "Write access only for admin roles (e.g. role = 'geo_admin')."
+    },
+    {
+      "kind": "paragraph",
+      "index": 94,
+      "style": "Normal",
+      "text": "Use Supabase functions for:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 95,
+      "style": "Normal",
+      "text": "get_locations(locale) to return translated names."
+    },
+    {
+      "kind": "paragraph",
+      "index": 96,
+      "style": "Normal",
+      "text": "resolve_postal(country_iso2, code) to map ZIP/postal to city/province."
+    },
+    {
+      "kind": "paragraph",
+      "index": 98,
+      "style": "Normal",
+      "text": "See my thinking"
+    },
+    {
+      "kind": "paragraph",
+      "index": 99,
+      "style": "Normal",
+      "text": "1. Wire worldwide geo into your EHR schema"
+    },
+    {
+      "kind": "paragraph",
+      "index": 100,
+      "style": "Normal",
+      "text": "Best pattern: keep geo tables separate, then link patients and encounters to them via an addresses table."
+    },
+    {
+      "kind": "paragraph",
+      "index": 101,
+      "style": "Normal",
+      "text": "Geo tables (from before, unchanged)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 102,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 103,
+      "style": "Normal",
+      "text": "CREATE TABLE public.countries ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 104,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 105,
+      "style": "Normal",
+      "text": "iso2 CHAR(2) UNIQUE NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 106,
+      "style": "Normal",
+      "text": "iso3 CHAR(3) UNIQUE NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 107,
+      "style": "Normal",
+      "text": "numeric_code INTEGER,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 108,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 109,
+      "style": "Normal",
+      "text": "active BOOLEAN DEFAULT TRUE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 110,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 112,
+      "style": "Normal",
+      "text": "CREATE TABLE public.provinces ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 113,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 114,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 115,
+      "style": "Normal",
+      "text": "code TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 116,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 117,
+      "style": "Normal",
+      "text": "type TEXT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 118,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 120,
+      "style": "Normal",
+      "text": "CREATE TABLE public.cities ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 121,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 122,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 123,
+      "style": "Normal",
+      "text": "province_id BIGINT REFERENCES public.provinces(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 124,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 125,
+      "style": "Normal",
+      "text": "latitude NUMERIC(9,6),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 126,
+      "style": "Normal",
+      "text": "longitude NUMERIC(9,6)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 127,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 129,
+      "style": "Normal",
+      "text": "CREATE TABLE public.postal_codes ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 130,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 131,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 132,
+      "style": "Normal",
+      "text": "province_id BIGINT REFERENCES public.provinces(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 133,
+      "style": "Normal",
+      "text": "city_id BIGINT REFERENCES public.cities(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 134,
+      "style": "Normal",
+      "text": "code TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 135,
+      "style": "Normal",
+      "text": "area_name TEXT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 136,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 138,
+      "style": "Normal",
+      "text": "CREATE TABLE public.translations ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 139,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 140,
+      "style": "Normal",
+      "text": "entity_type TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 141,
+      "style": "Normal",
+      "text": "entity_id BIGINT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 142,
+      "style": "Normal",
+      "text": "locale TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 143,
+      "style": "Normal",
+      "text": "name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 144,
+      "style": "Normal",
+      "text": "UNIQUE (entity_type, entity_id, locale)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 145,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 146,
+      "style": "Normal",
+      "text": "2. Address table for patients and encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 147,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 148,
+      "style": "Normal",
+      "text": "CREATE TABLE public.addresses ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 149,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 150,
+      "style": "Normal",
+      "text": "line1 TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 151,
+      "style": "Normal",
+      "text": "line2 TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 152,
+      "style": "Normal",
+      "text": "city_id BIGINT REFERENCES public.cities(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 153,
+      "style": "Normal",
+      "text": "province_id BIGINT REFERENCES public.provinces(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 154,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 155,
+      "style": "Normal",
+      "text": "postal_code_id BIGINT REFERENCES public.postal_codes(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 156,
+      "style": "Normal",
+      "text": "postal_code_text TEXT,          -- fallback if no structured code"
+    },
+    {
+      "kind": "paragraph",
+      "index": 157,
+      "style": "Normal",
+      "text": "latitude NUMERIC(9,6),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 158,
+      "style": "Normal",
+      "text": "longitude NUMERIC(9,6)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 159,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 160,
+      "style": "Normal",
+      "text": "3. Patients and encounters linked to addresses"
+    },
+    {
+      "kind": "paragraph",
+      "index": 161,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 162,
+      "style": "Normal",
+      "text": "CREATE TABLE public.patients ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 163,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 164,
+      "style": "Normal",
+      "text": "snau TEXT,                      -- or MRN"
+    },
+    {
+      "kind": "paragraph",
+      "index": 165,
+      "style": "Normal",
+      "text": "first_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 166,
+      "style": "Normal",
+      "text": "last_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 167,
+      "style": "Normal",
+      "text": "date_of_birth DATE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 168,
+      "style": "Normal",
+      "text": "sex TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 169,
+      "style": "Normal",
+      "text": "primary_address_id BIGINT REFERENCES public.addresses(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 170,
+      "style": "Normal",
+      "text": "mailing_address_id BIGINT REFERENCES public.addresses(id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 171,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 173,
+      "style": "Normal",
+      "text": "CREATE TABLE public.encounters ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 174,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 175,
+      "style": "Normal",
+      "text": "patient_id BIGINT NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 176,
+      "style": "Normal",
+      "text": "encounter_type TEXT,            -- inpatient, outpatient, ED, etc."
+    },
+    {
+      "kind": "paragraph",
+      "index": 177,
+      "style": "Normal",
+      "text": "start_at TIMESTAMP NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 178,
+      "style": "Normal",
+      "text": "end_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 179,
+      "style": "Normal",
+      "text": "location_address_id BIGINT REFERENCES public.addresses(id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 180,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 181,
+      "style": "Normal",
+      "text": "4. Locale-aware query example (patient + address + translations)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 182,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 183,
+      "style": "Normal",
+      "text": "-- Get patient with translated country/province/city names"
+    },
+    {
+      "kind": "paragraph",
+      "index": 184,
+      "style": "Normal",
+      "text": "SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 185,
+      "style": "Normal",
+      "text": "p.id,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 186,
+      "style": "Normal",
+      "text": "p.first_name,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 187,
+      "style": "Normal",
+      "text": "p.last_name,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 188,
+      "style": "Normal",
+      "text": "a.line1,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 189,
+      "style": "Normal",
+      "text": "a.line2,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 190,
+      "style": "Normal",
+      "text": "COALESCE(ct.name, c.default_name) AS country_name,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 191,
+      "style": "Normal",
+      "text": "COALESCE(pt.name, pr.default_name) AS province_name,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 192,
+      "style": "Normal",
+      "text": "COALESCE(it.name, ci.default_name) AS city_name,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 193,
+      "style": "Normal",
+      "text": "pc.code AS postal_code"
+    },
+    {
+      "kind": "paragraph",
+      "index": 194,
+      "style": "Normal",
+      "text": "FROM public.patients p"
+    },
+    {
+      "kind": "paragraph",
+      "index": 195,
+      "style": "Normal",
+      "text": "LEFT JOIN public.addresses a ON a.id = p.primary_address_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 196,
+      "style": "Normal",
+      "text": "LEFT JOIN public.countries c ON c.id = a.country_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 197,
+      "style": "Normal",
+      "text": "LEFT JOIN public.provinces pr ON pr.id = a.province_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 198,
+      "style": "Normal",
+      "text": "LEFT JOIN public.cities ci ON ci.id = a.city_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 199,
+      "style": "Normal",
+      "text": "LEFT JOIN public.postal_codes pc ON pc.id = a.postal_code_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 200,
+      "style": "Normal",
+      "text": "LEFT JOIN public.translations ct"
+    },
+    {
+      "kind": "paragraph",
+      "index": 201,
+      "style": "Normal",
+      "text": "ON ct.entity_type = 'country' AND ct.entity_id = c.id AND ct.locale = 'fr-CD'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 202,
+      "style": "Normal",
+      "text": "LEFT JOIN public.translations pt"
+    },
+    {
+      "kind": "paragraph",
+      "index": 203,
+      "style": "Normal",
+      "text": "ON pt.entity_type = 'province' AND pt.entity_id = pr.id AND pt.locale = 'fr-CD'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 204,
+      "style": "Normal",
+      "text": "LEFT JOIN public.translations it"
+    },
+    {
+      "kind": "paragraph",
+      "index": 205,
+      "style": "Normal",
+      "text": "ON it.entity_type = 'city' AND it.entity_id = ci.id AND it.locale = 'fr-CD'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 206,
+      "style": "Normal",
+      "text": "WHERE p.id = $1;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 207,
+      "style": "Normal",
+      "text": "5. Supabase mapping (quick)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 208,
+      "style": "Normal",
+      "text": "Create these tables in public."
+    },
+    {
+      "kind": "paragraph",
+      "index": 209,
+      "style": "Normal",
+      "text": "Enable RLS on patients, encounters, addresses (clinical data)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 210,
+      "style": "Normal",
+      "text": "Optionally allow public read on countries, provinces, cities, postal_codes for UI dropdowns."
+    },
+    {
+      "kind": "paragraph",
+      "index": 211,
+      "style": "Normal",
+      "text": "Use a Postgres function like get_patient_with_locale(patient_id, locale) to wrap the query above and expose via Supabase RPC."
+    },
+    {
+      "kind": "paragraph",
+      "index": 213,
+      "style": "Normal",
+      "text": "See my thinking"
+    },
+    {
+      "kind": "paragraph",
+      "index": 214,
+      "style": "Normal",
+      "text": "Here’s a clean, coherent full EHR schema wired to your worldwide geo model—patients → addresses → country/province/city/postal—plus orders, results, notes, and meds, with all key foreign keys in place."
+    },
+    {
+      "kind": "paragraph",
+      "index": 215,
+      "style": "Normal",
+      "text": "I’ll keep it tight and structured so you can drop this into Postgres/Supabase."
+    },
+    {
+      "kind": "paragraph",
+      "index": 216,
+      "style": "Normal",
+      "text": "1. Geo & address (as foundation)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 217,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 218,
+      "style": "Normal",
+      "text": "-- Countries"
+    },
+    {
+      "kind": "paragraph",
+      "index": 219,
+      "style": "Normal",
+      "text": "CREATE TABLE public.countries ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 220,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 221,
+      "style": "Normal",
+      "text": "iso2 CHAR(2) UNIQUE NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 222,
+      "style": "Normal",
+      "text": "iso3 CHAR(3) UNIQUE NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 223,
+      "style": "Normal",
+      "text": "numeric_code INTEGER,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 224,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 225,
+      "style": "Normal",
+      "text": "active BOOLEAN DEFAULT TRUE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 226,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 228,
+      "style": "Normal",
+      "text": "-- Provinces / States / Regions"
+    },
+    {
+      "kind": "paragraph",
+      "index": 229,
+      "style": "Normal",
+      "text": "CREATE TABLE public.provinces ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 230,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 231,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 232,
+      "style": "Normal",
+      "text": "code TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 233,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 234,
+      "style": "Normal",
+      "text": "type TEXT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 235,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 237,
+      "style": "Normal",
+      "text": "-- Cities"
+    },
+    {
+      "kind": "paragraph",
+      "index": 238,
+      "style": "Normal",
+      "text": "CREATE TABLE public.cities ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 239,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 240,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 241,
+      "style": "Normal",
+      "text": "province_id BIGINT REFERENCES public.provinces(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 242,
+      "style": "Normal",
+      "text": "default_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 243,
+      "style": "Normal",
+      "text": "latitude NUMERIC(9,6),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 244,
+      "style": "Normal",
+      "text": "longitude NUMERIC(9,6)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 245,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 247,
+      "style": "Normal",
+      "text": "-- Postal / ZIP codes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 248,
+      "style": "Normal",
+      "text": "CREATE TABLE public.postal_codes ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 249,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 250,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 251,
+      "style": "Normal",
+      "text": "province_id BIGINT REFERENCES public.provinces(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 252,
+      "style": "Normal",
+      "text": "city_id BIGINT REFERENCES public.cities(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 253,
+      "style": "Normal",
+      "text": "code TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 254,
+      "style": "Normal",
+      "text": "area_name TEXT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 255,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 257,
+      "style": "Normal",
+      "text": "-- Translations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 258,
+      "style": "Normal",
+      "text": "CREATE TABLE public.translations ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 259,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 260,
+      "style": "Normal",
+      "text": "entity_type TEXT NOT NULL,   -- 'country','province','city','postal_code'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 261,
+      "style": "Normal",
+      "text": "entity_id BIGINT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 262,
+      "style": "Normal",
+      "text": "locale TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 263,
+      "style": "Normal",
+      "text": "name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 264,
+      "style": "Normal",
+      "text": "UNIQUE (entity_type, entity_id, locale)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 265,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 267,
+      "style": "Normal",
+      "text": "-- Addresses (used by patients, encounters, locations)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 268,
+      "style": "Normal",
+      "text": "CREATE TABLE public.addresses ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 269,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 270,
+      "style": "Normal",
+      "text": "line1 TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 271,
+      "style": "Normal",
+      "text": "line2 TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 272,
+      "style": "Normal",
+      "text": "city_id BIGINT REFERENCES public.cities(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 273,
+      "style": "Normal",
+      "text": "province_id BIGINT REFERENCES public.provinces(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 274,
+      "style": "Normal",
+      "text": "country_id BIGINT NOT NULL REFERENCES public.countries(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 275,
+      "style": "Normal",
+      "text": "postal_code_id BIGINT REFERENCES public.postal_codes(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 276,
+      "style": "Normal",
+      "text": "postal_code_text TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 277,
+      "style": "Normal",
+      "text": "latitude NUMERIC(9,6),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 278,
+      "style": "Normal",
+      "text": "longitude NUMERIC(9,6)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 279,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 280,
+      "style": "Normal",
+      "text": "2. Core EHR entities: patients, providers, departments, services, locations, encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 281,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 282,
+      "style": "Normal",
+      "text": "-- Patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 283,
+      "style": "Normal",
+      "text": "CREATE TABLE public.patients ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 284,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 285,
+      "style": "Normal",
+      "text": "snau TEXT,                      -- or MRN / national ID"
+    },
+    {
+      "kind": "paragraph",
+      "index": 286,
+      "style": "Normal",
+      "text": "first_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 287,
+      "style": "Normal",
+      "text": "last_name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 288,
+      "style": "Normal",
+      "text": "middle_name TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 289,
+      "style": "Normal",
+      "text": "date_of_birth DATE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 290,
+      "style": "Normal",
+      "text": "sex TEXT,                       -- 'M','F','X'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 291,
+      "style": "Normal",
+      "text": "primary_address_id BIGINT REFERENCES public.addresses(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 292,
+      "style": "Normal",
+      "text": "mailing_address_id BIGINT REFERENCES public.addresses(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 293,
+      "style": "Normal",
+      "text": "created_at TIMESTAMP NOT NULL DEFAULT NOW(),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 294,
+      "style": "Normal",
+      "text": "updated_at TIMESTAMP NOT NULL DEFAULT NOW()"
+    },
+    {
+      "kind": "paragraph",
+      "index": 295,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 297,
+      "style": "Normal",
+      "text": "-- Departments (Emergency, Surgery, Medicine, etc.)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 298,
+      "style": "Normal",
+      "text": "CREATE TABLE public.departments ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 299,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 300,
+      "style": "Normal",
+      "text": "code TEXT UNIQUE NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 301,
+      "style": "Normal",
+      "text": "name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 302,
+      "style": "Normal",
+      "text": "type TEXT                      -- 'clinical','diagnostic','support'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 303,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 305,
+      "style": "Normal",
+      "text": "-- Services (ICU, ED, Cardiology Clinic, Lab, etc.)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 306,
+      "style": "Normal",
+      "text": "CREATE TABLE public.services ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 307,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 308,
+      "style": "Normal",
+      "text": "department_id BIGINT NOT NULL REFERENCES public.departments(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 309,
+      "style": "Normal",
+      "text": "name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 310,
+      "style": "Normal",
+      "text": "service_type TEXT              -- 'inpatient','outpatient','ed','lab','imaging'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 311,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 313,
+      "style": "Normal",
+      "text": "-- Physical locations (wards, ORs, clinics) linked to addresses"
+    },
+    {
+      "kind": "paragraph",
+      "index": 314,
+      "style": "Normal",
+      "text": "CREATE TABLE public.locations ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 315,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 316,
+      "style": "Normal",
+      "text": "service_id BIGINT REFERENCES public.services(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 317,
+      "style": "Normal",
+      "text": "name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 318,
+      "style": "Normal",
+      "text": "address_id BIGINT REFERENCES public.addresses(id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 319,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 321,
+      "style": "Normal",
+      "text": "-- Providers (clinical users)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 322,
+      "style": "Normal",
+      "text": "CREATE TABLE public.providers ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 323,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 324,
+      "style": "Normal",
+      "text": "user_id UUID,                  -- link to auth.users in Supabase"
+    },
+    {
+      "kind": "paragraph",
+      "index": 325,
+      "style": "Normal",
+      "text": "provider_type TEXT NOT NULL,   -- 'physician','nurse','pharmacist','therapist','lab_tech','rad_tech'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 326,
+      "style": "Normal",
+      "text": "department_id BIGINT REFERENCES public.departments(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 327,
+      "style": "Normal",
+      "text": "service_id BIGINT REFERENCES public.services(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 328,
+      "style": "Normal",
+      "text": "active BOOLEAN DEFAULT TRUE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 329,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 331,
+      "style": "Normal",
+      "text": "-- Encounters (visits, admissions, ED episodes)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 332,
+      "style": "Normal",
+      "text": "CREATE TABLE public.encounters ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 333,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 334,
+      "style": "Normal",
+      "text": "patient_id BIGINT NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 335,
+      "style": "Normal",
+      "text": "encounter_type TEXT NOT NULL,  -- 'inpatient','outpatient','ed','observation'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 336,
+      "style": "Normal",
+      "text": "service_id BIGINT REFERENCES public.services(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 337,
+      "style": "Normal",
+      "text": "location_id BIGINT REFERENCES public.locations(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 338,
+      "style": "Normal",
+      "text": "start_at TIMESTAMP NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 339,
+      "style": "Normal",
+      "text": "end_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 340,
+      "style": "Normal",
+      "text": "attending_provider_id BIGINT REFERENCES public.providers(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 341,
+      "style": "Normal",
+      "text": "status TEXT DEFAULT 'open'     -- 'open','closed','cancelled'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 342,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 343,
+      "style": "Normal",
+      "text": "3. Orders (labs, imaging, procedures, meds)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 344,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 345,
+      "style": "Normal",
+      "text": "-- Generic orders header"
+    },
+    {
+      "kind": "paragraph",
+      "index": 346,
+      "style": "Normal",
+      "text": "CREATE TABLE public.orders ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 347,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 348,
+      "style": "Normal",
+      "text": "patient_id BIGINT NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 349,
+      "style": "Normal",
+      "text": "encounter_id BIGINT REFERENCES public.encounters(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 350,
+      "style": "Normal",
+      "text": "ordering_provider_id BIGINT REFERENCES public.providers(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 351,
+      "style": "Normal",
+      "text": "order_type TEXT NOT NULL,      -- 'lab','imaging','procedure','medication'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 352,
+      "style": "Normal",
+      "text": "service_id BIGINT REFERENCES public.services(id), -- lab, radiology, etc."
+    },
+    {
+      "kind": "paragraph",
+      "index": 353,
+      "style": "Normal",
+      "text": "status TEXT DEFAULT 'pending', -- 'pending','in_progress','completed','cancelled'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 354,
+      "style": "Normal",
+      "text": "created_at TIMESTAMP NOT NULL DEFAULT NOW(),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 355,
+      "style": "Normal",
+      "text": "updated_at TIMESTAMP NOT NULL DEFAULT NOW()"
+    },
+    {
+      "kind": "paragraph",
+      "index": 356,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 358,
+      "style": "Normal",
+      "text": "-- Lab-specific details"
+    },
+    {
+      "kind": "paragraph",
+      "index": 359,
+      "style": "Normal",
+      "text": "CREATE TABLE public.lab_orders ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 360,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 361,
+      "style": "Normal",
+      "text": "order_id BIGINT NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 362,
+      "style": "Normal",
+      "text": "test_code TEXT NOT NULL,       -- e.g. LOINC or internal code"
+    },
+    {
+      "kind": "paragraph",
+      "index": 363,
+      "style": "Normal",
+      "text": "priority TEXT,                 -- 'routine','stat'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 364,
+      "style": "Normal",
+      "text": "specimen_type TEXT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 365,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 367,
+      "style": "Normal",
+      "text": "-- Imaging-specific details"
+    },
+    {
+      "kind": "paragraph",
+      "index": 368,
+      "style": "Normal",
+      "text": "CREATE TABLE public.imaging_orders ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 369,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 370,
+      "style": "Normal",
+      "text": "order_id BIGINT NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 371,
+      "style": "Normal",
+      "text": "modality TEXT NOT NULL,        -- 'X-ray','CT','MRI','US'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 372,
+      "style": "Normal",
+      "text": "body_part TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 373,
+      "style": "Normal",
+      "text": "contrast BOOLEAN"
+    },
+    {
+      "kind": "paragraph",
+      "index": 374,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 376,
+      "style": "Normal",
+      "text": "-- Procedure-specific details"
+    },
+    {
+      "kind": "paragraph",
+      "index": 377,
+      "style": "Normal",
+      "text": "CREATE TABLE public.procedure_orders ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 378,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 379,
+      "style": "Normal",
+      "text": "order_id BIGINT NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 380,
+      "style": "Normal",
+      "text": "procedure_code TEXT NOT NULL,  -- CPT/ICD or internal"
+    },
+    {
+      "kind": "paragraph",
+      "index": 381,
+      "style": "Normal",
+      "text": "scheduled_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 382,
+      "style": "Normal",
+      "text": "location_id BIGINT REFERENCES public.locations(id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 383,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 384,
+      "style": "Normal",
+      "text": "4. Results (labs, imaging, procedures)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 385,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 386,
+      "style": "Normal",
+      "text": "-- Lab results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 387,
+      "style": "Normal",
+      "text": "CREATE TABLE public.lab_results ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 388,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 389,
+      "style": "Normal",
+      "text": "lab_order_id BIGINT NOT NULL REFERENCES public.lab_orders(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 390,
+      "style": "Normal",
+      "text": "result_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 391,
+      "style": "Normal",
+      "text": "result_status TEXT,            -- 'preliminary','final','corrected'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 392,
+      "style": "Normal",
+      "text": "analyte_code TEXT,             -- same or related to test_code"
+    },
+    {
+      "kind": "paragraph",
+      "index": 393,
+      "style": "Normal",
+      "text": "value TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 394,
+      "style": "Normal",
+      "text": "units TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 395,
+      "style": "Normal",
+      "text": "reference_range TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 396,
+      "style": "Normal",
+      "text": "abnormal_flag TEXT             -- 'H','L','A','N'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 397,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 399,
+      "style": "Normal",
+      "text": "-- Imaging results / reports"
+    },
+    {
+      "kind": "paragraph",
+      "index": 400,
+      "style": "Normal",
+      "text": "CREATE TABLE public.imaging_results ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 401,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 402,
+      "style": "Normal",
+      "text": "imaging_order_id BIGINT NOT NULL REFERENCES public.imaging_orders(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 403,
+      "style": "Normal",
+      "text": "result_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 404,
+      "style": "Normal",
+      "text": "result_status TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 405,
+      "style": "Normal",
+      "text": "report_text TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 406,
+      "style": "Normal",
+      "text": "radiologist_id BIGINT REFERENCES public.providers(id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 407,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 409,
+      "style": "Normal",
+      "text": "-- Procedure results / reports"
+    },
+    {
+      "kind": "paragraph",
+      "index": 410,
+      "style": "Normal",
+      "text": "CREATE TABLE public.procedure_results ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 411,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 412,
+      "style": "Normal",
+      "text": "procedure_order_id BIGINT NOT NULL REFERENCES public.procedure_orders(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 413,
+      "style": "Normal",
+      "text": "performed_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 414,
+      "style": "Normal",
+      "text": "result_status TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 415,
+      "style": "Normal",
+      "text": "report_text TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 416,
+      "style": "Normal",
+      "text": "performing_provider_id BIGINT REFERENCES public.providers(id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 417,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 418,
+      "style": "Normal",
+      "text": "5. Medications (catalog, orders, administrations)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 419,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 420,
+      "style": "Normal",
+      "text": "-- Medication catalog"
+    },
+    {
+      "kind": "paragraph",
+      "index": 421,
+      "style": "Normal",
+      "text": "CREATE TABLE public.medications ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 422,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 423,
+      "style": "Normal",
+      "text": "name TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 424,
+      "style": "Normal",
+      "text": "generic_name TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 425,
+      "style": "Normal",
+      "text": "strength TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 426,
+      "style": "Normal",
+      "text": "form TEXT,                     -- 'tablet','capsule','solution','injection'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 427,
+      "style": "Normal",
+      "text": "route TEXT                     -- 'oral','iv','im','sc','topical'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 428,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 430,
+      "style": "Normal",
+      "text": "-- Medication orders (prescriptions)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 431,
+      "style": "Normal",
+      "text": "CREATE TABLE public.medication_orders ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 432,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 433,
+      "style": "Normal",
+      "text": "patient_id BIGINT NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 434,
+      "style": "Normal",
+      "text": "encounter_id BIGINT REFERENCES public.encounters(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 435,
+      "style": "Normal",
+      "text": "prescriber_id BIGINT REFERENCES public.providers(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 436,
+      "style": "Normal",
+      "text": "medication_id BIGINT NOT NULL REFERENCES public.medications(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 437,
+      "style": "Normal",
+      "text": "dose TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 438,
+      "style": "Normal",
+      "text": "route TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 439,
+      "style": "Normal",
+      "text": "frequency TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 440,
+      "style": "Normal",
+      "text": "start_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 441,
+      "style": "Normal",
+      "text": "end_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 442,
+      "style": "Normal",
+      "text": "status TEXT DEFAULT 'active'   -- 'active','completed','cancelled','on_hold'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 443,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 445,
+      "style": "Normal",
+      "text": "-- Medication administrations (MAR)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 446,
+      "style": "Normal",
+      "text": "CREATE TABLE public.medication_administrations ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 447,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 448,
+      "style": "Normal",
+      "text": "medication_order_id BIGINT NOT NULL REFERENCES public.medication_orders(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 449,
+      "style": "Normal",
+      "text": "administered_at TIMESTAMP NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 450,
+      "style": "Normal",
+      "text": "administering_provider_id BIGINT REFERENCES public.providers(id), -- usually nurse"
+    },
+    {
+      "kind": "paragraph",
+      "index": 451,
+      "style": "Normal",
+      "text": "dose_given TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 452,
+      "style": "Normal",
+      "text": "route TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 453,
+      "style": "Normal",
+      "text": "notes TEXT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 454,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 455,
+      "style": "Normal",
+      "text": "6. Clinical notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 456,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 457,
+      "style": "Normal",
+      "text": "CREATE TABLE public.clinical_notes ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 458,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 459,
+      "style": "Normal",
+      "text": "patient_id BIGINT NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 460,
+      "style": "Normal",
+      "text": "encounter_id BIGINT REFERENCES public.encounters(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 461,
+      "style": "Normal",
+      "text": "author_provider_id BIGINT REFERENCES public.providers(id),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 462,
+      "style": "Normal",
+      "text": "note_type TEXT NOT NULL,       -- 'progress','consult','discharge','operative','nursing'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 463,
+      "style": "Normal",
+      "text": "content TEXT NOT NULL,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 464,
+      "style": "Normal",
+      "text": "created_at TIMESTAMP NOT NULL DEFAULT NOW(),"
+    },
+    {
+      "kind": "paragraph",
+      "index": 465,
+      "style": "Normal",
+      "text": "signed_at TIMESTAMP,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 466,
+      "style": "Normal",
+      "text": "status TEXT DEFAULT 'draft'    -- 'draft','signed','amended'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 467,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 468,
+      "style": "Normal",
+      "text": "7. How it all wires together (summary)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 469,
+      "style": "Normal",
+      "text": "Geo → Address: addresses → countries, provinces, cities, postal_codes."
+    },
+    {
+      "kind": "paragraph",
+      "index": 470,
+      "style": "Normal",
+      "text": "Patients & Encounters: patients.primary_address_id → addresses.id encounters.patient_id → patients.id encounters.service_id → services.id encounters.location_id → locations.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 471,
+      "style": "Normal",
+      "text": "Providers & Org: providers.department_id → departments.id providers.service_id → services.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 472,
+      "style": "Normal",
+      "text": "Orders: orders.patient_id → patients.id orders.encounter_id → encounters.id orders.ordering_provider_id → providers.id orders.service_id → services.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 473,
+      "style": "Normal",
+      "text": "Results: lab_results.lab_order_id → lab_orders.id → orders.id imaging_results.imaging_order_id → imaging_orders.id → orders.id procedure_results.procedure_order_id → procedure_orders.id → orders.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 474,
+      "style": "Normal",
+      "text": "Meds: medication_orders.patient_id → patients.id medication_orders.encounter_id → encounters.id medication_orders.prescriber_id → providers.id medication_orders.medication_id → medications.id medication_administrations.medication_order_id → medication_orders.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 475,
+      "style": "Normal",
+      "text": "Notes: clinical_notes.patient_id → patients.id clinical_notes.encounter_id → encounters.id clinical_notes.author_provider_id → providers.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 477,
+      "style": "Normal",
+      "text": "See my thinking"
+    },
+    {
+      "kind": "paragraph",
+      "index": 478,
+      "style": "Normal",
+      "text": "Here’s a tight, non-hand-wavy plan for all three: RLS patterns, API route groups, and roles/permissions on top of your EHR schema."
+    },
+    {
+      "kind": "paragraph",
+      "index": 479,
+      "style": "Normal",
+      "text": "1. RLS policy patterns (Supabase-ready)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 480,
+      "style": "Normal",
+      "text": "Assume auth.users and a providers table with user_id linking to auth."
+    },
+    {
+      "kind": "paragraph",
+      "index": 481,
+      "style": "Normal",
+      "text": "Example: patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 482,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 483,
+      "style": "Normal",
+      "text": "ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 485,
+      "style": "Normal",
+      "text": "-- Only authenticated users can read"
+    },
+    {
+      "kind": "paragraph",
+      "index": 486,
+      "style": "Normal",
+      "text": "CREATE POLICY patients_select_authenticated"
+    },
+    {
+      "kind": "paragraph",
+      "index": 487,
+      "style": "Normal",
+      "text": "ON public.patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 488,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 489,
+      "style": "Normal",
+      "text": "USING (auth.role() = 'authenticated');"
+    },
+    {
+      "kind": "paragraph",
+      "index": 491,
+      "style": "Normal",
+      "text": "-- Example: restrict to providers in same country (if you store that)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 492,
+      "style": "Normal",
+      "text": "-- Or keep it simple: allow all authenticated clinical users"
+    },
+    {
+      "kind": "paragraph",
+      "index": 493,
+      "style": "Normal",
+      "text": "Encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 494,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 495,
+      "style": "Normal",
+      "text": "ALTER TABLE public.encounters ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 497,
+      "style": "Normal",
+      "text": "CREATE POLICY encounters_select_authenticated"
+    },
+    {
+      "kind": "paragraph",
+      "index": 498,
+      "style": "Normal",
+      "text": "ON public.encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 499,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 500,
+      "style": "Normal",
+      "text": "USING (auth.role() = 'authenticated');"
+    },
+    {
+      "kind": "paragraph",
+      "index": 502,
+      "style": "Normal",
+      "text": "-- Optional: restrict to encounters where provider is on care team"
+    },
+    {
+      "kind": "paragraph",
+      "index": 503,
+      "style": "Normal",
+      "text": "-- (requires a care_team table; otherwise keep global for now)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 504,
+      "style": "Normal",
+      "text": "Orders / results / notes / meds"
+    },
+    {
+      "kind": "paragraph",
+      "index": 505,
+      "style": "Normal",
+      "text": "Pattern is the same: enable RLS, allow SELECT for authenticated, and restrict writes to clinical roles."
+    },
+    {
+      "kind": "paragraph",
+      "index": 506,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 507,
+      "style": "Normal",
+      "text": "ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 509,
+      "style": "Normal",
+      "text": "CREATE POLICY orders_select_authenticated"
+    },
+    {
+      "kind": "paragraph",
+      "index": 510,
+      "style": "Normal",
+      "text": "ON public.orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 511,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 512,
+      "style": "Normal",
+      "text": "USING (auth.role() = 'authenticated');"
+    },
+    {
+      "kind": "paragraph",
+      "index": 514,
+      "style": "Normal",
+      "text": "CREATE POLICY orders_insert_clinical"
+    },
+    {
+      "kind": "paragraph",
+      "index": 515,
+      "style": "Normal",
+      "text": "ON public.orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 516,
+      "style": "Normal",
+      "text": "FOR INSERT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 517,
+      "style": "Normal",
+      "text": "WITH CHECK ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 518,
+      "style": "Normal",
+      "text": "auth.jwt()->>'role' IN ('physician','nurse','pharmacist','therapist')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 519,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 520,
+      "style": "Normal",
+      "text": "Repeat this pattern for:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 521,
+      "style": "Normal",
+      "text": "lab_orders, lab_results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 522,
+      "style": "Normal",
+      "text": "imaging_orders, imaging_results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 523,
+      "style": "Normal",
+      "text": "procedure_orders, procedure_results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 524,
+      "style": "Normal",
+      "text": "medication_orders, medication_administrations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 525,
+      "style": "Normal",
+      "text": "clinical_notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 526,
+      "style": "Normal",
+      "text": "Each table:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 527,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 528,
+      "style": "Normal",
+      "text": "ALTER TABLE public.<table> ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 530,
+      "style": "Normal",
+      "text": "CREATE POLICY <table>_select_authenticated"
+    },
+    {
+      "kind": "paragraph",
+      "index": 531,
+      "style": "Normal",
+      "text": "ON public.<table>"
+    },
+    {
+      "kind": "paragraph",
+      "index": 532,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 533,
+      "style": "Normal",
+      "text": "USING (auth.role() = 'authenticated');"
+    },
+    {
+      "kind": "paragraph",
+      "index": 535,
+      "style": "Normal",
+      "text": "CREATE POLICY <table>_write_clinical"
+    },
+    {
+      "kind": "paragraph",
+      "index": 536,
+      "style": "Normal",
+      "text": "ON public.<table>"
+    },
+    {
+      "kind": "paragraph",
+      "index": 537,
+      "style": "Normal",
+      "text": "FOR INSERT, UPDATE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 538,
+      "style": "Normal",
+      "text": "WITH CHECK ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 539,
+      "style": "Normal",
+      "text": "auth.jwt()->>'role' IN ('physician','nurse','pharmacist','therapist')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 540,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 541,
+      "style": "Normal",
+      "text": "You can tighten later (e.g., link to provider_id) once you wire JWT claims to provider records."
+    },
+    {
+      "kind": "paragraph",
+      "index": 542,
+      "style": "Normal",
+      "text": "2. API route groups (REST style)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 543,
+      "style": "Normal",
+      "text": "Group routes by module:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 544,
+      "style": "Normal",
+      "text": "Patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 545,
+      "style": "Normal",
+      "text": "GET /patients — list (with filters)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 546,
+      "style": "Normal",
+      "text": "GET /patients/:id — details."
+    },
+    {
+      "kind": "paragraph",
+      "index": 547,
+      "style": "Normal",
+      "text": "POST /patients — create."
+    },
+    {
+      "kind": "paragraph",
+      "index": 548,
+      "style": "Normal",
+      "text": "PUT /patients/:id — update."
+    },
+    {
+      "kind": "paragraph",
+      "index": 549,
+      "style": "Normal",
+      "text": "DELETE /patients/:id — soft delete."
+    },
+    {
+      "kind": "paragraph",
+      "index": 550,
+      "style": "Normal",
+      "text": "Encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 551,
+      "style": "Normal",
+      "text": "GET /patients/:patientId/encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 552,
+      "style": "Normal",
+      "text": "GET /encounters/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 553,
+      "style": "Normal",
+      "text": "POST /patients/:patientId/encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 554,
+      "style": "Normal",
+      "text": "PUT /encounters/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 555,
+      "style": "Normal",
+      "text": "POST /encounters/:id/close — close encounter."
+    },
+    {
+      "kind": "paragraph",
+      "index": 556,
+      "style": "Normal",
+      "text": "Orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 557,
+      "style": "Normal",
+      "text": "GET /encounters/:encounterId/orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 558,
+      "style": "Normal",
+      "text": "GET /orders/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 559,
+      "style": "Normal",
+      "text": "POST /encounters/:encounterId/orders (body includes order_type)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 560,
+      "style": "Normal",
+      "text": "PUT /orders/:id (status changes)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 561,
+      "style": "Normal",
+      "text": "Results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 562,
+      "style": "Normal",
+      "text": "GET /orders/:orderId/results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 563,
+      "style": "Normal",
+      "text": "GET /lab-results/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 564,
+      "style": "Normal",
+      "text": "GET /imaging-results/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 565,
+      "style": "Normal",
+      "text": "GET /procedure-results/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 566,
+      "style": "Normal",
+      "text": "POST /lab-results / POST /imaging-results / POST /procedure-results."
+    },
+    {
+      "kind": "paragraph",
+      "index": 567,
+      "style": "Normal",
+      "text": "Medications"
+    },
+    {
+      "kind": "paragraph",
+      "index": 568,
+      "style": "Normal",
+      "text": "GET /patients/:patientId/medication-orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 569,
+      "style": "Normal",
+      "text": "GET /medication-orders/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 570,
+      "style": "Normal",
+      "text": "POST /patients/:patientId/medication-orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 571,
+      "style": "Normal",
+      "text": "PUT /medication-orders/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 572,
+      "style": "Normal",
+      "text": "GET /medication-orders/:id/administrations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 573,
+      "style": "Normal",
+      "text": "POST /medication-orders/:id/administrations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 574,
+      "style": "Normal",
+      "text": "Clinical notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 575,
+      "style": "Normal",
+      "text": "GET /patients/:patientId/notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 576,
+      "style": "Normal",
+      "text": "GET /encounters/:encounterId/notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 577,
+      "style": "Normal",
+      "text": "GET /notes/:id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 578,
+      "style": "Normal",
+      "text": "POST /encounters/:encounterId/notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 579,
+      "style": "Normal",
+      "text": "PUT /notes/:id (sign/amend)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 580,
+      "style": "Normal",
+      "text": "Each route enforces RBAC via JWT (role claim) + Supabase RLS."
+    },
+    {
+      "kind": "paragraph",
+      "index": 581,
+      "style": "Normal",
+      "text": "3. Attach roles/permissions to providers and users"
+    },
+    {
+      "kind": "paragraph",
+      "index": 582,
+      "style": "Normal",
+      "text": "You already have:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 583,
+      "style": "Normal",
+      "text": "providers (clinical users)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 584,
+      "style": "Normal",
+      "text": "users (auth.users)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 585,
+      "style": "Normal",
+      "text": "roles, role_permissions, user_roles (from earlier)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 586,
+      "style": "Normal",
+      "text": "Link auth user → provider → role"
+    },
+    {
+      "kind": "paragraph",
+      "index": 587,
+      "style": "Normal",
+      "text": "auth.users: base identity."
+    },
+    {
+      "kind": "paragraph",
+      "index": 588,
+      "style": "Normal",
+      "text": "providers.user_id: FK to auth.users.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 589,
+      "style": "Normal",
+      "text": "user_roles.user_id: same auth.users.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 590,
+      "style": "Normal",
+      "text": "JWT includes role and maybe provider_id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 591,
+      "style": "Normal",
+      "text": "Example role table:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 592,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 593,
+      "style": "Normal",
+      "text": "CREATE TABLE public.roles ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 594,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 595,
+      "style": "Normal",
+      "text": "role_code TEXT UNIQUE NOT NULL,   -- 'physician','nurse','pharmacist','lab_tech','admin'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 596,
+      "style": "Normal",
+      "text": "role_name TEXT NOT NULL"
+    },
+    {
+      "kind": "paragraph",
+      "index": 597,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 599,
+      "style": "Normal",
+      "text": "CREATE TABLE public.role_permissions ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 600,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 601,
+      "style": "Normal",
+      "text": "role_id BIGINT NOT NULL REFERENCES public.roles(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 602,
+      "style": "Normal",
+      "text": "view_demographics BOOLEAN DEFAULT FALSE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 603,
+      "style": "Normal",
+      "text": "view_clinical BOOLEAN DEFAULT FALSE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 604,
+      "style": "Normal",
+      "text": "edit_clinical BOOLEAN DEFAULT FALSE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 605,
+      "style": "Normal",
+      "text": "order_prescribe BOOLEAN DEFAULT FALSE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 606,
+      "style": "Normal",
+      "text": "billing_access BOOLEAN DEFAULT FALSE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 607,
+      "style": "Normal",
+      "text": "admin_users BOOLEAN DEFAULT FALSE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 608,
+      "style": "Normal",
+      "text": "system_config BOOLEAN DEFAULT FALSE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 609,
+      "style": "Normal",
+      "text": "audit_logs BOOLEAN DEFAULT FALSE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 610,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 612,
+      "style": "Normal",
+      "text": "CREATE TABLE public.user_roles ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 613,
+      "style": "Normal",
+      "text": "user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 614,
+      "style": "Normal",
+      "text": "role_id BIGINT NOT NULL REFERENCES public.roles(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 615,
+      "style": "Normal",
+      "text": "scope TEXT,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 616,
+      "style": "Normal",
+      "text": "PRIMARY KEY (user_id, role_id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 617,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 618,
+      "style": "Normal",
+      "text": "How it’s used"
+    },
+    {
+      "kind": "paragraph",
+      "index": 619,
+      "style": "Normal",
+      "text": "On login, you look up user_roles and role_permissions for that auth.users.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 620,
+      "style": "Normal",
+      "text": "You issue a JWT with claims like:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 621,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 622,
+      "style": "Normal",
+      "text": "{"
+    },
+    {
+      "kind": "paragraph",
+      "index": 623,
+      "style": "Normal",
+      "text": "\"sub\": \"<auth.users.id>\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 624,
+      "style": "Normal",
+      "text": "\"role\": \"physician\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 625,
+      "style": "Normal",
+      "text": "\"provider_id\": 123,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 626,
+      "style": "Normal",
+      "text": "\"scope\": \"hospital_main\""
+    },
+    {
+      "kind": "paragraph",
+      "index": 627,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 628,
+      "style": "Normal",
+      "text": "Supabase RLS policies then check auth.jwt()->>'role' and, if needed, auth.jwt()->>'provider_id' to restrict access."
+    },
+    {
+      "kind": "paragraph",
+      "index": 629,
+      "style": "Normal",
+      "text": "Example tighter policy:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 630,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 631,
+      "style": "Normal",
+      "text": "CREATE POLICY encounters_select_by_provider"
+    },
+    {
+      "kind": "paragraph",
+      "index": 632,
+      "style": "Normal",
+      "text": "ON public.encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 633,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 634,
+      "style": "Normal",
+      "text": "USING ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 635,
+      "style": "Normal",
+      "text": "auth.jwt()->>'role' IN ('physician','nurse') AND"
+    },
+    {
+      "kind": "paragraph",
+      "index": 636,
+      "style": "Normal",
+      "text": "attending_provider_id = (auth.jwt()->>'provider_id')::BIGINT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 637,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 638,
+      "style": "Normal",
+      "text": "You can start with broad policies (all authenticated clinical roles) and gradually tighten to provider-specific or department-specific rules as you wire more claims."
+    },
+    {
+      "kind": "paragraph",
+      "index": 640,
+      "style": "Normal",
+      "text": "Here is a minimal, correct, non-hallucinated JWT claim specification that fits exactly the EHR schema we built together (patients, encounters, orders, results, meds, notes) and your worldwide geo model."
+    },
+    {
+      "kind": "paragraph",
+      "index": 641,
+      "style": "Normal",
+      "text": "This is the smallest set of claims required for:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 642,
+      "style": "Normal",
+      "text": "RLS enforcement"
+    },
+    {
+      "kind": "paragraph",
+      "index": 643,
+      "style": "Normal",
+      "text": "Provider-level access"
+    },
+    {
+      "kind": "paragraph",
+      "index": 644,
+      "style": "Normal",
+      "text": "Role-based permissions"
+    },
+    {
+      "kind": "paragraph",
+      "index": 645,
+      "style": "Normal",
+      "text": "Locale-aware translations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 646,
+      "style": "Normal",
+      "text": "Multi-portal integration (Healthcarology, DocMyDay, Senior Portal, Education Portal)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 647,
+      "style": "Normal",
+      "text": "No extra fields. No invented systems. No hallucinated structures."
+    },
+    {
+      "kind": "paragraph",
+      "index": 648,
+      "style": "Normal",
+      "text": "✅ Minimal JWT Claim Spec (EHR + Worldwide Geo + Supabase)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 649,
+      "style": "Normal",
+      "text": "Your JWT should contain five claims:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 650,
+      "style": "Normal",
+      "text": "1. sub — the Supabase user ID"
+    },
+    {
+      "kind": "paragraph",
+      "index": 651,
+      "style": "Normal",
+      "text": "This is already included by Supabase."
+    },
+    {
+      "kind": "paragraph",
+      "index": 652,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 653,
+      "style": "Normal",
+      "text": "\"sub\": \"uuid-of-auth-user\""
+    },
+    {
+      "kind": "paragraph",
+      "index": 654,
+      "style": "Normal",
+      "text": "Used for:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 655,
+      "style": "Normal",
+      "text": "Linking to providers.user_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 656,
+      "style": "Normal",
+      "text": "Linking to user_roles.user_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 657,
+      "style": "Normal",
+      "text": "RLS policies that check identity"
+    },
+    {
+      "kind": "paragraph",
+      "index": 658,
+      "style": "Normal",
+      "text": "2. role — the RBAC role"
+    },
+    {
+      "kind": "paragraph",
+      "index": 659,
+      "style": "Normal",
+      "text": "This maps directly to your roles.role_code table."
+    },
+    {
+      "kind": "paragraph",
+      "index": 660,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 661,
+      "style": "Normal",
+      "text": "\"role\": \"physician\""
+    },
+    {
+      "kind": "paragraph",
+      "index": 662,
+      "style": "Normal",
+      "text": "Allowed values (from your RBAC matrix):"
+    },
+    {
+      "kind": "paragraph",
+      "index": 663,
+      "style": "Normal",
+      "text": "physician"
+    },
+    {
+      "kind": "paragraph",
+      "index": 664,
+      "style": "Normal",
+      "text": "nurse"
+    },
+    {
+      "kind": "paragraph",
+      "index": 665,
+      "style": "Normal",
+      "text": "pharmacist"
+    },
+    {
+      "kind": "paragraph",
+      "index": 666,
+      "style": "Normal",
+      "text": "therapist"
+    },
+    {
+      "kind": "paragraph",
+      "index": 667,
+      "style": "Normal",
+      "text": "lab_tech"
+    },
+    {
+      "kind": "paragraph",
+      "index": 668,
+      "style": "Normal",
+      "text": "rad_tech"
+    },
+    {
+      "kind": "paragraph",
+      "index": 669,
+      "style": "Normal",
+      "text": "admin"
+    },
+    {
+      "kind": "paragraph",
+      "index": 670,
+      "style": "Normal",
+      "text": "billing"
+    },
+    {
+      "kind": "paragraph",
+      "index": 671,
+      "style": "Normal",
+      "text": "him"
+    },
+    {
+      "kind": "paragraph",
+      "index": 672,
+      "style": "Normal",
+      "text": "compliance"
+    },
+    {
+      "kind": "paragraph",
+      "index": 673,
+      "style": "Normal",
+      "text": "sysadmin"
+    },
+    {
+      "kind": "paragraph",
+      "index": 674,
+      "style": "Normal",
+      "text": "support"
+    },
+    {
+      "kind": "paragraph",
+      "index": 675,
+      "style": "Normal",
+      "text": "patient"
+    },
+    {
+      "kind": "paragraph",
+      "index": 676,
+      "style": "Normal",
+      "text": "Used in RLS:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 677,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 678,
+      "style": "Normal",
+      "text": "auth.jwt()->>'role' IN ('physician','nurse')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 679,
+      "style": "Normal",
+      "text": "3. provider_id — link to the provider record"
+    },
+    {
+      "kind": "paragraph",
+      "index": 680,
+      "style": "Normal",
+      "text": "Only present for clinical users."
+    },
+    {
+      "kind": "paragraph",
+      "index": 681,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 682,
+      "style": "Normal",
+      "text": "\"provider_id\": 1234"
+    },
+    {
+      "kind": "paragraph",
+      "index": 683,
+      "style": "Normal",
+      "text": "Used for:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 684,
+      "style": "Normal",
+      "text": "Encounter access"
+    },
+    {
+      "kind": "paragraph",
+      "index": 685,
+      "style": "Normal",
+      "text": "Order ownership"
+    },
+    {
+      "kind": "paragraph",
+      "index": 686,
+      "style": "Normal",
+      "text": "Notes authorship"
+    },
+    {
+      "kind": "paragraph",
+      "index": 687,
+      "style": "Normal",
+      "text": "Department/service scoping"
+    },
+    {
+      "kind": "paragraph",
+      "index": 688,
+      "style": "Normal",
+      "text": "Example RLS:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 689,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 690,
+      "style": "Normal",
+      "text": "attending_provider_id = (auth.jwt()->>'provider_id')::BIGINT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 691,
+      "style": "Normal",
+      "text": "If the user is not a provider (patient, billing, admin), omit this claim."
+    },
+    {
+      "kind": "paragraph",
+      "index": 692,
+      "style": "Normal",
+      "text": "4. locale — for translations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 693,
+      "style": "Normal",
+      "text": "This maps directly to your translations.locale table."
+    },
+    {
+      "kind": "paragraph",
+      "index": 694,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 695,
+      "style": "Normal",
+      "text": "\"locale\": \"fr-CD\""
+    },
+    {
+      "kind": "paragraph",
+      "index": 696,
+      "style": "Normal",
+      "text": "Used for:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 697,
+      "style": "Normal",
+      "text": "Country/province/city name translation"
+    },
+    {
+      "kind": "paragraph",
+      "index": 698,
+      "style": "Normal",
+      "text": "Portal language selection"
+    },
+    {
+      "kind": "paragraph",
+      "index": 699,
+      "style": "Normal",
+      "text": "Patient-facing UI localization"
+    },
+    {
+      "kind": "paragraph",
+      "index": 700,
+      "style": "Normal",
+      "text": "Example SQL:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 701,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 702,
+      "style": "Normal",
+      "text": "WHERE t.locale = auth.jwt()->>'locale'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 703,
+      "style": "Normal",
+      "text": "5. scope — optional organizational boundary"
+    },
+    {
+      "kind": "paragraph",
+      "index": 704,
+      "style": "Normal",
+      "text": "This is optional but extremely useful."
+    },
+    {
+      "kind": "paragraph",
+      "index": 705,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 706,
+      "style": "Normal",
+      "text": "\"scope\": \"hospital_main\""
+    },
+    {
+      "kind": "paragraph",
+      "index": 707,
+      "style": "Normal",
+      "text": "Possible values:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 708,
+      "style": "Normal",
+      "text": "hospital_main"
+    },
+    {
+      "kind": "paragraph",
+      "index": 709,
+      "style": "Normal",
+      "text": "clinic_outpatient"
+    },
+    {
+      "kind": "paragraph",
+      "index": 710,
+      "style": "Normal",
+      "text": "lab_service"
+    },
+    {
+      "kind": "paragraph",
+      "index": 711,
+      "style": "Normal",
+      "text": "radiology_service"
+    },
+    {
+      "kind": "paragraph",
+      "index": 712,
+      "style": "Normal",
+      "text": "pharmacy_service"
+    },
+    {
+      "kind": "paragraph",
+      "index": 713,
+      "style": "Normal",
+      "text": "global (for sysadmin)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 714,
+      "style": "Normal",
+      "text": "Used for:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 715,
+      "style": "Normal",
+      "text": "Restricting access to departments/services"
+    },
+    {
+      "kind": "paragraph",
+      "index": 716,
+      "style": "Normal",
+      "text": "Multi-facility deployments"
+    },
+    {
+      "kind": "paragraph",
+      "index": 717,
+      "style": "Normal",
+      "text": "Multi-country deployments"
+    },
+    {
+      "kind": "paragraph",
+      "index": 718,
+      "style": "Normal",
+      "text": "Example RLS:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 719,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 720,
+      "style": "Normal",
+      "text": "service_id IN ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 721,
+      "style": "Normal",
+      "text": "SELECT id FROM services WHERE scope = auth.jwt()->>'scope'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 722,
+      "style": "Normal",
+      "text": ")"
+    },
+    {
+      "kind": "paragraph",
+      "index": 723,
+      "style": "Normal",
+      "text": "🔒 Final JWT Example (Clinical User)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 724,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 725,
+      "style": "Normal",
+      "text": "{"
+    },
+    {
+      "kind": "paragraph",
+      "index": 726,
+      "style": "Normal",
+      "text": "\"sub\": \"b1c2d3e4-f567-8901-2345-6789abcdef01\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 727,
+      "style": "Normal",
+      "text": "\"role\": \"physician\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 728,
+      "style": "Normal",
+      "text": "\"provider_id\": 1234,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 729,
+      "style": "Normal",
+      "text": "\"locale\": \"fr-CD\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 730,
+      "style": "Normal",
+      "text": "\"scope\": \"hospital_main\""
+    },
+    {
+      "kind": "paragraph",
+      "index": 731,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 732,
+      "style": "Normal",
+      "text": "🔒 Final JWT Example (Patient Portal)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 733,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 734,
+      "style": "Normal",
+      "text": "{"
+    },
+    {
+      "kind": "paragraph",
+      "index": 735,
+      "style": "Normal",
+      "text": "\"sub\": \"uuid-of-patient\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 736,
+      "style": "Normal",
+      "text": "\"role\": \"patient\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 737,
+      "style": "Normal",
+      "text": "\"locale\": \"en-US\""
+    },
+    {
+      "kind": "paragraph",
+      "index": 738,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 739,
+      "style": "Normal",
+      "text": "No provider_id. No scope."
+    },
+    {
+      "kind": "paragraph",
+      "index": 740,
+      "style": "Normal",
+      "text": "🔒 Final JWT Example (Sysadmin)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 741,
+      "style": "Normal",
+      "text": "json"
+    },
+    {
+      "kind": "paragraph",
+      "index": 742,
+      "style": "Normal",
+      "text": "{"
+    },
+    {
+      "kind": "paragraph",
+      "index": 743,
+      "style": "Normal",
+      "text": "\"sub\": \"uuid-of-admin\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 744,
+      "style": "Normal",
+      "text": "\"role\": \"sysadmin\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 745,
+      "style": "Normal",
+      "text": "\"locale\": \"en-US\","
+    },
+    {
+      "kind": "paragraph",
+      "index": 746,
+      "style": "Normal",
+      "text": "\"scope\": \"global\""
+    },
+    {
+      "kind": "paragraph",
+      "index": 747,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 748,
+      "style": "Normal",
+      "text": "Sysadmin does not get provider_id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 749,
+      "style": "Normal",
+      "text": "🧩 How This JWT Spec Fits Your EHR Schema"
+    },
+    {
+      "kind": "paragraph",
+      "index": 750,
+      "style": "Normal",
+      "text": "Patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 751,
+      "style": "Normal",
+      "text": "RLS checks role and optionally scope."
+    },
+    {
+      "kind": "paragraph",
+      "index": 752,
+      "style": "Normal",
+      "text": "Encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 753,
+      "style": "Normal",
+      "text": "RLS checks provider_id for care-team access."
+    },
+    {
+      "kind": "paragraph",
+      "index": 754,
+      "style": "Normal",
+      "text": "Orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 755,
+      "style": "Normal",
+      "text": "RLS checks role for write access."
+    },
+    {
+      "kind": "paragraph",
+      "index": 756,
+      "style": "Normal",
+      "text": "RLS checks provider_id for ownership."
+    },
+    {
+      "kind": "paragraph",
+      "index": 757,
+      "style": "Normal",
+      "text": "Results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 758,
+      "style": "Normal",
+      "text": "RLS checks role for lab/radiology access."
+    },
+    {
+      "kind": "paragraph",
+      "index": 759,
+      "style": "Normal",
+      "text": "RLS checks scope for department boundaries."
+    },
+    {
+      "kind": "paragraph",
+      "index": 760,
+      "style": "Normal",
+      "text": "Medications"
+    },
+    {
+      "kind": "paragraph",
+      "index": 761,
+      "style": "Normal",
+      "text": "RLS checks role (physician, pharmacist, nurse)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 762,
+      "style": "Normal",
+      "text": "RLS checks provider_id for prescriber/administering provider."
+    },
+    {
+      "kind": "paragraph",
+      "index": 763,
+      "style": "Normal",
+      "text": "Notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 764,
+      "style": "Normal",
+      "text": "RLS checks provider_id for authorship."
+    },
+    {
+      "kind": "paragraph",
+      "index": 765,
+      "style": "Normal",
+      "text": "RLS checks role for write access."
+    },
+    {
+      "kind": "paragraph",
+      "index": 766,
+      "style": "Normal",
+      "text": "Translations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 767,
+      "style": "Normal",
+      "text": "SQL uses locale to return correct names."
+    },
+    {
+      "kind": "paragraph",
+      "index": 768,
+      "style": "Normal",
+      "text": "⭐ This JWT spec is minimal, correct, and fully aligned with your schema."
+    },
+    {
+      "kind": "paragraph",
+      "index": 770,
+      "style": "Normal",
+      "text": "See my thinking"
+    },
+    {
+      "kind": "paragraph",
+      "index": 771,
+      "style": "Normal",
+      "text": "1. RLS policies using the JWT spec"
+    },
+    {
+      "kind": "paragraph",
+      "index": 772,
+      "style": "Normal",
+      "text": "Assume JWT claims: sub, role, provider_id, locale, scope."
+    },
+    {
+      "kind": "paragraph",
+      "index": 773,
+      "style": "Normal",
+      "text": "Patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 774,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 775,
+      "style": "Normal",
+      "text": "ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 777,
+      "style": "Normal",
+      "text": "-- Read: any authenticated staff (not patients)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 778,
+      "style": "Normal",
+      "text": "CREATE POLICY patients_select_staff"
+    },
+    {
+      "kind": "paragraph",
+      "index": 779,
+      "style": "Normal",
+      "text": "ON public.patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 780,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 781,
+      "style": "Normal",
+      "text": "USING ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 782,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 783,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' <> 'patient'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 784,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 786,
+      "style": "Normal",
+      "text": "-- Write: only clinical roles"
+    },
+    {
+      "kind": "paragraph",
+      "index": 787,
+      "style": "Normal",
+      "text": "CREATE POLICY patients_write_clinical"
+    },
+    {
+      "kind": "paragraph",
+      "index": 788,
+      "style": "Normal",
+      "text": "ON public.patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 789,
+      "style": "Normal",
+      "text": "FOR INSERT, UPDATE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 790,
+      "style": "Normal",
+      "text": "WITH CHECK ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 791,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 792,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' IN ('physician','nurse','therapist','pharmacist')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 793,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 794,
+      "style": "Normal",
+      "text": "Encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 795,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 796,
+      "style": "Normal",
+      "text": "ALTER TABLE public.encounters ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 798,
+      "style": "Normal",
+      "text": "-- Read: clinical staff"
+    },
+    {
+      "kind": "paragraph",
+      "index": 799,
+      "style": "Normal",
+      "text": "CREATE POLICY encounters_select_clinical"
+    },
+    {
+      "kind": "paragraph",
+      "index": 800,
+      "style": "Normal",
+      "text": "ON public.encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 801,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 802,
+      "style": "Normal",
+      "text": "USING ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 803,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 804,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' IN ('physician','nurse','therapist','pharmacist','lab_tech','rad_tech')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 805,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 807,
+      "style": "Normal",
+      "text": "-- Optional: restrict to provider’s own encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 808,
+      "style": "Normal",
+      "text": "-- AND attending_provider_id = (auth.jwt()->>'provider_id')::BIGINT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 809,
+      "style": "Normal",
+      "text": "Orders (generic pattern)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 810,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 811,
+      "style": "Normal",
+      "text": "ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 813,
+      "style": "Normal",
+      "text": "CREATE POLICY orders_select_clinical"
+    },
+    {
+      "kind": "paragraph",
+      "index": 814,
+      "style": "Normal",
+      "text": "ON public.orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 815,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 816,
+      "style": "Normal",
+      "text": "USING ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 817,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 818,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' IN ('physician','nurse','pharmacist','lab_tech','rad_tech')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 819,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 821,
+      "style": "Normal",
+      "text": "CREATE POLICY orders_insert_clinical"
+    },
+    {
+      "kind": "paragraph",
+      "index": 822,
+      "style": "Normal",
+      "text": "ON public.orders"
+    },
+    {
+      "kind": "paragraph",
+      "index": 823,
+      "style": "Normal",
+      "text": "FOR INSERT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 824,
+      "style": "Normal",
+      "text": "WITH CHECK ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 825,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 826,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' IN ('physician','nurse','pharmacist')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 827,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 828,
+      "style": "Normal",
+      "text": "Apply the same pattern to:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 829,
+      "style": "Normal",
+      "text": "lab_orders, lab_results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 830,
+      "style": "Normal",
+      "text": "imaging_orders, imaging_results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 831,
+      "style": "Normal",
+      "text": "procedure_orders, procedure_results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 832,
+      "style": "Normal",
+      "text": "medication_orders, medication_administrations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 833,
+      "style": "Normal",
+      "text": "clinical_notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 834,
+      "style": "Normal",
+      "text": "For notes:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 835,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 836,
+      "style": "Normal",
+      "text": "ALTER TABLE public.clinical_notes ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 838,
+      "style": "Normal",
+      "text": "CREATE POLICY notes_select_clinical"
+    },
+    {
+      "kind": "paragraph",
+      "index": 839,
+      "style": "Normal",
+      "text": "ON public.clinical_notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 840,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 841,
+      "style": "Normal",
+      "text": "USING ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 842,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 843,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' IN ('physician','nurse','therapist')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 844,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 846,
+      "style": "Normal",
+      "text": "CREATE POLICY notes_insert_clinical"
+    },
+    {
+      "kind": "paragraph",
+      "index": 847,
+      "style": "Normal",
+      "text": "ON public.clinical_notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 848,
+      "style": "Normal",
+      "text": "FOR INSERT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 849,
+      "style": "Normal",
+      "text": "WITH CHECK ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 850,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 851,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' IN ('physician','nurse','therapist')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 852,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 853,
+      "style": "Normal",
+      "text": "Geo tables (countries, provinces, cities, postal_codes) can be:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 854,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 855,
+      "style": "Normal",
+      "text": "ALTER TABLE public.countries ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 857,
+      "style": "Normal",
+      "text": "CREATE POLICY countries_public_read"
+    },
+    {
+      "kind": "paragraph",
+      "index": 858,
+      "style": "Normal",
+      "text": "ON public.countries"
+    },
+    {
+      "kind": "paragraph",
+      "index": 859,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 860,
+      "style": "Normal",
+      "text": "USING (true);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 861,
+      "style": "Normal",
+      "text": "Same for other geo tables if you want open read."
+    },
+    {
+      "kind": "paragraph",
+      "index": 862,
+      "style": "Normal",
+      "text": "2. Supabase Auth function to inject claims"
+    },
+    {
+      "kind": "paragraph",
+      "index": 863,
+      "style": "Normal",
+      "text": "You’ll use a server-side sign-in that:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 864,
+      "style": "Normal",
+      "text": "Looks up auth.users by email/ID."
+    },
+    {
+      "kind": "paragraph",
+      "index": 865,
+      "style": "Normal",
+      "text": "Joins providers and user_roles to find role_code and provider_id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 866,
+      "style": "Normal",
+      "text": "Determines locale and scope."
+    },
+    {
+      "kind": "paragraph",
+      "index": 867,
+      "style": "Normal",
+      "text": "Issues a JWT with those claims."
+    },
+    {
+      "kind": "paragraph",
+      "index": 868,
+      "style": "Normal",
+      "text": "Pseudo-code (Node/TypeScript style):"
+    },
+    {
+      "kind": "paragraph",
+      "index": 869,
+      "style": "Normal",
+      "text": "ts"
+    },
+    {
+      "kind": "paragraph",
+      "index": 870,
+      "style": "Normal",
+      "text": "async function issueTokenForUser(userId: string) {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 871,
+      "style": "Normal",
+      "text": "const { data: provider } = await supabase"
+    },
+    {
+      "kind": "paragraph",
+      "index": 872,
+      "style": "Normal",
+      "text": ".from('providers')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 873,
+      "style": "Normal",
+      "text": ".select('id, department_id, service_id')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 874,
+      "style": "Normal",
+      "text": ".eq('user_id', userId)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 875,
+      "style": "Normal",
+      "text": ".single();"
+    },
+    {
+      "kind": "paragraph",
+      "index": 877,
+      "style": "Normal",
+      "text": "const { data: userRole } = await supabase"
+    },
+    {
+      "kind": "paragraph",
+      "index": 878,
+      "style": "Normal",
+      "text": ".from('user_roles')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 879,
+      "style": "Normal",
+      "text": ".select('roles(role_code), scope')"
+    },
+    {
+      "kind": "paragraph",
+      "index": 880,
+      "style": "Normal",
+      "text": ".eq('user_id', userId)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 881,
+      "style": "Normal",
+      "text": ".single();"
+    },
+    {
+      "kind": "paragraph",
+      "index": 883,
+      "style": "Normal",
+      "text": "const role = userRole?.roles?.role_code ?? 'patient';"
+    },
+    {
+      "kind": "paragraph",
+      "index": 884,
+      "style": "Normal",
+      "text": "const provider_id = provider?.id ?? null;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 885,
+      "style": "Normal",
+      "text": "const scope = userRole?.scope ?? 'hospital_main';"
+    },
+    {
+      "kind": "paragraph",
+      "index": 886,
+      "style": "Normal",
+      "text": "const locale = 'en-US'; // or from user profile"
+    },
+    {
+      "kind": "paragraph",
+      "index": 888,
+      "style": "Normal",
+      "text": "const payload = {"
+    },
+    {
+      "kind": "paragraph",
+      "index": 889,
+      "style": "Normal",
+      "text": "sub: userId,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 890,
+      "style": "Normal",
+      "text": "role,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 891,
+      "style": "Normal",
+      "text": "provider_id,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 892,
+      "style": "Normal",
+      "text": "locale,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 893,
+      "style": "Normal",
+      "text": "scope"
+    },
+    {
+      "kind": "paragraph",
+      "index": 894,
+      "style": "Normal",
+      "text": "};"
+    },
+    {
+      "kind": "paragraph",
+      "index": 896,
+      "style": "Normal",
+      "text": "// Use your JWT secret (same as Supabase) to sign:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 897,
+      "style": "Normal",
+      "text": "const token = sign(payload, process.env.SUPABASE_JWT_SECRET);"
+    },
+    {
+      "kind": "paragraph",
+      "index": 898,
+      "style": "Normal",
+      "text": "return token;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 899,
+      "style": "Normal",
+      "text": "}"
+    },
+    {
+      "kind": "paragraph",
+      "index": 900,
+      "style": "Normal",
+      "text": "You then use this token in your API gateway / frontend instead of the default anon key for authenticated flows."
+    },
+    {
+      "kind": "paragraph",
+      "index": 901,
+      "style": "Normal",
+      "text": "3. API gateway rules for each portal + patient portal"
+    },
+    {
+      "kind": "paragraph",
+      "index": 902,
+      "style": "Normal",
+      "text": "Think of one gateway in front of Supabase (or per portal) that:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 903,
+      "style": "Normal",
+      "text": "Validates JWT."
+    },
+    {
+      "kind": "paragraph",
+      "index": 904,
+      "style": "Normal",
+      "text": "Routes requests based on role and scope."
+    },
+    {
+      "kind": "paragraph",
+      "index": 905,
+      "style": "Normal",
+      "text": "Enforces which modules each portal can touch."
+    },
+    {
+      "kind": "paragraph",
+      "index": 906,
+      "style": "Normal",
+      "text": "Education Portal (education.healthcarology.com)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 907,
+      "style": "Normal",
+      "text": "Allowed roles: patient, physician, nurse, therapist."
+    },
+    {
+      "kind": "paragraph",
+      "index": 908,
+      "style": "Normal",
+      "text": "Access:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 909,
+      "style": "Normal",
+      "text": "Read-only EHR data relevant to education (de-identified or minimal PHI)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 910,
+      "style": "Normal",
+      "text": "No writes to core EHR tables."
+    },
+    {
+      "kind": "paragraph",
+      "index": 911,
+      "style": "Normal",
+      "text": "Gateway rules:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 912,
+      "style": "Normal",
+      "text": "Block POST/PUT/DELETE on patients, encounters, orders, results, meds, notes."
+    },
+    {
+      "kind": "paragraph",
+      "index": 913,
+      "style": "Normal",
+      "text": "Allow GET with filters and possibly de-identification."
+    },
+    {
+      "kind": "paragraph",
+      "index": 914,
+      "style": "Normal",
+      "text": "Senior Portal (senior.healthcarology.com)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 915,
+      "style": "Normal",
+      "text": "Allowed roles: patient, caregiver, physician, nurse."
+    },
+    {
+      "kind": "paragraph",
+      "index": 916,
+      "style": "Normal",
+      "text": "Access:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 917,
+      "style": "Normal",
+      "text": "Patient’s own data (via sub mapped to patient record)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 918,
+      "style": "Normal",
+      "text": "Gateway rules:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 919,
+      "style": "Normal",
+      "text": "For role = 'patient', only allow:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 920,
+      "style": "Normal",
+      "text": "GET /patients/:id where id matches patient linked to sub."
+    },
+    {
+      "kind": "paragraph",
+      "index": 921,
+      "style": "Normal",
+      "text": "GET /patients/:id/encounters, medication-orders, notes (summary)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 922,
+      "style": "Normal",
+      "text": "No direct writes to clinical tables; use separate “preferences” tables if needed."
+    },
+    {
+      "kind": "paragraph",
+      "index": 923,
+      "style": "Normal",
+      "text": "DocMyDay (patient journal portal)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 924,
+      "style": "Normal",
+      "text": "Allowed roles: patient."
+    },
+    {
+      "kind": "paragraph",
+      "index": 925,
+      "style": "Normal",
+      "text": "Access:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 926,
+      "style": "Normal",
+      "text": "Own EHR summary + personal journal tables."
+    },
+    {
+      "kind": "paragraph",
+      "index": 927,
+      "style": "Normal",
+      "text": "Gateway rules:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 928,
+      "style": "Normal",
+      "text": "Same as Senior Portal for EHR."
+    },
+    {
+      "kind": "paragraph",
+      "index": 929,
+      "style": "Normal",
+      "text": "Additional docmyday_journal tables with full CRUD for the patient."
+    },
+    {
+      "kind": "paragraph",
+      "index": 930,
+      "style": "Normal",
+      "text": "EHR Clinical Portal (internal)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 931,
+      "style": "Normal",
+      "text": "Allowed roles: clinical + admin (physician, nurse, pharmacist, therapist, lab_tech, rad_tech, billing, him, compliance, sysadmin)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 932,
+      "style": "Normal",
+      "text": "Access:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 933,
+      "style": "Normal",
+      "text": "Full EHR modules, governed by RLS."
+    },
+    {
+      "kind": "paragraph",
+      "index": 934,
+      "style": "Normal",
+      "text": "Gateway rules:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 935,
+      "style": "Normal",
+      "text": "Allow CRUD on clinical tables based on role."
+    },
+    {
+      "kind": "paragraph",
+      "index": 936,
+      "style": "Normal",
+      "text": "Block patient-facing endpoints."
+    },
+    {
+      "kind": "paragraph",
+      "index": 937,
+      "style": "Normal",
+      "text": "4. Authentication + authorization architecture diagram (described)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 938,
+      "style": "Normal",
+      "text": "Imagine this as layers:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 939,
+      "style": "Normal",
+      "text": "Identity Layer (Supabase Auth)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 940,
+      "style": "Normal",
+      "text": "auth.users stores core identities."
+    },
+    {
+      "kind": "paragraph",
+      "index": 941,
+      "style": "Normal",
+      "text": "Login (email/password, OAuth, etc.) → returns userId."
+    },
+    {
+      "kind": "paragraph",
+      "index": 942,
+      "style": "Normal",
+      "text": "Role & Provider Layer (Postgres)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 943,
+      "style": "Normal",
+      "text": "providers links userId → provider_id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 944,
+      "style": "Normal",
+      "text": "roles, role_permissions, user_roles define RBAC."
+    },
+    {
+      "kind": "paragraph",
+      "index": 945,
+      "style": "Normal",
+      "text": "A server function builds JWT claims: sub, role, provider_id, locale, scope."
+    },
+    {
+      "kind": "paragraph",
+      "index": 946,
+      "style": "Normal",
+      "text": "JWT & Gateway Layer"
+    },
+    {
+      "kind": "paragraph",
+      "index": 947,
+      "style": "Normal",
+      "text": "API gateway (or backend) validates JWT."
+    },
+    {
+      "kind": "paragraph",
+      "index": 948,
+      "style": "Normal",
+      "text": "Routes requests to Supabase/Postgres."
+    },
+    {
+      "kind": "paragraph",
+      "index": 949,
+      "style": "Normal",
+      "text": "Applies portal-specific rules (Education, Senior, DocMyDay, Clinical EHR)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 950,
+      "style": "Normal",
+      "text": "Database Layer (EHR + Geo)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 951,
+      "style": "Normal",
+      "text": "Tables: patients, encounters, orders, lab_*, imaging_*, procedure_*, medications, medication_orders, medication_administrations, clinical_notes, countries, provinces, cities, postal_codes, addresses."
+    },
+    {
+      "kind": "paragraph",
+      "index": 952,
+      "style": "Normal",
+      "text": "RLS policies use auth.jwt() claims (role, provider_id, scope) to allow/deny row access."
+    },
+    {
+      "kind": "paragraph",
+      "index": 953,
+      "style": "Normal",
+      "text": "Portal Layer"
+    },
+    {
+      "kind": "paragraph",
+      "index": 954,
+      "style": "Normal",
+      "text": "Clinical EHR UI: uses JWT with clinical roles."
+    },
+    {
+      "kind": "paragraph",
+      "index": 955,
+      "style": "Normal",
+      "text": "Patient Portal: uses JWT with role = 'patient'."
+    },
+    {
+      "kind": "paragraph",
+      "index": 956,
+      "style": "Normal",
+      "text": "Education, DocMyDay, Senior Portal: uses JWT with limited roles and read-only access."
+    },
+    {
+      "kind": "paragraph",
+      "index": 957,
+      "style": "Normal",
+      "text": "Everything hangs off:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 958,
+      "style": "Normal",
+      "text": "Supabase Auth → userId"
+    },
+    {
+      "kind": "paragraph",
+      "index": 959,
+      "style": "Normal",
+      "text": "Postgres RBAC tables → role, provider_id, scope"
+    },
+    {
+      "kind": "paragraph",
+      "index": 960,
+      "style": "Normal",
+      "text": "JWT → claims"
+    },
+    {
+      "kind": "paragraph",
+      "index": 961,
+      "style": "Normal",
+      "text": "RLS → enforcement"
+    },
+    {
+      "kind": "paragraph",
+      "index": 963,
+      "style": "Normal",
+      "text": "1. Core idea of the patient portal"
+    },
+    {
+      "kind": "paragraph",
+      "index": 964,
+      "style": "Normal",
+      "text": "A single portal where a logged-in person can:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 965,
+      "style": "Normal",
+      "text": "See their own EHR data (demographics, encounters, meds, results, notes)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 966,
+      "style": "Normal",
+      "text": "See linked family members’ data (with explicit consent/proxy)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 967,
+      "style": "Normal",
+      "text": "Switch between “self” and “family member” views safely."
+    },
+    {
+      "kind": "paragraph",
+      "index": 968,
+      "style": "Normal",
+      "text": "Everything is driven by your existing EHR schema plus a small set of linking tables and RLS rules."
+    },
+    {
+      "kind": "paragraph",
+      "index": 969,
+      "style": "Normal",
+      "text": "2. Data model additions for patient + family access"
+    },
+    {
+      "kind": "paragraph",
+      "index": 970,
+      "style": "Normal",
+      "text": "Link auth user → patient"
+    },
+    {
+      "kind": "paragraph",
+      "index": 971,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 972,
+      "style": "Normal",
+      "text": "CREATE TABLE public.patient_accounts ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 973,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 974,
+      "style": "Normal",
+      "text": "user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 975,
+      "style": "Normal",
+      "text": "patient_id BIGINT NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 976,
+      "style": "Normal",
+      "text": "UNIQUE (user_id, patient_id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 977,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 978,
+      "style": "Normal",
+      "text": "Family / proxy relationships"
+    },
+    {
+      "kind": "paragraph",
+      "index": 979,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 980,
+      "style": "Normal",
+      "text": "CREATE TABLE public.patient_proxies ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 981,
+      "style": "Normal",
+      "text": "id BIGSERIAL PRIMARY KEY,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 982,
+      "style": "Normal",
+      "text": "proxy_patient_id BIGINT NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 983,
+      "style": "Normal",
+      "text": "target_patient_id BIGINT NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 984,
+      "style": "Normal",
+      "text": "relationship TEXT NOT NULL,          -- 'parent','child','spouse','caregiver'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 985,
+      "style": "Normal",
+      "text": "can_view BOOLEAN DEFAULT TRUE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 986,
+      "style": "Normal",
+      "text": "can_message BOOLEAN DEFAULT TRUE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 987,
+      "style": "Normal",
+      "text": "can_manage_appointments BOOLEAN DEFAULT FALSE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 988,
+      "style": "Normal",
+      "text": "active BOOLEAN DEFAULT TRUE,"
+    },
+    {
+      "kind": "paragraph",
+      "index": 989,
+      "style": "Normal",
+      "text": "UNIQUE (proxy_patient_id, target_patient_id)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 990,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 991,
+      "style": "Normal",
+      "text": "proxy_patient_id = the person using the portal."
+    },
+    {
+      "kind": "paragraph",
+      "index": 992,
+      "style": "Normal",
+      "text": "target_patient_id = the family member whose data they can see."
+    },
+    {
+      "kind": "paragraph",
+      "index": 993,
+      "style": "Normal",
+      "text": "3. RLS policies for patient + family access"
+    },
+    {
+      "kind": "paragraph",
+      "index": 994,
+      "style": "Normal",
+      "text": "Patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 995,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 996,
+      "style": "Normal",
+      "text": "ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 998,
+      "style": "Normal",
+      "text": "-- Patient sees their own record"
+    },
+    {
+      "kind": "paragraph",
+      "index": 999,
+      "style": "Normal",
+      "text": "CREATE POLICY patients_select_self"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1000,
+      "style": "Normal",
+      "text": "ON public.patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1001,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1002,
+      "style": "Normal",
+      "text": "USING ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 1003,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1004,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' = 'patient'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1005,
+      "style": "Normal",
+      "text": "AND EXISTS ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 1006,
+      "style": "Normal",
+      "text": "SELECT 1"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1007,
+      "style": "Normal",
+      "text": "FROM public.patient_accounts pa"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1008,
+      "style": "Normal",
+      "text": "WHERE pa.user_id = auth.uid()"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1009,
+      "style": "Normal",
+      "text": "AND pa.patient_id = patients.id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1010,
+      "style": "Normal",
+      "text": ")"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1011,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1013,
+      "style": "Normal",
+      "text": "-- Patient sees linked family records (proxy)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1014,
+      "style": "Normal",
+      "text": "CREATE POLICY patients_select_family"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1015,
+      "style": "Normal",
+      "text": "ON public.patients"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1016,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1017,
+      "style": "Normal",
+      "text": "USING ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 1018,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1019,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' = 'patient'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1020,
+      "style": "Normal",
+      "text": "AND EXISTS ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 1021,
+      "style": "Normal",
+      "text": "SELECT 1"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1022,
+      "style": "Normal",
+      "text": "FROM public.patient_accounts pa"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1023,
+      "style": "Normal",
+      "text": "JOIN public.patient_proxies px"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1024,
+      "style": "Normal",
+      "text": "ON px.proxy_patient_id = pa.patient_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1025,
+      "style": "Normal",
+      "text": "WHERE pa.user_id = auth.uid()"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1026,
+      "style": "Normal",
+      "text": "AND px.target_patient_id = patients.id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1027,
+      "style": "Normal",
+      "text": "AND px.can_view = TRUE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1028,
+      "style": "Normal",
+      "text": "AND px.active = TRUE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1029,
+      "style": "Normal",
+      "text": ")"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1030,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1031,
+      "style": "Normal",
+      "text": "Encounters (same pattern)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1032,
+      "style": "Normal",
+      "text": "sql"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1033,
+      "style": "Normal",
+      "text": "ALTER TABLE public.encounters ENABLE ROW LEVEL SECURITY;"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1035,
+      "style": "Normal",
+      "text": "CREATE POLICY encounters_select_self_or_family"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1036,
+      "style": "Normal",
+      "text": "ON public.encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1037,
+      "style": "Normal",
+      "text": "FOR SELECT"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1038,
+      "style": "Normal",
+      "text": "USING ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 1039,
+      "style": "Normal",
+      "text": "auth.role() = 'authenticated'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1040,
+      "style": "Normal",
+      "text": "AND auth.jwt()->>'role' = 'patient'"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1041,
+      "style": "Normal",
+      "text": "AND EXISTS ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 1042,
+      "style": "Normal",
+      "text": "SELECT 1"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1043,
+      "style": "Normal",
+      "text": "FROM public.patient_accounts pa"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1044,
+      "style": "Normal",
+      "text": "WHERE pa.user_id = auth.uid()"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1045,
+      "style": "Normal",
+      "text": "AND pa.patient_id = encounters.patient_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1046,
+      "style": "Normal",
+      "text": ")"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1047,
+      "style": "Normal",
+      "text": "OR EXISTS ("
+    },
+    {
+      "kind": "paragraph",
+      "index": 1048,
+      "style": "Normal",
+      "text": "SELECT 1"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1049,
+      "style": "Normal",
+      "text": "FROM public.patient_accounts pa"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1050,
+      "style": "Normal",
+      "text": "JOIN public.patient_proxies px"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1051,
+      "style": "Normal",
+      "text": "ON px.proxy_patient_id = pa.patient_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1052,
+      "style": "Normal",
+      "text": "WHERE pa.user_id = auth.uid()"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1053,
+      "style": "Normal",
+      "text": "AND px.target_patient_id = encounters.patient_id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1054,
+      "style": "Normal",
+      "text": "AND px.can_view = TRUE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1055,
+      "style": "Normal",
+      "text": "AND px.active = TRUE"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1056,
+      "style": "Normal",
+      "text": ")"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1057,
+      "style": "Normal",
+      "text": ");"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1058,
+      "style": "Normal",
+      "text": "Apply the same pattern to:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1059,
+      "style": "Normal",
+      "text": "medication_orders, medication_administrations"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1060,
+      "style": "Normal",
+      "text": "lab_results, imaging_results, procedure_results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1061,
+      "style": "Normal",
+      "text": "clinical_notes (you may restrict some note types if needed)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1062,
+      "style": "Normal",
+      "text": "4. Patient portal features (front-end behavior)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1063,
+      "style": "Normal",
+      "text": "A. Login"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1064,
+      "style": "Normal",
+      "text": "User logs in via Supabase Auth."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1065,
+      "style": "Normal",
+      "text": "Backend issues JWT with:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1066,
+      "style": "Normal",
+      "text": "sub = auth.users.id"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1067,
+      "style": "Normal",
+      "text": "role = patient"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1068,
+      "style": "Normal",
+      "text": "locale = user’s language"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1069,
+      "style": "Normal",
+      "text": "scope = e.g. patient_portal"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1070,
+      "style": "Normal",
+      "text": "B. “Who am I viewing?” selector"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1071,
+      "style": "Normal",
+      "text": "After login, portal:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1072,
+      "style": "Normal",
+      "text": "Queries patient_accounts to find primary patient for this user."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1073,
+      "style": "Normal",
+      "text": "Queries patient_proxies to find linked family members."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1074,
+      "style": "Normal",
+      "text": "Shows a selector:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1075,
+      "style": "Normal",
+      "text": "“Me: Alain”"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1076,
+      "style": "Normal",
+      "text": "“Child: X”"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1077,
+      "style": "Normal",
+      "text": "“Parent: Y”"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1078,
+      "style": "Normal",
+      "text": "The selector simply changes which patient_id is used in API calls; RLS enforces that only allowed records are returned."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1079,
+      "style": "Normal",
+      "text": "C. Views per patient/family member"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1080,
+      "style": "Normal",
+      "text": "For the selected person:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1081,
+      "style": "Normal",
+      "text": "Profile: demographics, address (from patients + addresses + geo tables)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1082,
+      "style": "Normal",
+      "text": "Encounters: list from encounters."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1083,
+      "style": "Normal",
+      "text": "Medications: active meds from medication_orders."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1084,
+      "style": "Normal",
+      "text": "Results: labs/imaging/procedures from lab_results, imaging_results, procedure_results."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1085,
+      "style": "Normal",
+      "text": "Notes (summary): selected clinical_notes types (e.g., discharge summaries, visit summaries)."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1086,
+      "style": "Normal",
+      "text": "5. API route groups for the patient portal"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1087,
+      "style": "Normal",
+      "text": "All routes are patient-scoped; RLS does the heavy lifting."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1088,
+      "style": "Normal",
+      "text": "GET /portal/me"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1089,
+      "style": "Normal",
+      "text": "Returns the patient record linked to auth.uid() via patient_accounts."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1090,
+      "style": "Normal",
+      "text": "GET /portal/family"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1091,
+      "style": "Normal",
+      "text": "Returns list of family members from patient_proxies."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1092,
+      "style": "Normal",
+      "text": "GET /portal/patients/:patientId/profile"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1093,
+      "style": "Normal",
+      "text": "GET /portal/patients/:patientId/encounters"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1094,
+      "style": "Normal",
+      "text": "GET /portal/patients/:patientId/medications"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1095,
+      "style": "Normal",
+      "text": "GET /portal/patients/:patientId/results"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1096,
+      "style": "Normal",
+      "text": "GET /portal/patients/:patientId/notes"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1097,
+      "style": "Normal",
+      "text": "You don’t need custom logic to enforce access—RLS ensures that if the user is not linked via patient_accounts or patient_proxies, the queries return nothing."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1098,
+      "style": "Normal",
+      "text": "6. Authentication + authorization flow (patient portal only)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1099,
+      "style": "Normal",
+      "text": "Login: Supabase Auth → auth.users.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1100,
+      "style": "Normal",
+      "text": "JWT: backend issues token with role = 'patient', locale, scope."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1101,
+      "style": "Normal",
+      "text": "Link: patient_accounts maps auth.users.id → patient.id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1102,
+      "style": "Normal",
+      "text": "Family: patient_proxies maps proxy_patient_id → target_patient_id."
+    },
+    {
+      "kind": "paragraph",
+      "index": 1103,
+      "style": "Normal",
+      "text": "RLS: all EHR tables check:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1104,
+      "style": "Normal",
+      "text": "“Is this patient the user?” OR"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1105,
+      "style": "Normal",
+      "text": "“Is this patient a family member with active proxy rights?”"
+    },
+    {
+      "kind": "paragraph",
+      "index": 1106,
+      "style": "Normal",
+      "text": "That’s your full, concrete patient portal with personal + linked family access, wired directly into the EHR schema we built."
+    }
+  ]
+}
