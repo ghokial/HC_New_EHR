@@ -9,3 +9,9 @@ source_docs/
 *.docx
 supabase/.temp/
 tmp/
+mobile-patient/android/.gradle/
+mobile-patient/android/.kotlin/
+mobile-patient/android/build/
+mobile-patient/android/app/build/
+mobile-patient/ios/App/build/
+mobile-patient/ios/DerivedData/

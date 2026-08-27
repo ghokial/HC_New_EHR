@@ -9,7 +9,7 @@ const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascrip
 createServer(async (req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, `http://${req.headers.host}`).pathname);
   const portalRoute = pathname === "/admin" || pathname === "/patient" || (/^\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/.test(pathname) && !pathname.includes("."));
-  const requested = pathname === "/" ? "index.html" : portalRoute ? "portal.html" : pathname.slice(1);
+  const requested = pathname === "/" ? "index.html" : pathname === "/shared-record" ? "shared-record.html" : portalRoute ? "portal.html" : pathname.slice(1);
   const file = normalize(join(root, requested));
   if (!file.startsWith(normalize(root))) {
     res.writeHead(403).end("Forbidden");

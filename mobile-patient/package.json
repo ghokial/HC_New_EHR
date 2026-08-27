@@ -1,0 +1,37 @@
+﻿{
+    "name":  "healthcarology-patient-mobile",
+    "version":  "1.0.0",
+    "private":  true,
+    "description":  "Healthcarology Patient Portal for Android and iOS",
+    "scripts":  {
+                    "sync":  "cap sync",
+                    "android":  "cap open android",
+                    "ios":  "cap open ios",
+                    "build:android":  "cap sync android \u0026\u0026 cd android \u0026\u0026 gradlew.bat bundleRelease",
+                    "build:android:debug":  "cap sync android \u0026\u0026 cd android \u0026\u0026 gradlew.bat assembleDebug",
+                    "assets":  "capacitor-assets generate --android --ios",
+                    "configure:api":  "node scripts/configure-api.mjs",
+                    "verify":  "node scripts/verify-mobile.mjs"
+                },
+    "dependencies":  {
+                         "@capacitor/android":  "^8.0.0",
+                         "@capacitor/app":  "^8.0.0",
+                         "@capacitor/browser":  "^8.0.0",
+                         "@capacitor/camera":  "^8.0.0",
+                         "@capacitor/core":  "^8.0.0",
+                         "@capacitor/filesystem":  "^8.0.0",
+                         "@capacitor/haptics":  "^8.0.0",
+                         "@capacitor/ios":  "^8.0.0",
+                         "@capacitor/keyboard":  "^8.0.0",
+                         "@capacitor/network":  "^8.0.0",
+                         "@capacitor/preferences":  "^8.0.0",
+                         "@capacitor/share":  "^8.0.0",
+                         "@capacitor/splash-screen":  "^8.0.0",
+                         "@capacitor/status-bar":  "^8.0.0"
+                     },
+    "devDependencies":  {
+                            "@capacitor/assets":  "^3.0.5",
+                            "@capacitor/cli":  "^8.0.0",
+                            "typescript":  "^5.9.0"
+                        }
+}

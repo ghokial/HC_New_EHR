@@ -1,0 +1,7 @@
+:root{--brand-blue:#1689c8;--brand-red:#d90000;--brand-white:#fff}
+.brand-logo,.portal-logo{width:48px;height:48px;object-fit:contain;background:#fff;border-radius:12px;padding:3px}
+.button.primary,.portal .button{background:var(--brand-blue);color:#fff}
+.nav-button.active{box-shadow:inset 3px 0 var(--brand-red)}
+.auth-gate{background:linear-gradient(135deg,#fff,#e9f4fb)}
+.auth-card{border-top:5px solid var(--brand-red)}
+.lab-normal{background:#e7f7ee;color:#187a45}.lab-out-of-range{background:#fff3c4;color:#8a6500}.lab-dangerously-abnormal{background:#ffe2e2;color:#b00000}

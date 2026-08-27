@@ -98,3 +98,28 @@ test("operational workflows enforce requested release and lifecycle rules", asyn
   assert.match(portal, /Report missed dose/);
   assert.match(portal, /Book an appointment/);
 });
+
+test("department, MFA, community, sharing, and mobile foundations are present", async () => {
+  const domain = await read("supabase/migrations/20260827091618_department_community_sharing.sql");
+  const mfa = await read("supabase/migrations/20260827133548_secure_mfa_and_messaging_bootstrap.sql");
+  const sharing = await read("supabase/migrations/20260827134748_shared_record_guest_access.sql");
+  const features = await read("portal-features.js");
+  const server = await read("server.mjs");
+  const mobile = await read("mobile-patient/capacitor.config.ts");
+  assert.match(domain, /facility_branding/);
+  assert.match(domain, /ehr_connections/);
+  assert.match(domain, /health_heatmap_observations/);
+  assert.match(domain, /message_threads/);
+  assert.match(domain, /community_moderation_actions/);
+  assert.match(domain, /support_tickets/);
+  assert.match(domain, /patient_record_shares/);
+  assert.match(domain, /billing_code_catalogs/);
+  assert.match(mfa, /as restrictive for all to authenticated using \(private\.is_aal2\(\)\)/);
+  assert.match(sharing, /protect_shared_contribution/);
+  assert.match(features, /auth\.mfa\.enroll/);
+  assert.match(features, /Google Authenticator, Microsoft Authenticator, Oracle Mobile Authenticator/);
+  assert.match(features, /Health heat map/);
+  assert.match(features, /Share PDF/);
+  assert.match(server, /shared-record\.html/);
+  assert.match(mobile, /com\.healthcarology\.patient/);
+});
