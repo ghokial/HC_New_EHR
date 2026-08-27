@@ -6,3 +6,4 @@ node_modules/
 requirements_extracted/
 source_docs/
 *.log
+*.docx
