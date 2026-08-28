@@ -1,0 +1,24 @@
+import { chromium } from "file:///C:/Users/ghoki/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs";
+
+const browser=await chromium.launch({headless:true,executablePath:"C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"});
+const page=await browser.newPage();
+const errors=[];page.on("pageerror",error=>errors.push(error.message));
+await page.route("**/vendor/supabase.js",route=>route.fulfill({contentType:"application/javascript",body:`globalThis.supabase={createClient(){const user={id:"diagnostic-user",email:"diagnostic@example.test",app_metadata:{}};const rows={patients:[{id:7,first_name:"Popaul",middle_name:null,last_name:"Manga",mrn:null,snau:"HC-TEST",date_of_birth:"2002-07-08",sex:"M",gender_identity:"Male",gender_other:null,ethnicity:null,ethnicity_other:null,preferred_language:"French",patient_type:"Standard Patient",life_status:"active",service_identifier:null,service_rank:null,service_unit:null,dependent_relationship:null,related_service_member_name:null,related_service_identifier:null,primary_address_id:null}],services:[{id:11,name:"General Medicine",department_id:2,departments:{id:2,name:"Medicine"}}],medications:[]};const chainFor=table=>{let chain;chain=new Proxy({}, {get(_t,p){if(p==="single")return async()=>({data:rows[table]?.[0]||null,error:null});if(p==="maybeSingle")return async()=>({data:table==="providers"?{id:8}:table==="facility_memberships"?{facility_id:9}:table==="user_roles"?{roles:{role_name:"Physician",role_code:"physician"}}:table==="profiles"?{display_name:"Diagnostic User",email:user.email}:null,error:null});if(p==="then")return resolve=>resolve({data:rows[table]||[],error:null});return()=>chain}});return chain};return{auth:{getSession:async()=>({data:{session:{user}}}),mfa:{getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:"aal2"},error:null})},onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}}},signOut:async()=>{}},from:chainFor,functions:{invoke:async()=>({data:null,error:null})}}}};`}));
+await page.goto("http://127.0.0.1:4173/",{waitUntil:"domcontentloaded",timeout:15000});
+await page.locator('#primary-nav [data-view="patients"]').click();
+await page.locator('[data-live-patient="7"]').waitFor();
+const linkedName=await page.locator('[data-live-patient="7"]').textContent();
+await page.locator('[data-live-patient="7"]').click();
+const options=await page.locator(".patient-actions button").allTextContents();
+await page.locator('[data-patient-encounter="7"]').click();
+const selectedPatient=await page.locator('[name="patient_id"]').inputValue();
+await page.locator("[data-close]").click();
+await page.locator('[data-live-patient="7"]').click();
+await page.locator('[data-patient-profile="7"]').click();
+await page.locator(".patient-profile").waitFor();
+const profileTitle=await page.locator(".patient-profile .patient-hero h2").textContent();
+const sections=await page.locator(".patient-profile .card-head h2").allTextContents();
+console.log(JSON.stringify({linkedName,options,selectedPatient,profileTitle,sections,errors},null,2));
+await browser.close().catch(()=>{});
+const expected=["Demographics","Contact and address","Service affiliation","Encounters","Diagnoses","Orders","Medications","Clinical notes"];
+process.exit(linkedName==="Popaul Manga"&&options.includes("Start new encounter")&&options.includes("View full patient profile")&&selectedPatient==="7"&&profileTitle==="Popaul Manga"&&expected.every(section=>sections.includes(section))&&!errors.length?0:1);

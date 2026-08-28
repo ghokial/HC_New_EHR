@@ -163,7 +163,35 @@ async function hydrateLivePatients() {
   if (!table || !session) return;
   const { data, error } = await supabase.from("patients").select("id,first_name,middle_name,last_name,mrn,date_of_birth,sex,snau,life_status").order("last_name");
   if (error) { table.innerHTML=`<tr><td colspan="6" class="empty">${error.message}</td></tr>`; return; }
-  table.innerHTML = data.length ? data.map(p => `<tr><td><div class="patient-cell"><span class="patient-avatar">${(p.first_name?.[0]||"")+(p.last_name?.[0]||"")}</span><span><strong>${p.first_name} ${p.last_name}</strong><small>${p.mrn||"No MRN"}</small></span></div></td><td>${p.date_of_birth||"—"}</td><td>${p.snau||"UNIN not assigned"}</td><td>${p.sex||"—"}</td><td><span class="status active">${p.life_status||"active"}</span></td><td>Live</td></tr>`).join("") : `<tr><td colspan="6" class="empty">No live patients yet. Use “Register patient”.</td></tr>`;
+  table.innerHTML = data.length ? data.map(p => `<tr><td><div class="patient-cell"><span class="patient-avatar">${safe((p.first_name?.[0]||"")+(p.last_name?.[0]||""))}</span><span><button type="button" class="patient-name-link" data-live-patient="${p.id}" data-patient-name="${safe(`${p.first_name||""} ${p.last_name||""}`.trim())}">${safe(`${p.first_name||""} ${p.last_name||""}`.trim())}</button><small>${safe(p.mrn||"No MRN")}</small></span></div></td><td>${safe(p.date_of_birth||"—")}</td><td>${safe(p.snau||"UNIN not assigned")}</td><td>${safe(p.sex||"—")}</td><td><span class="status active">${safe(p.life_status||"active")}</span></td><td>Live</td></tr>`).join("") : `<tr><td colspan="6" class="empty">No live patients yet. Use “Register patient”.</td></tr>`;
+}
+
+function patientActionMenu(patientId,patientName){
+  showModal("Patient options",`<div class="live-banner"><strong>${safe(patientName)}</strong></div><div class="patient-actions"><button type="button" class="button primary" data-patient-encounter="${patientId}">Start new encounter</button><button type="button" class="button secondary" data-patient-profile="${patientId}">View full patient profile</button></div>`);
+}
+
+const profileFact=(label,content)=>`<div class="data-row"><span>${safe(label)}</span><strong>${safe(content===null||content===undefined||content===""?"—":content)}</strong></div>`;
+const profileRecords=(rows,render,empty)=>rows.length?rows.map(render).join(""):`<p class="empty">${safe(empty)}</p>`;
+
+async function patientProfile(patientId){
+  try{
+    const patientResult=await supabase.from("patients").select("id,first_name,middle_name,last_name,mrn,snau,date_of_birth,sex,gender_identity,gender_other,ethnicity,ethnicity_other,preferred_language,patient_type,life_status,service_identifier,service_rank,service_unit,dependent_relationship,related_service_member_name,related_service_identifier,primary_address_id").eq("id",patientId).single();
+    if(patientResult.error)throw patientResult.error;
+    const patient=patientResult.data;
+    const results=await Promise.all([
+      supabase.from("patient_contact_methods").select("contact_type,country_calling_code,contact_value,primary_contact").eq("patient_id",patientId).order("primary_contact",{ascending:false}),
+      patient.primary_address_id?supabase.from("addresses").select("line1,line2,city_text,province_text,postal_code_text,countries(default_name)").eq("id",patient.primary_address_id).maybeSingle():Promise.resolve({data:null,error:null}),
+      supabase.from("encounters").select("id,encounter_type,start_at,end_at,status,services(name)").eq("patient_id",patientId).order("start_at",{ascending:false}),
+      supabase.from("diagnoses").select("id,code,display,clinical_status,onset_at,closed_at,recorded_at").eq("patient_id",patientId).order("recorded_at",{ascending:false}),
+      supabase.from("orders").select("id,order_type,status,created_at,services(name)").eq("patient_id",patientId).order("created_at",{ascending:false}),
+      supabase.from("medication_orders").select("id,dose,route,frequency,start_at,end_at,status,medications(name,strength)").eq("patient_id",patientId).order("id",{ascending:false}),
+      supabase.from("clinical_notes").select("id,note_type,content,created_at,signed_at,status").eq("patient_id",patientId).order("created_at",{ascending:false})
+    ]);
+    const failed=results.find(result=>result.error);if(failed)throw failed.error;
+    const [contacts,addressResult,encounters,diagnoses,orders,medications,notes]=results.map(result=>result.data);
+    const fullName=[patient.first_name,patient.middle_name,patient.last_name].filter(Boolean).join(" "),address=addressResult;
+    showModal("Full patient profile",`<section class="patient-profile"><div class="patient-hero"><div class="patient-id"><span class="hero-avatar">${safe((patient.first_name?.[0]||"")+(patient.last_name?.[0]||""))}</span><div><h2>${safe(fullName)}</h2><p>MRN: ${safe(patient.mrn||"—")} · UNIN: ${safe(patient.snau||"—")}</p></div></div><button type="button" class="button primary" data-patient-encounter="${patient.id}">Start new encounter</button></div><div class="profile-grid"><article class="card"><header class="card-head"><h2>Demographics</h2></header><div class="card-body data-list">${profileFact("Date of birth",patient.date_of_birth)}${profileFact("Sex",patient.sex)}${profileFact("Gender",patient.gender_identity==="Other"?patient.gender_other:patient.gender_identity)}${profileFact("Ethnicity",patient.ethnicity==="Other"?patient.ethnicity_other:patient.ethnicity)}${profileFact("Preferred language",patient.preferred_language)}${profileFact("Patient type",patient.patient_type)}${profileFact("Life status",patient.life_status)}</div></article><article class="card"><header class="card-head"><h2>Contact and address</h2></header><div class="card-body data-list">${profileRecords(contacts||[],contact=>profileFact(contact.contact_type,`${contact.country_calling_code||""}${contact.contact_value}${contact.primary_contact?" · Primary":""}`),"No contact methods recorded.")}${address?profileFact("Address",[address.line1,address.line2,address.city_text,address.province_text,address.postal_code_text,address.countries?.default_name].filter(Boolean).join(", ")):'<p class="empty">No primary address recorded.</p>'}</div></article><article class="card"><header class="card-head"><h2>Service affiliation</h2></header><div class="card-body data-list">${profileFact("Service ID",patient.service_identifier)}${profileFact("Rank / function",patient.service_rank)}${profileFact("Unit",patient.service_unit)}${profileFact("Dependent relationship",patient.dependent_relationship)}${profileFact("Related member",patient.related_service_member_name)}${profileFact("Related member service ID",patient.related_service_identifier)}</div></article></div><article class="card"><header class="card-head"><h2>Encounters</h2></header><div class="card-body compact-list">${profileRecords(encounters||[],item=>`<div class="data-row"><span>${safe(item.encounter_type)} · ${safe(item.services?.name||"No service")}</span><strong>${safe(item.status)} · ${safe(new Date(item.start_at).toLocaleString())}</strong></div>`,"No encounters recorded.")}</div></article><article class="card"><header class="card-head"><h2>Diagnoses</h2></header><div class="card-body compact-list">${profileRecords(diagnoses||[],item=>`<div class="data-row"><span>${safe(item.code)} · ${safe(item.display)}</span><strong>${safe(item.clinical_status||"recorded")}</strong></div>`,"No diagnoses recorded.")}</div></article><article class="card"><header class="card-head"><h2>Orders</h2></header><div class="card-body compact-list">${profileRecords(orders||[],item=>`<div class="data-row"><span>${safe(item.order_type)} · ${safe(item.services?.name||"No service")}</span><strong>${safe(item.status)}</strong></div>`,"No orders recorded.")}</div></article><article class="card"><header class="card-head"><h2>Medications</h2></header><div class="card-body compact-list">${profileRecords(medications||[],item=>`<div class="data-row"><span>${safe(item.medications?.name||"Medication")} ${safe(item.medications?.strength||"")} · ${safe(item.dose)} ${safe(item.route||"")} ${safe(item.frequency||"")}</span><strong>${safe(item.status)}</strong></div>`,"No medication orders recorded.")}</div></article><article class="card"><header class="card-head"><h2>Clinical notes</h2></header><div class="card-body compact-list">${profileRecords(notes||[],item=>`<div class="profile-note"><strong>${safe(item.note_type)} · ${safe(item.status)}</strong><small>${safe(new Date(item.created_at).toLocaleString())}</small><p>${safe(item.content)}</p></div>`,"No clinical notes recorded.")}</div></article></section>`);
+  }catch(error){notify(error.message)}
 }
 
 async function hydrateClinicalView(viewName) {
@@ -205,7 +233,7 @@ async function hydrateDashboard(){
   const heading=document.querySelector("#view .page-head h1"),subtitle=document.querySelector("#view .page-head p");if(heading)heading.textContent="Healthcarology EHR";if(subtitle)subtitle.textContent="Internal EHR · Live operational data";
 }
 
-async function encounterForm(){
+async function encounterForm(preselectedPatientId=null){
   try{
     const {patients,services}=await clinicalChoices();
     const canManageCatalog=["root","sysadmin"].includes(currentRoleCode);
@@ -214,6 +242,7 @@ async function encounterForm(){
     const sortedServices=[...services].sort(alphabetically);
     const otherOption=canManageCatalog?`<option value="__other__">Other — add new</option>`:"";
     showModal("Open encounter",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Encounter type<select name="encounter_type" required><option>Outpatient</option><option>Inpatient</option><option>Emergency</option><option>Observation</option><option>Telehealth</option></select></label><label>Department<select id="encounter-department" name="department_id" required>${optionList(departments,department=>department.name,"Select department")}${otherOption}</select></label>${canManageCatalog?`<label id="new-department-field" hidden>New department name<input id="new-department-name" name="new_department_name" maxlength="160"></label>`:""}<label>Service<select id="encounter-service" name="service_id" required disabled><option value="">Select department first</option></select></label>${canManageCatalog?`<label id="new-service-field" hidden>New service name<input id="new-service-name" name="new_service_name" maxlength="160"></label>`:""}<label>Start date and time<input type="datetime-local" name="start_at" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Open encounter</button></footer></form>`);
+    if(preselectedPatientId)modal.querySelector('[name="patient_id"]').value=String(preselectedPatientId);
     const departmentSelect=modal.querySelector("#encounter-department");
     const serviceSelect=modal.querySelector("#encounter-service");
     const departmentField=modal.querySelector("#new-department-field");
@@ -306,6 +335,12 @@ async function setSignedInUser() {
 }
 
 document.addEventListener("click", event => {
+  const patientLink=event.target.closest("[data-live-patient]");
+  if(patientLink){event.preventDefault();event.stopImmediatePropagation();patientActionMenu(Number(patientLink.dataset.livePatient),patientLink.dataset.patientName);return}
+  const profileAction=event.target.closest("[data-patient-profile]");
+  if(profileAction){event.preventDefault();event.stopImmediatePropagation();patientProfile(Number(profileAction.dataset.patientProfile));return}
+  const encounterAction=event.target.closest("[data-patient-encounter]");
+  if(encounterAction){event.preventDefault();event.stopImmediatePropagation();encounterForm(Number(encounterAction.dataset.patientEncounter));return}
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "new-patient") { event.preventDefault(); event.stopImmediatePropagation(); patientForm(); }
   if (action === "review-access") { event.preventDefault(); event.stopImmediatePropagation(); userForm(); }

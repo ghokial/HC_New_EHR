@@ -241,6 +241,19 @@ test("encounter creation filters alphabetized services by alphabetized departmen
   assert.match(live,/from\("services"\)\.insert/);
 });
 
+test("live patient names open profile or a patient-preselected encounter", async () => {
+  const live=await read("live.js");
+  const theme=await read("theme.css");
+  assert.match(live,/class="patient-name-link" data-live-patient/);
+  assert.match(live,/Start new encounter/);
+  assert.match(live,/View full patient profile/);
+  assert.match(live,/async function patientProfile/);
+  for(const section of ["Demographics","Contact and address","Service affiliation","Encounters","Diagnoses","Orders","Medications","Clinical notes"])assert.match(live,new RegExp(section));
+  assert.match(live,/encounterForm\(preselectedPatientId=null\)/);
+  assert.match(live,/\[name="patient_id"\]'\)\.value=String\(preselectedPatientId\)/);
+  assert.match(theme,/\.patient-name-link/);
+});
+
 test("stand-alone service facilities use scoped referrals, OTP consent, and inventory visibility", async () => {
   const portal = await read("portal-features.js");
   const live = await read("live.js");
