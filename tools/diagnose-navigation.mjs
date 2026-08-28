@@ -9,7 +9,7 @@ page.on("console", message => messages.push(`console:${message.type()}:${message
 page.on("pageerror", error => messages.push(`pageerror:${error.stack || error.message}`));
 await page.route("**/vendor/supabase.js", route => route.fulfill({
   contentType: "application/javascript",
-  body: `globalThis.supabase={createClient(){const user={id:"diagnostic-user",email:"diagnostic@example.test",app_metadata:{}};const chain=new Proxy({}, {get(_t,p){if(p==="maybeSingle"||p==="single")return async()=>({data:null,error:null});if(p==="then")return resolve=>resolve({data:[],error:null});return()=>chain}});return{auth:{getSession:async()=>({data:{session:{user}}}),onAuthStateChange(cb){setTimeout(()=>cb("INITIAL_SESSION",{user}),20);return{data:{subscription:{unsubscribe(){}}}}},signOut:async()=>{}},from(){return chain},functions:{invoke:async()=>({data:null,error:null})}}}};`
+  body: `globalThis.supabase={createClient(){const user={id:"diagnostic-user",email:"diagnostic@example.test",app_metadata:{}};const chain=new Proxy({}, {get(_t,p){if(p==="maybeSingle"||p==="single")return async()=>({data:null,error:null});if(p==="then")return resolve=>resolve({data:[],error:null});return()=>chain}});return{auth:{getSession:async()=>({data:{session:{user}}}),mfa:{getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:"aal2"},error:null})},onAuthStateChange(cb){setTimeout(()=>cb("INITIAL_SESSION",{user}),20);return{data:{subscription:{unsubscribe(){}}}}},signOut:async()=>{}},from(){return chain},functions:{invoke:async()=>({data:null,error:null})}}}};`
 }));
 await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded", timeout: 15000 });
 await page.locator("#view h1").waitFor({ timeout: 5000 });

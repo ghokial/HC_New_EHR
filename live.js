@@ -1,4 +1,5 @@
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
+import { requireMfa } from "./portal-features.js";
 
 const supabase = globalThis.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const modal = document.querySelector("#live-modal");
@@ -266,7 +267,7 @@ document.addEventListener("hc:view-rendered", event => {
 
 const { data } = await supabase.auth.getSession();
 session = data.session;
-if (!session) authGate(); else if(session.user.app_metadata?.must_change_password===true) passwordChangeGate(); else { await loadClinicalContext(); await setSignedInUser(); await hydrateLivePatients(); await hydrateDashboard(); if(new URLSearchParams(location.search).get("register")==="patient")await patientForm(); }
+if (!session) authGate(); else if(session.user.app_metadata?.must_change_password===true) passwordChangeGate(); else if(await requireMfa(supabase,document.body)){ await loadClinicalContext(); await setSignedInUser(); await hydrateLivePatients(); await hydrateDashboard(); if(new URLSearchParams(location.search).get("register")==="patient")await patientForm(); }
 supabase.auth.onAuthStateChange((event,newSession)=>{
   const previousUserId = session?.user?.id;
   session = newSession;

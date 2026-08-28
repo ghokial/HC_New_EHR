@@ -129,7 +129,9 @@ test("department, MFA, community, sharing, and mobile foundations are present", 
   assert.match(mfa, /as restrictive for all to authenticated using \(private\.is_aal2\(\)\)/);
   assert.match(sharing, /protect_shared_contribution/);
   assert.match(features, /auth\.mfa\.enroll/);
-  assert.match(features, /Google Authenticator, Microsoft Authenticator, Oracle Mobile Authenticator/);
+  assert.match(features, /Google Authenticator/);
+  assert.match(features, /Microsoft Authenticator/);
+  assert.match(features, /Oracle Mobile Authenticator/);
   assert.match(features, /Health heat map/);
   assert.match(features, /Share PDF/);
   assert.match(server, /shared-record\.html/);
@@ -145,6 +147,22 @@ test("patient portal keeps MFA optional until the user shares data", async () =>
   assert.match(features, /access-share-form[\s\S]*?if\(!await requireMfa/);
   assert.match(migration, /pa\.user_id=\(select auth\.uid\(\)\) and pa\.patient_id=diagnoses\.patient_id/);
   assert.match(migration, /shares_grantor_create/);
+});
+
+test("first-login MFA presents supported choices before enrollment", async () => {
+  const live = await read("live.js");
+  const features = await read("portal-features.js");
+  const mobile = await read("mobile-patient/www/portal-features.js");
+  assert.match(features,/Choose your authentication method/);
+  assert.match(features,/Google Authenticator/);
+  assert.match(features,/Microsoft Authenticator/);
+  assert.match(features,/Oracle Mobile Authenticator/);
+  assert.match(features,/factorType:"phone"/);
+  assert.match(features,/value="sms"/);
+  assert.match(features,/value="whatsapp"/);
+  assert.match(features,/body:\{password\}/);
+  assert.match(live,/requireMfa\(supabase,document\.body\)/);
+  assert.equal(mobile,features);
 });
 
 test("facility types, training hospital, workforce, and messaging are durable", async () => {

@@ -6,3 +6,6 @@
 .auth-card{border-top:5px solid var(--brand-red)}
 .lab-normal{background:#e7f7ee;color:#187a45}.lab-out-of-range{background:#fff3c4;color:#8a6500}.lab-dangerously-abnormal{background:#ffe2e2;color:#b00000}
 .live-panel [hidden]{display:none!important}
+.auth-card [hidden]{display:none!important}
+.auth-card-wide{width:min(640px,100%)}
+.mfa-methods{display:grid;gap:10px;margin:18px 0}.mfa-method{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #cbdbe3;background:#f7fbfd;color:#17384f;border-radius:10px;padding:13px;cursor:pointer}.mfa-method:hover,.mfa-method:focus-within{border-color:var(--brand-blue);background:#eef8fc}.mfa-method input{width:auto;margin:0}.mfa-method span{display:block}.mfa-method strong,.mfa-method small{display:block}.mfa-method small{margin-top:4px;color:#647b8b;font-weight:400}
