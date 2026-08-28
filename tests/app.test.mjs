@@ -251,3 +251,22 @@ test("sign in accepts account email or international phone and MFA navigation is
   assert.match(mfa,/Choose another enrolled method/);
   assert.doesNotMatch(mfa,/id="mfa-back"[^;]+location\.reload/);
 });
+
+test("patient form limits dependent fields and uses licensed worldwide geography", async () => {
+  const live=await read("live.js");
+  const manifest=JSON.parse(await read("assets/geography/manifest.json"));
+  const gabon=JSON.parse(await read("assets/geography/GA.json"));
+  const benin=JSON.parse(await read("assets/geography/BJ.json"));
+  const nigeria=JSON.parse(await read("assets/geography/NG.json"));
+  const migration=await read("supabase/migrations/20260828010000_world_geography_text_fallback.sql");
+  assert.match(live,/refreshDependent/);
+  assert.match(live,/includes\("dependent"\)/);
+  assert.match(live,/assets\/geography/);
+  assert.equal(manifest.countries.length,250);
+  assert.equal(manifest.source,"dr5hn/countries-states-cities-database");
+  assert.ok(gabon.states.some(state=>state.name==="Estuaire"));
+  assert.ok(benin.states.some(state=>state.name==="Alibori"));
+  assert.ok(nigeria.states.some(state=>state.name==="Abia"));
+  assert.match(migration,/province_text/);
+  assert.match(migration,/city_text/);
+});

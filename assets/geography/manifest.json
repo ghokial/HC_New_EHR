@@ -1,0 +1,1507 @@
+{
+  "source": "dr5hn/countries-states-cities-database",
+  "license": "ODbL-1.0",
+  "generated_at": "2026-08-28T12:35:18.379Z",
+  "countries": [
+    {
+      "iso2": "AF",
+      "name": "Afghanistan",
+      "states": 34,
+      "cities": 100
+    },
+    {
+      "iso2": "AX",
+      "name": "Aland Islands",
+      "states": 16,
+      "cities": 12
+    },
+    {
+      "iso2": "AL",
+      "name": "Albania",
+      "states": 12,
+      "cities": 143
+    },
+    {
+      "iso2": "DZ",
+      "name": "Algeria",
+      "states": 58,
+      "cities": 293
+    },
+    {
+      "iso2": "AS",
+      "name": "American Samoa",
+      "states": 5,
+      "cities": 14
+    },
+    {
+      "iso2": "AD",
+      "name": "Andorra",
+      "states": 7,
+      "cities": 10
+    },
+    {
+      "iso2": "AO",
+      "name": "Angola",
+      "states": 18,
+      "cities": 72
+    },
+    {
+      "iso2": "AI",
+      "name": "Anguilla",
+      "states": 14,
+      "cities": 0
+    },
+    {
+      "iso2": "AQ",
+      "name": "Antarctica",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "AG",
+      "name": "Antigua and Barbuda",
+      "states": 8,
+      "cities": 9
+    },
+    {
+      "iso2": "AR",
+      "name": "Argentina",
+      "states": 24,
+      "cities": 1136
+    },
+    {
+      "iso2": "AM",
+      "name": "Armenia",
+      "states": 11,
+      "cities": 308
+    },
+    {
+      "iso2": "AW",
+      "name": "Aruba",
+      "states": 9,
+      "cities": 12
+    },
+    {
+      "iso2": "AU",
+      "name": "Australia",
+      "states": 8,
+      "cities": 4147
+    },
+    {
+      "iso2": "AT",
+      "name": "Austria",
+      "states": 9,
+      "cities": 2360
+    },
+    {
+      "iso2": "AZ",
+      "name": "Azerbaijan",
+      "states": 78,
+      "cities": 180
+    },
+    {
+      "iso2": "BH",
+      "name": "Bahrain",
+      "states": 4,
+      "cities": 9
+    },
+    {
+      "iso2": "BD",
+      "name": "Bangladesh",
+      "states": 72,
+      "cities": 64
+    },
+    {
+      "iso2": "BB",
+      "name": "Barbados",
+      "states": 11,
+      "cities": 7
+    },
+    {
+      "iso2": "BY",
+      "name": "Belarus",
+      "states": 7,
+      "cities": 329
+    },
+    {
+      "iso2": "BE",
+      "name": "Belgium",
+      "states": 13,
+      "cities": 549
+    },
+    {
+      "iso2": "BZ",
+      "name": "Belize",
+      "states": 6,
+      "cities": 13
+    },
+    {
+      "iso2": "BJ",
+      "name": "Benin",
+      "states": 12,
+      "cities": 36
+    },
+    {
+      "iso2": "BM",
+      "name": "Bermuda",
+      "states": 9,
+      "cities": 9
+    },
+    {
+      "iso2": "BT",
+      "name": "Bhutan",
+      "states": 20,
+      "cities": 57
+    },
+    {
+      "iso2": "BO",
+      "name": "Bolivia",
+      "states": 9,
+      "cities": 228
+    },
+    {
+      "iso2": "BQ",
+      "name": "Bonaire, Sint Eustatius and Saba",
+      "states": 3,
+      "cities": 8
+    },
+    {
+      "iso2": "BA",
+      "name": "Bosnia and Herzegovina",
+      "states": 3,
+      "cities": 232
+    },
+    {
+      "iso2": "BW",
+      "name": "Botswana",
+      "states": 16,
+      "cities": 75
+    },
+    {
+      "iso2": "BV",
+      "name": "Bouvet Island",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "BR",
+      "name": "Brazil",
+      "states": 27,
+      "cities": 5629
+    },
+    {
+      "iso2": "IO",
+      "name": "British Indian Ocean Territory",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "BN",
+      "name": "Brunei",
+      "states": 4,
+      "cities": 9
+    },
+    {
+      "iso2": "BG",
+      "name": "Bulgaria",
+      "states": 28,
+      "cities": 504
+    },
+    {
+      "iso2": "BF",
+      "name": "Burkina Faso",
+      "states": 58,
+      "cities": 92
+    },
+    {
+      "iso2": "BI",
+      "name": "Burundi",
+      "states": 18,
+      "cities": 17
+    },
+    {
+      "iso2": "KH",
+      "name": "Cambodia",
+      "states": 25,
+      "cities": 107
+    },
+    {
+      "iso2": "CM",
+      "name": "Cameroon",
+      "states": 10,
+      "cities": 139
+    },
+    {
+      "iso2": "CA",
+      "name": "Canada",
+      "states": 13,
+      "cities": 1080
+    },
+    {
+      "iso2": "CV",
+      "name": "Cape Verde",
+      "states": 24,
+      "cities": 28
+    },
+    {
+      "iso2": "KY",
+      "name": "Cayman Islands",
+      "states": 3,
+      "cities": 7
+    },
+    {
+      "iso2": "CF",
+      "name": "Central African Republic",
+      "states": 17,
+      "cities": 42
+    },
+    {
+      "iso2": "TD",
+      "name": "Chad",
+      "states": 23,
+      "cities": 49
+    },
+    {
+      "iso2": "CL",
+      "name": "Chile",
+      "states": 16,
+      "cities": 300
+    },
+    {
+      "iso2": "CN",
+      "name": "China",
+      "states": 34,
+      "cities": 4133
+    },
+    {
+      "iso2": "CX",
+      "name": "Christmas Island",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "CC",
+      "name": "Cocos (Keeling) Islands",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "CO",
+      "name": "Colombia",
+      "states": 33,
+      "cities": 1122
+    },
+    {
+      "iso2": "KM",
+      "name": "Comoros",
+      "states": 3,
+      "cities": 88
+    },
+    {
+      "iso2": "CG",
+      "name": "Congo",
+      "states": 12,
+      "cities": 17
+    },
+    {
+      "iso2": "CK",
+      "name": "Cook Islands",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "CR",
+      "name": "Costa Rica",
+      "states": 7,
+      "cities": 159
+    },
+    {
+      "iso2": "HR",
+      "name": "Croatia",
+      "states": 20,
+      "cities": 663
+    },
+    {
+      "iso2": "CU",
+      "name": "Cuba",
+      "states": 16,
+      "cities": 187
+    },
+    {
+      "iso2": "CW",
+      "name": "Curaçao",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "CY",
+      "name": "Cyprus",
+      "states": 6,
+      "cities": 95
+    },
+    {
+      "iso2": "CZ",
+      "name": "Czech Republic",
+      "states": 90,
+      "cities": 1355
+    },
+    {
+      "iso2": "CD",
+      "name": "Democratic Republic of the Congo",
+      "states": 26,
+      "cities": 67
+    },
+    {
+      "iso2": "DK",
+      "name": "Denmark",
+      "states": 5,
+      "cities": 430
+    },
+    {
+      "iso2": "DJ",
+      "name": "Djibouti",
+      "states": 6,
+      "cities": 12
+    },
+    {
+      "iso2": "DM",
+      "name": "Dominica",
+      "states": 10,
+      "cities": 17
+    },
+    {
+      "iso2": "DO",
+      "name": "Dominican Republic",
+      "states": 42,
+      "cities": 207
+    },
+    {
+      "iso2": "EC",
+      "name": "Ecuador",
+      "states": 24,
+      "cities": 114
+    },
+    {
+      "iso2": "EG",
+      "name": "Egypt",
+      "states": 27,
+      "cities": 163
+    },
+    {
+      "iso2": "SV",
+      "name": "El Salvador",
+      "states": 14,
+      "cities": 100
+    },
+    {
+      "iso2": "GQ",
+      "name": "Equatorial Guinea",
+      "states": 10,
+      "cities": 26
+    },
+    {
+      "iso2": "ER",
+      "name": "Eritrea",
+      "states": 6,
+      "cities": 11
+    },
+    {
+      "iso2": "EE",
+      "name": "Estonia",
+      "states": 94,
+      "cities": 162
+    },
+    {
+      "iso2": "SZ",
+      "name": "Eswatini",
+      "states": 4,
+      "cities": 34
+    },
+    {
+      "iso2": "ET",
+      "name": "Ethiopia",
+      "states": 13,
+      "cities": 144
+    },
+    {
+      "iso2": "FK",
+      "name": "Falkland Islands",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "FO",
+      "name": "Faroe Islands",
+      "states": 6,
+      "cities": 27
+    },
+    {
+      "iso2": "FJ",
+      "name": "Fiji Islands",
+      "states": 19,
+      "cities": 20
+    },
+    {
+      "iso2": "FI",
+      "name": "Finland",
+      "states": 18,
+      "cities": 437
+    },
+    {
+      "iso2": "FR",
+      "name": "France",
+      "states": 124,
+      "cities": 10534
+    },
+    {
+      "iso2": "GF",
+      "name": "French Guiana",
+      "states": 1,
+      "cities": 22
+    },
+    {
+      "iso2": "PF",
+      "name": "French Polynesia",
+      "states": 5,
+      "cities": 48
+    },
+    {
+      "iso2": "TF",
+      "name": "French Southern Territories",
+      "states": 5,
+      "cities": 5
+    },
+    {
+      "iso2": "GA",
+      "name": "Gabon",
+      "states": 9,
+      "cities": 28
+    },
+    {
+      "iso2": "GE",
+      "name": "Georgia",
+      "states": 12,
+      "cities": 110
+    },
+    {
+      "iso2": "DE",
+      "name": "Germany",
+      "states": 16,
+      "cities": 7104
+    },
+    {
+      "iso2": "GH",
+      "name": "Ghana",
+      "states": 16,
+      "cities": 121
+    },
+    {
+      "iso2": "GI",
+      "name": "Gibraltar",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "GR",
+      "name": "Greece",
+      "states": 15,
+      "cities": 1103
+    },
+    {
+      "iso2": "GL",
+      "name": "Greenland",
+      "states": 5,
+      "cities": 18
+    },
+    {
+      "iso2": "GD",
+      "name": "Grenada",
+      "states": 7,
+      "cities": 7
+    },
+    {
+      "iso2": "GP",
+      "name": "Guadeloupe",
+      "states": 2,
+      "cities": 32
+    },
+    {
+      "iso2": "GU",
+      "name": "Guam",
+      "states": 19,
+      "cities": 25
+    },
+    {
+      "iso2": "GT",
+      "name": "Guatemala",
+      "states": 22,
+      "cities": 382
+    },
+    {
+      "iso2": "GG",
+      "name": "Guernsey",
+      "states": 12,
+      "cities": 5
+    },
+    {
+      "iso2": "GN",
+      "name": "Guinea",
+      "states": 41,
+      "cities": 54
+    },
+    {
+      "iso2": "GW",
+      "name": "Guinea-Bissau",
+      "states": 12,
+      "cities": 15
+    },
+    {
+      "iso2": "GY",
+      "name": "Guyana",
+      "states": 10,
+      "cities": 14
+    },
+    {
+      "iso2": "HT",
+      "name": "Haiti",
+      "states": 10,
+      "cities": 124
+    },
+    {
+      "iso2": "HM",
+      "name": "Heard Island and McDonald Islands",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "HN",
+      "name": "Honduras",
+      "states": 18,
+      "cities": 545
+    },
+    {
+      "iso2": "HK",
+      "name": "Hong Kong S.A.R.",
+      "states": 18,
+      "cities": 27
+    },
+    {
+      "iso2": "HU",
+      "name": "Hungary",
+      "states": 43,
+      "cities": 1074
+    },
+    {
+      "iso2": "IS",
+      "name": "Iceland",
+      "states": 72,
+      "cities": 73
+    },
+    {
+      "iso2": "IN",
+      "name": "India",
+      "states": 36,
+      "cities": 4198
+    },
+    {
+      "iso2": "ID",
+      "name": "Indonesia",
+      "states": 45,
+      "cities": 799
+    },
+    {
+      "iso2": "IR",
+      "name": "Iran",
+      "states": 31,
+      "cities": 1847
+    },
+    {
+      "iso2": "IQ",
+      "name": "Iraq",
+      "states": 19,
+      "cities": 135
+    },
+    {
+      "iso2": "IE",
+      "name": "Ireland",
+      "states": 30,
+      "cities": 370
+    },
+    {
+      "iso2": "IL",
+      "name": "Israel",
+      "states": 6,
+      "cities": 150
+    },
+    {
+      "iso2": "IT",
+      "name": "Italy",
+      "states": 126,
+      "cities": 9852
+    },
+    {
+      "iso2": "CI",
+      "name": "Ivory Coast",
+      "states": 14,
+      "cities": 95
+    },
+    {
+      "iso2": "JM",
+      "name": "Jamaica",
+      "states": 14,
+      "cities": 837
+    },
+    {
+      "iso2": "JP",
+      "name": "Japan",
+      "states": 47,
+      "cities": 1655
+    },
+    {
+      "iso2": "JE",
+      "name": "Jersey",
+      "states": 12,
+      "cities": 51
+    },
+    {
+      "iso2": "JO",
+      "name": "Jordan",
+      "states": 12,
+      "cities": 82
+    },
+    {
+      "iso2": "KZ",
+      "name": "Kazakhstan",
+      "states": 20,
+      "cities": 259
+    },
+    {
+      "iso2": "KE",
+      "name": "Kenya",
+      "states": 47,
+      "cities": 145
+    },
+    {
+      "iso2": "KI",
+      "name": "Kiribati",
+      "states": 3,
+      "cities": 37
+    },
+    {
+      "iso2": "XK",
+      "name": "Kosovo",
+      "states": 7,
+      "cities": 59
+    },
+    {
+      "iso2": "KW",
+      "name": "Kuwait",
+      "states": 6,
+      "cities": 25
+    },
+    {
+      "iso2": "KG",
+      "name": "Kyrgyzstan",
+      "states": 9,
+      "cities": 53
+    },
+    {
+      "iso2": "LA",
+      "name": "Laos",
+      "states": 18,
+      "cities": 76
+    },
+    {
+      "iso2": "LV",
+      "name": "Latvia",
+      "states": 43,
+      "cities": 125
+    },
+    {
+      "iso2": "LB",
+      "name": "Lebanon",
+      "states": 8,
+      "cities": 26
+    },
+    {
+      "iso2": "LS",
+      "name": "Lesotho",
+      "states": 10,
+      "cities": 12
+    },
+    {
+      "iso2": "LR",
+      "name": "Liberia",
+      "states": 15,
+      "cities": 18
+    },
+    {
+      "iso2": "LY",
+      "name": "Libya",
+      "states": 22,
+      "cities": 54
+    },
+    {
+      "iso2": "LI",
+      "name": "Liechtenstein",
+      "states": 11,
+      "cities": 11
+    },
+    {
+      "iso2": "LT",
+      "name": "Lithuania",
+      "states": 70,
+      "cities": 128
+    },
+    {
+      "iso2": "LU",
+      "name": "Luxembourg",
+      "states": 12,
+      "cities": 144
+    },
+    {
+      "iso2": "MO",
+      "name": "Macau S.A.R.",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "MG",
+      "name": "Madagascar",
+      "states": 6,
+      "cities": 9
+    },
+    {
+      "iso2": "MW",
+      "name": "Malawi",
+      "states": 31,
+      "cities": 61
+    },
+    {
+      "iso2": "MY",
+      "name": "Malaysia",
+      "states": 16,
+      "cities": 223
+    },
+    {
+      "iso2": "MV",
+      "name": "Maldives",
+      "states": 21,
+      "cities": 21
+    },
+    {
+      "iso2": "ML",
+      "name": "Mali",
+      "states": 11,
+      "cities": 47
+    },
+    {
+      "iso2": "MT",
+      "name": "Malta",
+      "states": 68,
+      "cities": 87
+    },
+    {
+      "iso2": "IM",
+      "name": "Man (Isle of)",
+      "states": 6,
+      "cities": 16
+    },
+    {
+      "iso2": "MH",
+      "name": "Marshall Islands",
+      "states": 26,
+      "cities": 26
+    },
+    {
+      "iso2": "MQ",
+      "name": "Martinique",
+      "states": 4,
+      "cities": 34
+    },
+    {
+      "iso2": "MR",
+      "name": "Mauritania",
+      "states": 15,
+      "cities": 42
+    },
+    {
+      "iso2": "MU",
+      "name": "Mauritius",
+      "states": 12,
+      "cities": 168
+    },
+    {
+      "iso2": "YT",
+      "name": "Mayotte",
+      "states": 17,
+      "cities": 57
+    },
+    {
+      "iso2": "MX",
+      "name": "Mexico",
+      "states": 32,
+      "cities": 9321
+    },
+    {
+      "iso2": "FM",
+      "name": "Micronesia",
+      "states": 4,
+      "cities": 80
+    },
+    {
+      "iso2": "MD",
+      "name": "Moldova",
+      "states": 37,
+      "cities": 72
+    },
+    {
+      "iso2": "MC",
+      "name": "Monaco",
+      "states": 17,
+      "cities": 17
+    },
+    {
+      "iso2": "MN",
+      "name": "Mongolia",
+      "states": 22,
+      "cities": 40
+    },
+    {
+      "iso2": "ME",
+      "name": "Montenegro",
+      "states": 25,
+      "cities": 40
+    },
+    {
+      "iso2": "MS",
+      "name": "Montserrat",
+      "states": 3,
+      "cities": 0
+    },
+    {
+      "iso2": "MA",
+      "name": "Morocco",
+      "states": 87,
+      "cities": 222
+    },
+    {
+      "iso2": "MZ",
+      "name": "Mozambique",
+      "states": 11,
+      "cities": 38
+    },
+    {
+      "iso2": "MM",
+      "name": "Myanmar",
+      "states": 15,
+      "cities": 74
+    },
+    {
+      "iso2": "NA",
+      "name": "Namibia",
+      "states": 14,
+      "cities": 48
+    },
+    {
+      "iso2": "NR",
+      "name": "Nauru",
+      "states": 14,
+      "cities": 7
+    },
+    {
+      "iso2": "NP",
+      "name": "Nepal",
+      "states": 7,
+      "cities": 77
+    },
+    {
+      "iso2": "NL",
+      "name": "Netherlands",
+      "states": 12,
+      "cities": 1644
+    },
+    {
+      "iso2": "NC",
+      "name": "New Caledonia",
+      "states": 3,
+      "cities": 10
+    },
+    {
+      "iso2": "NZ",
+      "name": "New Zealand",
+      "states": 17,
+      "cities": 160
+    },
+    {
+      "iso2": "NI",
+      "name": "Nicaragua",
+      "states": 17,
+      "cities": 155
+    },
+    {
+      "iso2": "NE",
+      "name": "Niger",
+      "states": 8,
+      "cities": 71
+    },
+    {
+      "iso2": "NG",
+      "name": "Nigeria",
+      "states": 37,
+      "cities": 491
+    },
+    {
+      "iso2": "NU",
+      "name": "Niue",
+      "states": 14,
+      "cities": 0
+    },
+    {
+      "iso2": "NF",
+      "name": "Norfolk Island",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "KP",
+      "name": "North Korea",
+      "states": 13,
+      "cities": 80
+    },
+    {
+      "iso2": "MK",
+      "name": "North Macedonia",
+      "states": 80,
+      "cities": 194
+    },
+    {
+      "iso2": "MP",
+      "name": "Northern Mariana Islands",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "NO",
+      "name": "Norway",
+      "states": 17,
+      "cities": 666
+    },
+    {
+      "iso2": "OM",
+      "name": "Oman",
+      "states": 11,
+      "cities": 28
+    },
+    {
+      "iso2": "PK",
+      "name": "Pakistan",
+      "states": 7,
+      "cities": 456
+    },
+    {
+      "iso2": "PW",
+      "name": "Palau",
+      "states": 16,
+      "cities": 15
+    },
+    {
+      "iso2": "PS",
+      "name": "Palestinian Territory Occupied",
+      "states": 16,
+      "cities": 132
+    },
+    {
+      "iso2": "PA",
+      "name": "Panama",
+      "states": 14,
+      "cities": 551
+    },
+    {
+      "iso2": "PG",
+      "name": "Papua New Guinea",
+      "states": 22,
+      "cities": 100
+    },
+    {
+      "iso2": "PY",
+      "name": "Paraguay",
+      "states": 18,
+      "cities": 152
+    },
+    {
+      "iso2": "PE",
+      "name": "Peru",
+      "states": 26,
+      "cities": 485
+    },
+    {
+      "iso2": "PH",
+      "name": "Philippines",
+      "states": 99,
+      "cities": 5357
+    },
+    {
+      "iso2": "PN",
+      "name": "Pitcairn Island",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "PL",
+      "name": "Poland",
+      "states": 16,
+      "cities": 2810
+    },
+    {
+      "iso2": "PT",
+      "name": "Portugal",
+      "states": 20,
+      "cities": 1296
+    },
+    {
+      "iso2": "PR",
+      "name": "Puerto Rico",
+      "states": 78,
+      "cities": 78
+    },
+    {
+      "iso2": "QA",
+      "name": "Qatar",
+      "states": 8,
+      "cities": 15
+    },
+    {
+      "iso2": "RE",
+      "name": "Reunion",
+      "states": 4,
+      "cities": 24
+    },
+    {
+      "iso2": "RO",
+      "name": "Romania",
+      "states": 42,
+      "cities": 7949
+    },
+    {
+      "iso2": "RU",
+      "name": "Russia",
+      "states": 83,
+      "cities": 5523
+    },
+    {
+      "iso2": "RW",
+      "name": "Rwanda",
+      "states": 5,
+      "cities": 12
+    },
+    {
+      "iso2": "SH",
+      "name": "Saint Helena",
+      "states": 8,
+      "cities": 0
+    },
+    {
+      "iso2": "KN",
+      "name": "Saint Kitts and Nevis",
+      "states": 16,
+      "cities": 13
+    },
+    {
+      "iso2": "LC",
+      "name": "Saint Lucia",
+      "states": 10,
+      "cities": 479
+    },
+    {
+      "iso2": "PM",
+      "name": "Saint Pierre and Miquelon",
+      "states": 1,
+      "cities": 2
+    },
+    {
+      "iso2": "VC",
+      "name": "Saint Vincent and the Grenadines",
+      "states": 6,
+      "cities": 9
+    },
+    {
+      "iso2": "BL",
+      "name": "Saint-Barthelemy",
+      "states": 1,
+      "cities": 1
+    },
+    {
+      "iso2": "MF",
+      "name": "Saint-Martin (French part)",
+      "states": 1,
+      "cities": 1
+    },
+    {
+      "iso2": "WS",
+      "name": "Samoa",
+      "states": 11,
+      "cities": 20
+    },
+    {
+      "iso2": "SM",
+      "name": "San Marino",
+      "states": 9,
+      "cities": 9
+    },
+    {
+      "iso2": "ST",
+      "name": "Sao Tome and Principe",
+      "states": 7,
+      "cities": 7
+    },
+    {
+      "iso2": "SA",
+      "name": "Saudi Arabia",
+      "states": 13,
+      "cities": 399
+    },
+    {
+      "iso2": "SN",
+      "name": "Senegal",
+      "states": 14,
+      "cities": 73
+    },
+    {
+      "iso2": "RS",
+      "name": "Serbia",
+      "states": 32,
+      "cities": 379
+    },
+    {
+      "iso2": "SC",
+      "name": "Seychelles",
+      "states": 27,
+      "cities": 9
+    },
+    {
+      "iso2": "SL",
+      "name": "Sierra Leone",
+      "states": 5,
+      "cities": 91
+    },
+    {
+      "iso2": "SG",
+      "name": "Singapore",
+      "states": 5,
+      "cities": 26
+    },
+    {
+      "iso2": "SX",
+      "name": "Sint Maarten (Dutch part)",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "SK",
+      "name": "Slovakia",
+      "states": 8,
+      "cities": 233
+    },
+    {
+      "iso2": "SI",
+      "name": "Slovenia",
+      "states": 212,
+      "cities": 312
+    },
+    {
+      "iso2": "SB",
+      "name": "Solomon Islands",
+      "states": 10,
+      "cities": 7
+    },
+    {
+      "iso2": "SO",
+      "name": "Somalia",
+      "states": 18,
+      "cities": 51
+    },
+    {
+      "iso2": "ZA",
+      "name": "South Africa",
+      "states": 9,
+      "cities": 314
+    },
+    {
+      "iso2": "GS",
+      "name": "South Georgia",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "KR",
+      "name": "South Korea",
+      "states": 17,
+      "cities": 308
+    },
+    {
+      "iso2": "SS",
+      "name": "South Sudan",
+      "states": 10,
+      "cities": 1
+    },
+    {
+      "iso2": "ES",
+      "name": "Spain",
+      "states": 69,
+      "cities": 8405
+    },
+    {
+      "iso2": "LK",
+      "name": "Sri Lanka",
+      "states": 34,
+      "cities": 147
+    },
+    {
+      "iso2": "SD",
+      "name": "Sudan",
+      "states": 18,
+      "cities": 71
+    },
+    {
+      "iso2": "SR",
+      "name": "Suriname",
+      "states": 10,
+      "cities": 13
+    },
+    {
+      "iso2": "SJ",
+      "name": "Svalbard and Jan Mayen Islands",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "SE",
+      "name": "Sweden",
+      "states": 21,
+      "cities": 800
+    },
+    {
+      "iso2": "CH",
+      "name": "Switzerland",
+      "states": 26,
+      "cities": 1507
+    },
+    {
+      "iso2": "SY",
+      "name": "Syria",
+      "states": 14,
+      "cities": 142
+    },
+    {
+      "iso2": "TW",
+      "name": "Taiwan",
+      "states": 22,
+      "cities": 40
+    },
+    {
+      "iso2": "TJ",
+      "name": "Tajikistan",
+      "states": 5,
+      "cities": 71
+    },
+    {
+      "iso2": "TZ",
+      "name": "Tanzania",
+      "states": 31,
+      "cities": 303
+    },
+    {
+      "iso2": "TH",
+      "name": "Thailand",
+      "states": 78,
+      "cities": 1241
+    },
+    {
+      "iso2": "BS",
+      "name": "The Bahamas",
+      "states": 32,
+      "cities": 21
+    },
+    {
+      "iso2": "GM",
+      "name": "The Gambia",
+      "states": 6,
+      "cities": 104
+    },
+    {
+      "iso2": "TL",
+      "name": "Timor-Leste",
+      "states": 13,
+      "cities": 55
+    },
+    {
+      "iso2": "TG",
+      "name": "Togo",
+      "states": 5,
+      "cities": 22
+    },
+    {
+      "iso2": "TK",
+      "name": "Tokelau",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "TO",
+      "name": "Tonga",
+      "states": 5,
+      "cities": 8
+    },
+    {
+      "iso2": "TT",
+      "name": "Trinidad and Tobago",
+      "states": 17,
+      "cities": 25
+    },
+    {
+      "iso2": "TN",
+      "name": "Tunisia",
+      "states": 24,
+      "cities": 165
+    },
+    {
+      "iso2": "TR",
+      "name": "Turkey",
+      "states": 81,
+      "cities": 980
+    },
+    {
+      "iso2": "TM",
+      "name": "Turkmenistan",
+      "states": 6,
+      "cities": 30
+    },
+    {
+      "iso2": "TC",
+      "name": "Turks and Caicos Islands",
+      "states": 6,
+      "cities": 0
+    },
+    {
+      "iso2": "TV",
+      "name": "Tuvalu",
+      "states": 8,
+      "cities": 9
+    },
+    {
+      "iso2": "UG",
+      "name": "Uganda",
+      "states": 139,
+      "cities": 91
+    },
+    {
+      "iso2": "UA",
+      "name": "Ukraine",
+      "states": 27,
+      "cities": 1819
+    },
+    {
+      "iso2": "AE",
+      "name": "United Arab Emirates",
+      "states": 7,
+      "cities": 30
+    },
+    {
+      "iso2": "GB",
+      "name": "United Kingdom",
+      "states": 221,
+      "cities": 3879
+    },
+    {
+      "iso2": "US",
+      "name": "United States",
+      "states": 60,
+      "cities": 16731
+    },
+    {
+      "iso2": "UM",
+      "name": "United States Minor Outlying Islands",
+      "states": 9,
+      "cities": 0
+    },
+    {
+      "iso2": "UY",
+      "name": "Uruguay",
+      "states": 19,
+      "cities": 2010
+    },
+    {
+      "iso2": "UZ",
+      "name": "Uzbekistan",
+      "states": 14,
+      "cities": 135
+    },
+    {
+      "iso2": "VU",
+      "name": "Vanuatu",
+      "states": 6,
+      "cities": 7
+    },
+    {
+      "iso2": "VA",
+      "name": "Vatican City State (Holy See)",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "VE",
+      "name": "Venezuela",
+      "states": 25,
+      "cities": 136
+    },
+    {
+      "iso2": "VN",
+      "name": "Vietnam",
+      "states": 34,
+      "cities": 488
+    },
+    {
+      "iso2": "VG",
+      "name": "Virgin Islands (British)",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "VI",
+      "name": "Virgin Islands (US)",
+      "states": 3,
+      "cities": 20
+    },
+    {
+      "iso2": "WF",
+      "name": "Wallis and Futuna Islands",
+      "states": 3,
+      "cities": 3
+    },
+    {
+      "iso2": "EH",
+      "name": "Western Sahara",
+      "states": 0,
+      "cities": 0
+    },
+    {
+      "iso2": "YE",
+      "name": "Yemen",
+      "states": 22,
+      "cities": 339
+    },
+    {
+      "iso2": "ZM",
+      "name": "Zambia",
+      "states": 10,
+      "cities": 71
+    },
+    {
+      "iso2": "ZW",
+      "name": "Zimbabwe",
+      "states": 10,
+      "cities": 109
+    }
+  ]
+}
