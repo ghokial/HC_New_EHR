@@ -47,18 +47,20 @@ const showModal = (title, body) => {
 function authGate() {
   const gate = document.createElement("div");
   gate.className = "auth-gate";
-  gate.innerHTML = `<section class="auth-card"><img class="portal-logo" src="/assets/images/healthcarology-logo.png" alt="Healthcarology"><p class="eyebrow">Secure access</p><h1>Healthcarology EHR</h1><p>Sign in with your email and password. New accounts must replace their temporary password before accessing the platform.</p><form id="login-form"><label>Language<select id="login-language"><option value="en">English</option><option value="fr">Français</option><option value="am">አማርኛ</option><option value="pt">Português</option><option value="es">Español</option><option value="bn">বাংলা</option><option value="kg">Kikongo</option><option value="lua">Tshiluba</option><option value="sw">Kiswahili</option><option value="ln">Lingála</option></select></label><input type="email" name="email" autocomplete="email" placeholder="Authorized email" required aria-label="Email"><input type="password" name="password" autocomplete="current-password" placeholder="Password" required aria-label="Password"><button class="button primary">Sign in</button><button type="button" class="button secondary" id="reset-password">Set or reset password</button></form><p id="auth-message">Authorized users only. All access is auditable.</p></section>`;
+  gate.innerHTML = `<section class="auth-card"><img class="portal-logo" src="/assets/images/healthcarology-logo.png" alt="Healthcarology"><p class="eyebrow">Secure access</p><h1>Healthcarology EHR</h1><p>Sign in with the email address or international phone number on your account. New accounts must replace their temporary password before accessing the platform.</p><form id="login-form"><label>Language<select id="login-language"><option value="en">English</option><option value="fr">Français</option><option value="am">አማርኛ</option><option value="pt">Português</option><option value="es">Español</option><option value="bn">বাংলা</option><option value="kg">Kikongo</option><option value="lua">Tshiluba</option><option value="sw">Kiswahili</option><option value="ln">Lingála</option></select></label><input type="text" name="identifier" autocomplete="username" placeholder="Authorized email or phone (+country code)" required aria-label="Email or phone number"><input type="password" name="password" autocomplete="current-password" placeholder="Password" required aria-label="Password"><button class="button primary">Sign in</button><button type="button" class="button secondary" id="reset-password">Set or reset password</button></form><p id="auth-message">Authorized users only. All access is auditable.</p></section>`;
   const language=gate.querySelector("#login-language");language.value=localStorage.getItem("hc_locale")||"en";language.addEventListener("change",()=>{localStorage.setItem("hc_locale",language.value);document.documentElement.lang=language.value});
   document.body.append(gate);
   gate.querySelector("form").addEventListener("submit", async event => {
     event.preventDefault();
     const form = new FormData(event.target);
-    const { error } = await supabase.auth.signInWithPassword({ email: form.get("email"), password: form.get("password") });
+    const identifier=String(form.get("identifier")).trim(),password=form.get("password");
+    const credentials=identifier.includes("@")?{email:identifier.toLowerCase(),password}:{phone:identifier.replace(/[\s().-]/g,""),password};
+    const { error } = await supabase.auth.signInWithPassword(credentials);
     gate.querySelector("#auth-message").textContent = error ? error.message : "Signed in securely.";
   });
   gate.querySelector("#reset-password").addEventListener("click", async () => {
-    const email = gate.querySelector('input[name="email"]').value.trim();
-    if (!email) { gate.querySelector("#auth-message").textContent = "Enter your authorized email first."; return; }
+    const email = gate.querySelector('input[name="identifier"]').value.trim();
+    if (!email.includes("@")) { gate.querySelector("#auth-message").textContent = "Password reset links require the email address on your account."; return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.href });
     gate.querySelector("#auth-message").textContent = error ? error.message : "Check your email for the secure password link.";
   });
@@ -134,7 +136,7 @@ async function patientForm() {
 async function userForm() {
   const { data: roles, error } = await supabase.from("roles").select("role_code,role_name").order("access_level");
   if (error) return notify(error.message);
-  showModal("Create user", `<form id="user-form"><div class="live-banner">A strong temporary password will be generated and shown once.</div><label>Email<input type="email" name="email" required></label><label>Display name<input name="display_name" required></label><label>Role<select name="role_code" required>${roles.map(r=>`<option value="${r.role_code}">${r.role_name}</option>`).join("")}</select></label><label>Scope<input name="scope" value="hospital_main" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create account</button></footer></form>`);
+  showModal("Create user", `<form id="user-form"><div class="live-banner">A strong temporary password will be generated and shown once.</div><label>Email<input type="email" name="email" required></label><label>Phone number<input type="tel" name="phone" autocomplete="tel" placeholder="+243..." pattern="\+[1-9][0-9]{7,14}" required></label><label>Display name<input name="display_name" required></label><label>Role<select name="role_code" required>${roles.map(r=>`<option value="${r.role_code}">${r.role_name}</option>`).join("")}</select></label><label>Scope<input name="scope" value="hospital_main" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Create account</button></footer></form>`);
   modal.querySelector("[data-cancel]").addEventListener("click",closeModal);
   modal.querySelector("#user-form").addEventListener("submit", async event => {
     event.preventDefault();

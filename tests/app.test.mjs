@@ -232,3 +232,22 @@ test("stand-alone service facilities use scoped referrals, OTP consent, and inve
   assert.match(live,/const organizationType=type\.includes\("military"\)\?"military":type\.includes\("police"\)\?"police":null/);
   assert.match(theme,/\.live-panel \[hidden\]\{display:none!important\}/);
 });
+
+test("sign in accepts account email or international phone and MFA navigation is honest", async () => {
+  const live = await read("live.js");
+  const portal = await read("portal.js");
+  const mobile = await read("mobile-patient/www/portal.js");
+  const mfa = await read("portal-features.js");
+  const createUser = await read("supabase/functions/create-user/index.ts");
+  const createFacility = await read("supabase/functions/create-facility/index.ts");
+  for (const source of [live,portal,mobile]) {
+    assert.match(source,/Email or phone/i);
+    assert.match(source,/identifier\.includes\("@"\)/);
+    assert.match(source, /phone:identifier\.replace/);
+  }
+  assert.match(createUser,/phone_confirm:true/);
+  assert.match(createFacility,/phone:ownerPhone/);
+  assert.match(mfa,/Only one authentication method is currently connected/);
+  assert.match(mfa,/Choose another enrolled method/);
+  assert.doesNotMatch(mfa,/id="mfa-back"[^;]+location\.reload/);
+});
