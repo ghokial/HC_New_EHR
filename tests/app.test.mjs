@@ -270,3 +270,12 @@ test("patient form limits dependent fields and uses licensed worldwide geography
   assert.match(migration,/province_text/);
   assert.match(migration,/city_text/);
 });
+
+test("role lookup cannot recurse through user_roles RLS", async () => {
+  const migration=await read("supabase/migrations/20260828020000_stop_role_policy_recursion.sql");
+  assert.match(migration,/private\.current_role_code\(\)/);
+  assert.match(migration,/security definer/);
+  assert.match(migration,/public\.current_role_code\(\)/);
+  assert.match(migration,/security invoker/);
+  assert.match(migration,/revoke all on function private\.current_role_code\(\) from public,anon/);
+});
