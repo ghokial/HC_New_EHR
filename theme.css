@@ -5,3 +5,4 @@
 .auth-gate{background:linear-gradient(135deg,#fff,#e9f4fb)}
 .auth-card{border-top:5px solid var(--brand-red)}
 .lab-normal{background:#e7f7ee;color:#187a45}.lab-out-of-range{background:#fff3c4;color:#8a6500}.lab-dangerously-abnormal{background:#ffe2e2;color:#b00000}
+.live-panel [hidden]{display:none!important}

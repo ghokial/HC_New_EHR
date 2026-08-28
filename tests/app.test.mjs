@@ -192,3 +192,23 @@ test("core clinical screens use live CRUD instead of prototype-only actions", as
   assert.match(live,/function hydrateDashboard/);
   assert.match(live,/Live operational data/);
 });
+
+test("stand-alone service facilities use scoped referrals, OTP consent, and inventory visibility", async () => {
+  const portal = await read("portal-features.js");
+  const live = await read("live.js");
+  const theme = await read("theme.css");
+  const migration = await read("supabase/migrations/20260827203000_standalone_facility_referrals_and_otp.sql");
+  const followup = await read("supabase/migrations/20260827204500_standalone_routing_followup.sql");
+  assert.match(portal,/standalonePurpose/);
+  assert.match(portal,/Patient-authorized search/);
+  assert.match(portal,/Inventory management/);
+  assert.match(portal,/My preferred service facilities/);
+  assert.match(migration,/external_record_access_requests/);
+  assert.match(migration,/issue_patient_access_otp/);
+  assert.match(migration,/search_shared_pharmacy_inventory/);
+  assert.match(followup,/route_prescription_to_pharmacy_on_file/);
+  assert.match(live,/patient-province/);
+  assert.match(live,/patient-city/);
+  assert.match(live,/const organizationType=type\.includes\("military"\)\?"military":type\.includes\("police"\)\?"police":null/);
+  assert.match(theme,/\.live-panel \[hidden\]\{display:none!important\}/);
+});
