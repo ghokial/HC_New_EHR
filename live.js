@@ -6,6 +6,7 @@ const modal = document.querySelector("#live-modal");
 let session = null;
 let currentProviderId = null;
 let currentFacilityId = null;
+let currentRoleCode = "";
 const safe = value => String(value ?? "—").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character]));
 const optionList = (rows, label, empty="Select") => `<option value="">${empty}</option>` + rows.map(row => `<option value="${row.id}">${safe(label(row))}</option>`).join("");
 
@@ -207,18 +208,55 @@ async function hydrateDashboard(){
 async function encounterForm(){
   try{
     const {patients,services}=await clinicalChoices();
+    const canManageCatalog=["root","sysadmin"].includes(currentRoleCode);
     const alphabetically=(left,right)=>String(left?.name||"").localeCompare(String(right?.name||""),undefined,{sensitivity:"base"});
     const departments=[...new Map(services.filter(service=>service.departments?.id).map(service=>[String(service.departments.id),service.departments])).values()].sort(alphabetically);
     const sortedServices=[...services].sort(alphabetically);
-    showModal("Open encounter",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Encounter type<select name="encounter_type" required><option>Outpatient</option><option>Inpatient</option><option>Emergency</option><option>Observation</option><option>Telehealth</option></select></label><label>Department<select id="encounter-department" name="department_id" required>${optionList(departments,department=>department.name,"Select department")}</select></label><label>Service<select id="encounter-service" name="service_id" required disabled><option value="">Select department first</option></select></label><label>Start date and time<input type="datetime-local" name="start_at" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Open encounter</button></footer></form>`);
+    const otherOption=canManageCatalog?`<option value="__other__">Other — add new</option>`:"";
+    showModal("Open encounter",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Encounter type<select name="encounter_type" required><option>Outpatient</option><option>Inpatient</option><option>Emergency</option><option>Observation</option><option>Telehealth</option></select></label><label>Department<select id="encounter-department" name="department_id" required>${optionList(departments,department=>department.name,"Select department")}${otherOption}</select></label>${canManageCatalog?`<label id="new-department-field" hidden>New department name<input id="new-department-name" name="new_department_name" maxlength="160"></label>`:""}<label>Service<select id="encounter-service" name="service_id" required disabled><option value="">Select department first</option></select></label>${canManageCatalog?`<label id="new-service-field" hidden>New service name<input id="new-service-name" name="new_service_name" maxlength="160"></label>`:""}<label>Start date and time<input type="datetime-local" name="start_at" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Open encounter</button></footer></form>`);
     const departmentSelect=modal.querySelector("#encounter-department");
     const serviceSelect=modal.querySelector("#encounter-service");
+    const departmentField=modal.querySelector("#new-department-field");
+    const departmentName=modal.querySelector("#new-department-name");
+    const serviceField=modal.querySelector("#new-service-field");
+    const serviceName=modal.querySelector("#new-service-name");
+    const refreshServiceName=()=>{
+      if(!serviceField)return;
+      const addingService=serviceSelect.value==="__other__";
+      serviceField.hidden=!addingService;
+      serviceName.required=addingService;
+      if(!addingService)serviceName.value="";
+    };
     departmentSelect.addEventListener("change",()=>{
-      const matchingServices=sortedServices.filter(service=>String(service.department_id||service.departments?.id||"")===departmentSelect.value);
-      serviceSelect.innerHTML=optionList(matchingServices,service=>service.name,matchingServices.length?"Select service":"No services available");
-      serviceSelect.disabled=!departmentSelect.value||matchingServices.length===0;
+      const addingDepartment=departmentSelect.value==="__other__";
+      if(departmentField){departmentField.hidden=!addingDepartment;departmentName.required=addingDepartment;if(!addingDepartment)departmentName.value="";}
+      const matchingServices=addingDepartment?[]:sortedServices.filter(service=>String(service.department_id||service.departments?.id||"")===departmentSelect.value);
+      serviceSelect.innerHTML=optionList(matchingServices,service=>service.name,matchingServices.length?"Select service":"No services available")+(canManageCatalog&&departmentSelect.value?otherOption:"");
+      serviceSelect.disabled=!departmentSelect.value||(!canManageCatalog&&matchingServices.length===0);
+      if(addingDepartment){serviceSelect.value="__other__";}
+      refreshServiceName();
     });
-    bindClinicalSubmit("encounters",values=>({patient_id:Number(values.patient_id),encounter_type:values.encounter_type,service_id:values.service_id?Number(values.service_id):null,start_at:new Date(values.start_at).toISOString(),attending_provider_id:currentProviderId,status:"open"}));
+    serviceSelect.addEventListener("change",refreshServiceName);
+    bindClinicalSubmit("encounters",async values=>{
+      let departmentId=values.department_id;
+      if(departmentId==="__other__"){
+        const name=String(values.new_department_name||"").trim();
+        if(!name)throw new Error("Enter the new department name.");
+        const code=`custom_${name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"").slice(0,60)||"department"}_${Date.now().toString(36)}`;
+        const {data,error}=await supabase.from("departments").insert({code,name,type:"custom"}).select("id").single();
+        if(error)throw error;
+        departmentId=data.id;
+      }
+      let serviceId=values.service_id;
+      if(serviceId==="__other__"){
+        const name=String(values.new_service_name||"").trim();
+        if(!name)throw new Error("Enter the new service name.");
+        const {data,error}=await supabase.from("services").insert({department_id:Number(departmentId),name,service_type:"custom"}).select("id").single();
+        if(error)throw error;
+        serviceId=data.id;
+      }
+      return {patient_id:Number(values.patient_id),encounter_type:values.encounter_type,service_id:Number(serviceId),start_at:new Date(values.start_at).toISOString(),attending_provider_id:currentProviderId,status:"open"};
+    });
   }catch(error){notify(error.message)}
 }
 
@@ -250,13 +288,14 @@ async function noteForm(){
 
 function bindClinicalSubmit(tableName,buildRow,viewName=tableName){
   const form=modal.querySelector("#clinical-form");modal.querySelector("[data-cancel]").addEventListener("click",closeModal);
-  form.addEventListener("submit",async event=>{event.preventDefault();const values=Object.fromEntries(new FormData(form));const {error}=await supabase.from(tableName).insert(buildRow(values));if(error)return notify(error.message);closeModal();notify("Saved to the live health record.");await hydrateClinicalView(viewName)});
+  form.addEventListener("submit",async event=>{event.preventDefault();try{const values=Object.fromEntries(new FormData(form));const row=await buildRow(values);const {error}=await supabase.from(tableName).insert(row);if(error)throw error;closeModal();notify("Saved to the live health record.");await hydrateClinicalView(viewName)}catch(error){notify(error.message)}});
 }
 
 async function setSignedInUser() {
   if (!session) return;
   const { data: profile } = await supabase.from("profiles").select("display_name,email").eq("user_id",session.user.id).maybeSingle();
   const { data: role } = await supabase.from("user_roles").select("roles(role_name,role_code)").eq("user_id",session.user.id).limit(1).maybeSingle();
+  currentRoleCode=role?.roles?.role_code||"";
   const name = profile?.display_name || session.user.email;
   const roleName = role?.roles?.role_name || "Pending role";
   const menu = document.querySelector(".user-menu");

@@ -220,7 +220,13 @@ test("encounter creation filters alphabetized services by alphabetized departmen
   assert.match(live,/id="encounter-service"[^>]+disabled/);
   assert.match(live,/Select department first/);
   assert.match(live,/localeCompare/);
-  assert.match(live,/matchingServices=sortedServices\.filter/);
+  assert.match(live,/matchingServices=addingDepartment\?\[\]:sortedServices\.filter/);
+  assert.match(live,/\["root","sysadmin"\]\.includes\(currentRoleCode\)/);
+  assert.match(live,/Other — add new/);
+  assert.match(live,/new_department_name/);
+  assert.match(live,/new_service_name/);
+  assert.match(live,/from\("departments"\)\.insert/);
+  assert.match(live,/from\("services"\)\.insert/);
 });
 
 test("stand-alone service facilities use scoped referrals, OTP consent, and inventory visibility", async () => {
