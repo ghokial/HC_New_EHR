@@ -132,6 +132,8 @@ test("department, MFA, community, sharing, and mobile foundations are present", 
   assert.match(features, /Google Authenticator/);
   assert.match(features, /Microsoft Authenticator/);
   assert.match(features, /Oracle Mobile Authenticator/);
+  assert.match(features, /auth\.refreshSession\(\)/);
+  assert.match(features, /Your session has expired/);
   assert.match(features, /Health heat map/);
   assert.match(features, /Share PDF/);
   assert.match(server, /shared-record\.html/);
