@@ -167,6 +167,18 @@ test("first-login MFA presents supported choices before enrollment", async () =>
   assert.equal(mobile,features);
 });
 
+test("MFA can remember the verified browser for exactly 30 days without bypassing AAL2", async () => {
+  const features=await read("portal-features.js");
+  const mobile=await read("mobile-patient/www/portal-features.js");
+  for(const source of [features,mobile]){
+    assert.match(source,/Remember this device for 30 days/);
+    assert.match(source,/MFA_DEVICE_DAYS=30/);
+    assert.match(source,/expiresAt=rememberDevice\?Date\.now\(\)\+MFA_DEVICE_DAYS\*24\*60\*60\*1000:null/);
+    assert.match(source,/aal\.currentLevel==="aal2"/);
+    assert.match(source,/rememberDevice/);
+  }
+});
+
 test("facility types, training hospital, workforce, and messaging are durable", async () => {
   const migration = await read("supabase/migrations/20260827161000_facility_types_training_workforce.sql");
   const createFacility = await read("supabase/functions/create-facility/index.ts");

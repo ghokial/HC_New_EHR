@@ -1,0 +1,20 @@
+import { chromium } from "file:///C:/Users/ghoki/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs";
+
+const browser=await chromium.launch({headless:true,executablePath:"C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"});
+const page=await browser.newPage();
+const errors=[];
+page.on("pageerror",error=>errors.push(error.message));
+await page.route("**/vendor/supabase.js",route=>route.fulfill({contentType:"application/javascript",body:`globalThis.supabase={createClient(){const user={id:"remember-device-user",email:"user@example.test",app_metadata:{}};const chain=new Proxy({}, {get(_t,p){if(p==="maybeSingle"||p==="single")return async()=>({data:null,error:null});if(p==="then")return resolve=>resolve({data:[],error:null});return()=>chain}});return{auth:{getSession:async()=>({data:{session:{user}}}),mfa:{getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:"aal1"},error:null}),listFactors:async()=>({data:{totp:[{id:"factor-1",status:"verified",factor_type:"totp",friendly_name:"Microsoft Authenticator"}],phone:[]},error:null}),challenge:async()=>({data:{id:"challenge-1"},error:null}),verify:async()=>({data:{},error:null})},refreshSession:async()=>({data:{session:{user}},error:null}),onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}}},signOut:async()=>{}},from(){return chain},functions:{invoke:async()=>({data:null,error:null})}}}};`}));
+await page.goto("http://127.0.0.1:4173/",{waitUntil:"domcontentloaded",timeout:15000});
+await page.locator('[data-factor="factor-1"]').click();
+const label=await page.locator(".mfa-remember").textContent();
+await page.locator('[name="remember_device"]').check();
+await page.locator('[name="code"]').fill("123456");
+const before=Date.now();
+await page.locator("#mfa-challenge button").click();
+await page.waitForTimeout(200);
+const trust=await page.evaluate(()=>JSON.parse(localStorage.getItem("healthcarology_mfa_trusted_device")));
+const days=(trust.expiresAt-before)/(24*60*60*1000);
+console.log(JSON.stringify({label,trust,days,errors},null,2));
+await browser.close().catch(()=>{});
+process.exit(label.includes("30 days")&&trust.userId==="remember-device-user"&&trust.rememberDevice===true&&days>29.99&&days<=30.01&&!errors.length?0:1);
