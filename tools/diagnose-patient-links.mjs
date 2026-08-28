@@ -8,6 +8,7 @@ await page.goto("http://127.0.0.1:4173/",{waitUntil:"domcontentloaded",timeout:1
 await page.locator('#primary-nav [data-view="patients"]').click();
 await page.locator('[data-live-patient="7"]').waitFor();
 const linkedName=await page.locator('[data-live-patient="7"]').textContent();
+const dobAndUnin=await page.locator("#patient-table .patient-dob-unin").textContent();
 await page.locator('[data-live-patient="7"]').click();
 const options=await page.locator(".patient-actions button").allTextContents();
 await page.locator('[data-patient-encounter="7"]').click();
@@ -18,7 +19,7 @@ await page.locator('[data-patient-profile="7"]').click();
 await page.locator(".patient-profile").waitFor();
 const profileTitle=await page.locator(".patient-profile .patient-hero h2").textContent();
 const sections=await page.locator(".patient-profile .card-head h2").allTextContents();
-console.log(JSON.stringify({linkedName,options,selectedPatient,profileTitle,sections,errors},null,2));
+console.log(JSON.stringify({linkedName,dobAndUnin,options,selectedPatient,profileTitle,sections,errors},null,2));
 await browser.close().catch(()=>{});
 const expected=["Demographics","Contact and address","Service affiliation","Encounters","Diagnoses","Orders","Medications","Clinical notes"];
-process.exit(linkedName==="Popaul Manga"&&options.includes("Start new encounter")&&options.includes("View full patient profile")&&selectedPatient==="7"&&profileTitle==="Popaul Manga"&&expected.every(section=>sections.includes(section))&&!errors.length?0:1);
+process.exit(linkedName==="Popaul Manga"&&dobAndUnin.includes("2002-07-08")&&dobAndUnin.includes("UNIN: HC-TEST")&&options.includes("Start new encounter")&&options.includes("View full patient profile")&&selectedPatient==="7"&&profileTitle==="Popaul Manga"&&expected.every(section=>sections.includes(section))&&!errors.length?0:1);

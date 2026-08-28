@@ -252,6 +252,8 @@ test("live patient names open profile or a patient-preselected encounter", async
   assert.match(live,/encounterForm\(preselectedPatientId=null\)/);
   assert.match(live,/\[name="patient_id"\]'\)\.value=String\(preselectedPatientId\)/);
   assert.match(theme,/\.patient-name-link/);
+  assert.match(live,/class="patient-dob-unin"/);
+  assert.match(live,/UNIN: \$\{safe\(p\.snau\|\|"Not assigned"\)\}/);
 });
 
 test("stand-alone service facilities use scoped referrals, OTP consent, and inventory visibility", async () => {
