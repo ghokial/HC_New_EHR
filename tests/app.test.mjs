@@ -254,6 +254,21 @@ test("live patient names open profile or a patient-preselected encounter", async
   assert.match(theme,/\.patient-name-link/);
   assert.match(live,/class="patient-dob-unin"/);
   assert.match(live,/UNIN: \$\{safe\(p\.snau\|\|"Not assigned"\)\}/);
+  assert.match(live,/renderLivePatientChart/);
+  assert.match(live,/event\.detail\?\.view==="chart"/);
+});
+
+test("every account receives a non-fabricated patient file and authorized encounters read back", async () => {
+  const migration=await read("supabase/migrations/20260828143000_live_patient_files_and_encounter_visibility.sql");
+  assert.match(migration,/private\.ensure_account_patient_file/);
+  assert.match(migration,/registration_source,facility_id[\s\S]+account_bootstrap/);
+  assert.match(migration,/from auth\.users u/);
+  assert.match(migration,/insert into public\.patient_accounts/);
+  assert.match(migration,/create trigger on_auth_user_created/);
+  assert.match(migration,/encounters_authorized_read/);
+  assert.match(migration,/private\.can_read_patient_record\(patient_id\)/);
+  assert.match(migration,/encounters_patient_start_idx/);
+  assert.doesNotMatch(migration,/date_of_birth[^\n]+values/i);
 });
 
 test("stand-alone service facilities use scoped referrals, OTP consent, and inventory visibility", async () => {
