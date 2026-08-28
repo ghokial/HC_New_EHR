@@ -213,6 +213,16 @@ test("core clinical screens use live CRUD instead of prototype-only actions", as
   assert.match(live,/Live operational data/);
 });
 
+test("encounter creation filters alphabetized services by alphabetized department", async () => {
+  const live = await read("live.js");
+  assert.match(live,/departments\(id,name\)/);
+  assert.match(live,/id="encounter-department"/);
+  assert.match(live,/id="encounter-service"[^>]+disabled/);
+  assert.match(live,/Select department first/);
+  assert.match(live,/localeCompare/);
+  assert.match(live,/matchingServices=sortedServices\.filter/);
+});
+
 test("stand-alone service facilities use scoped referrals, OTP consent, and inventory visibility", async () => {
   const portal = await read("portal-features.js");
   const live = await read("live.js");

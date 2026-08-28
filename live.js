@@ -22,7 +22,7 @@ async function loadClinicalContext() {
 async function clinicalChoices() {
   const [{data:patients,error:patientError},{data:services,error:serviceError},{data:medications,error:medicationError}] = await Promise.all([
     supabase.from("patients").select("id,first_name,last_name,snau").order("last_name"),
-    supabase.from("services").select("id,name,departments(name)").order("name"),
+    supabase.from("services").select("id,name,department_id,departments(id,name)").order("name"),
     supabase.from("medications").select("id,name,generic_name,strength,route").order("name")
   ]);
   const error=patientError||serviceError||medicationError;
@@ -207,7 +207,17 @@ async function hydrateDashboard(){
 async function encounterForm(){
   try{
     const {patients,services}=await clinicalChoices();
-    showModal("Open encounter",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Encounter type<select name="encounter_type" required><option>Outpatient</option><option>Inpatient</option><option>Emergency</option><option>Observation</option><option>Telehealth</option></select></label><label>Service<select name="service_id">${optionList(services,s=>`${s.departments?.name||"Department"} · ${s.name}`,"No service")}</select></label><label>Start date and time<input type="datetime-local" name="start_at" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Open encounter</button></footer></form>`);
+    const alphabetically=(left,right)=>String(left?.name||"").localeCompare(String(right?.name||""),undefined,{sensitivity:"base"});
+    const departments=[...new Map(services.filter(service=>service.departments?.id).map(service=>[String(service.departments.id),service.departments])).values()].sort(alphabetically);
+    const sortedServices=[...services].sort(alphabetically);
+    showModal("Open encounter",`<form id="clinical-form"><label>Patient<select name="patient_id" required>${optionList(patients,p=>`${p.last_name}, ${p.first_name} · ${p.snau||"UNIN pending"}`)}</select></label><label>Encounter type<select name="encounter_type" required><option>Outpatient</option><option>Inpatient</option><option>Emergency</option><option>Observation</option><option>Telehealth</option></select></label><label>Department<select id="encounter-department" name="department_id" required>${optionList(departments,department=>department.name,"Select department")}</select></label><label>Service<select id="encounter-service" name="service_id" required disabled><option value="">Select department first</option></select></label><label>Start date and time<input type="datetime-local" name="start_at" required></label><footer><button type="button" class="button secondary" data-cancel>Cancel</button><button class="button primary">Open encounter</button></footer></form>`);
+    const departmentSelect=modal.querySelector("#encounter-department");
+    const serviceSelect=modal.querySelector("#encounter-service");
+    departmentSelect.addEventListener("change",()=>{
+      const matchingServices=sortedServices.filter(service=>String(service.department_id||service.departments?.id||"")===departmentSelect.value);
+      serviceSelect.innerHTML=optionList(matchingServices,service=>service.name,matchingServices.length?"Select service":"No services available");
+      serviceSelect.disabled=!departmentSelect.value||matchingServices.length===0;
+    });
     bindClinicalSubmit("encounters",values=>({patient_id:Number(values.patient_id),encounter_type:values.encounter_type,service_id:values.service_id?Number(values.service_id):null,start_at:new Date(values.start_at).toISOString(),attending_provider_id:currentProviderId,status:"open"}));
   }catch(error){notify(error.message)}
 }
