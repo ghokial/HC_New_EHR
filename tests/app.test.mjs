@@ -242,6 +242,26 @@ test("clinical orders are destination-specific and use validated interpretation 
   assert.match(theme,/result-interpretation\.dangerously-abnormal/);
 });
 
+test("laboratory imaging and specialty orders have live result workflows", async () => {
+  const live = await read("live.js");
+  const theme = await read("theme.css");
+  const migration = await read("supabase/migrations/20260829143000_live_diagnostic_results.sql");
+  const labSecurity = await read("supabase/migrations/20260827031007_secure_operational_access.sql");
+  assert.match(live,/async function openOrderResult/);
+  assert.match(live,/from\("lab_results"\)/);
+  assert.match(live,/from\("lab_reference_ranges"\)/);
+  assert.match(live,/"imaging_results"/);
+  assert.match(live,/"procedure_results"/);
+  assert.match(live,/from\(resultTable\)\.insert/);
+  assert.match(live,/Awaiting supervisor validation/);
+  assert.match(live,/Results remain hidden from prescribers and patients until laboratory-supervisor validation/);
+  assert.match(live,/critical low ≤ normal low ≤ normal high ≤ critical high/i);
+  assert.match(live,/Imaging and specialty reports use findings and an impression, not laboratory reference ranges/);
+  assert.match(migration,/result_status='final' and private\.can_read_patient_record/);
+  assert.match(labSecurity,/validation_status='validated'/);
+  assert.match(theme,/\.result-record/);
+});
+
 test("encounter creation filters alphabetized services by alphabetized department", async () => {
   const live = await read("live.js");
   assert.match(live,/departments\(id,name\)/);
