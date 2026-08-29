@@ -225,6 +225,23 @@ test("core clinical screens use live CRUD instead of prototype-only actions", as
   assert.match(live,/Live operational data/);
 });
 
+test("clinical orders are destination-specific and use validated interpretation guidance", async () => {
+  const live = await read("live.js");
+  const theme = await read("theme.css");
+  const catalog = await read("supabase/migrations/20260828170000_contextual_clinical_order_catalog.sql");
+  assert.match(live,/clinical_order_catalog/);
+  assert.match(live,/serviceMatches/);
+  assert.match(live,/order-destination/);
+  assert.match(live,/Other specialty \/ procedure/);
+  assert.match(live,/Range \/ interpretation/);
+  assert.match(catalog,/performing laboratory.*validated/i);
+  assert.match(catalog,/MedlinePlus/i);
+  assert.match(catalog,/Stanford/i);
+  assert.match(theme,/result-interpretation\.normal/);
+  assert.match(theme,/result-interpretation\.out-of-range/);
+  assert.match(theme,/result-interpretation\.dangerously-abnormal/);
+});
+
 test("encounter creation filters alphabetized services by alphabetized department", async () => {
   const live = await read("live.js");
   assert.match(live,/departments\(id,name\)/);
@@ -252,8 +269,8 @@ test("live patient names open profile or a patient-preselected encounter", async
   assert.match(live,/encounterForm\(preselectedPatientId=null\)/);
   assert.match(live,/\[name="patient_id"\]'\)\.value=String\(preselectedPatientId\)/);
   assert.match(theme,/\.patient-name-link/);
-  assert.match(live,/class="patient-dob-unin"/);
-  assert.match(live,/UNIN: \$\{safe\(p\.snau\|\|"Not assigned"\)\}/);
+  assert.match(live,/Pending registry data/);
+  assert.match(live,/<td><strong>\$\{safe\(p\.snau/);
   assert.match(live,/renderLivePatientChart/);
   assert.match(live,/event\.detail\?\.view==="chart"/);
 });
@@ -269,6 +286,23 @@ test("every account receives a non-fabricated patient file and authorized encoun
   assert.match(migration,/private\.can_read_patient_record\(patient_id\)/);
   assert.match(migration,/encounters_patient_start_idx/);
   assert.doesNotMatch(migration,/date_of_birth[^\n]+values/i);
+});
+
+test("UNIN follows the registry document and hides the country prefix in patient displays", async () => {
+  const app = await read("app.js");
+  const live = await read("live.js");
+  const migration = await read("supabase/migrations/20260829103000_document_defined_unin.sql");
+  assert.match(app,/<th>UNIN<\/th>/);
+  assert.match(app,/10L-M192-00003/);
+  assert.doesNotMatch(app,/unin:"243-10L/);
+  assert.match(live,/Pending registry data/);
+  assert.match(live,/unin_province_code/);
+  assert.match(live,/unin_commune_code/);
+  assert.match(migration,/new\.unin_full=prefix \|\| '-' \|\| new\.snau/);
+  assert.match(migration,/new\.snau=new\.unin_province_code \|\| new\.unin_commune_code/);
+  assert.match(migration,/right\(extract\(year from new\.date_of_birth\)/);
+  assert.match(migration,/where snau like 'HC-%'/);
+  assert.match(migration,/UNIN is permanent and cannot be changed/);
 });
 
 test("stand-alone service facilities use scoped referrals, OTP consent, and inventory visibility", async () => {
