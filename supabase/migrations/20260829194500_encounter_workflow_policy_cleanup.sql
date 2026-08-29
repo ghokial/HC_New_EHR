@@ -1,0 +1,15 @@
+drop policy if exists vital_rules_manage on public.vital_sign_alert_rules;
+create policy vital_rules_insert on public.vital_sign_alert_rules for insert to authenticated with check(private.is_platform_root() or private.is_facility_admin(facility_id));
+create policy vital_rules_update on public.vital_sign_alert_rules for update to authenticated using(private.is_platform_root() or private.is_facility_admin(facility_id)) with check(private.is_platform_root() or private.is_facility_admin(facility_id));
+create policy vital_rules_delete on public.vital_sign_alert_rules for delete to authenticated using(private.is_platform_root() or private.is_facility_admin(facility_id));
+drop policy if exists terminology_concepts_manage on public.terminology_concepts;
+create policy terminology_concepts_insert on public.terminology_concepts for insert to authenticated with check(private.is_platform_root());
+create policy terminology_concepts_update on public.terminology_concepts for update to authenticated using(private.is_platform_root()) with check(private.is_platform_root());
+create policy terminology_concepts_delete on public.terminology_concepts for delete to authenticated using(private.is_platform_root());
+drop policy if exists diagnostic_rules_manage on public.diagnostic_suggestion_rules;
+create policy diagnostic_rules_insert on public.diagnostic_suggestion_rules for insert to authenticated with check(private.is_platform_root() or (facility_id is not null and private.is_facility_admin(facility_id)));
+create policy diagnostic_rules_update on public.diagnostic_suggestion_rules for update to authenticated using(private.is_platform_root() or (facility_id is not null and private.is_facility_admin(facility_id))) with check(private.is_platform_root() or (facility_id is not null and private.is_facility_admin(facility_id)));
+create policy diagnostic_rules_delete on public.diagnostic_suggestion_rules for delete to authenticated using(private.is_platform_root() or (facility_id is not null and private.is_facility_admin(facility_id)));
+create index if not exists vital_rules_facility_idx on public.vital_sign_alert_rules(facility_id,vital_code) where active;
+create index if not exists diagnostic_rules_facility_idx on public.diagnostic_suggestion_rules(facility_id) where active;
+create index if not exists diagnostic_rules_concept_idx on public.diagnostic_suggestion_rules(terminology_concept_id);

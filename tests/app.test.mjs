@@ -403,6 +403,16 @@ test("patient form limits dependent fields and uses licensed worldwide geography
   assert.match(migration,/city_text/);
 });
 
+test("encounters persist SOAP steps, diagnostic ordering, guarded ICD-11 selection, and vital trends", async () => {
+  const live=await read("live.js"),migration=await read("supabase/migrations/20260829193000_encounter_workflow_vital_trends.sql"),theme=await read("theme.css");
+  for(const field of ["subjective","objective","assessment","plan","physical_exam","presumed_diagnosis"])assert.match(live,new RegExp(field));
+  for(const feature of ["openEncounterWorkflow","data-encounter-workflow","data-exam-search","terminology_concepts","Suggested Diagnosis","Definitive Diagnosis","openVitalTrends","data-vital-period"])assert.match(live,new RegExp(feature));
+  assert.match(migration,/create table if not exists public\.encounter_clinical_workflows/);
+  assert.match(migration,/create table if not exists public\.vital_sign_alert_rules/);
+  assert.match(migration,/active boolean not null default false/);
+  assert.match(theme,/\.vital-trend/);
+});
+
 test("role lookup cannot recurse through user_roles RLS", async () => {
   const migration=await read("supabase/migrations/20260828020000_stop_role_policy_recursion.sql");
   assert.match(migration,/private\.current_role_code\(\)/);
