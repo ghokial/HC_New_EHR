@@ -6,7 +6,7 @@ const patients = [
 ].map(patient => ({...patient, provider: "Assigned provider"}));
 
 const navItems = [
-  ["dashboard","▦","Overview"],["patients","♙","Patients"],["chart","▤","Patient chart"],
+  ["dashboard","▦","Overview"],["patients","♙","Patients"],["triage","♧","Triage"],["chart","▤","Patient chart"],
   ["encounters","⌁","Encounters"],["orders","☷","Orders & results"],["medications","✚","Medications"],
   ["notes","▣","Clinical notes"],["registry","◎","UNIN registry"],["departments","◇","Departments"],
   ["access","⚿","Access control"],["audit","◷","Audit trail"]
@@ -71,6 +71,9 @@ function patientsView(){return `${head("Patient administration","Patients","Sear
   <div class="filter-bar"><input id="patient-filter" placeholder="Filter visible demonstration records…"><select><option>All services</option><option>Cardiology</option><option>Medicine</option></select><select><option>All statuses</option><option>Open</option><option>Closed</option></select></div>
   <article class="card"><div class="table-wrap"><table><thead><tr><th>Patient</th><th>Date of birth</th><th>UNIN</th><th>Service</th><th>Provider</th><th>Status</th><th>Time</th></tr></thead><tbody id="patient-table">${patientRows(patients)}</tbody></table></div></article>`}
 
+function triage(){return `${head("Clinical intake","Triage","Patient sorting, vital signs, acuity, and provider assignment before an encounter.")}
+  <article class="card"><div class="table-wrap"><table><thead><tr><th>Patient / reference</th><th>Arrival</th><th>Department</th><th>Priority</th><th>Assigned provider</th><th>Action</th></tr></thead><tbody id="triage-table"><tr><td colspan="6" class="empty">Loading live triage queue…</td></tr></tbody></table></div></article>`}
+
 function chart(){const p=selectedPatient;return `${head("Longitudinal record","Patient chart","Clinical chart for the selected demonstration record.",`<button class="button secondary" data-action="print-summary">Print summary</button>`)}
   <section class="patient-hero"><div class="patient-id"><span class="hero-avatar">${p.initials}</span><div><h2>${p.name}</h2><p>${p.mrn} · ${p.dob} · ${p.sex}</p></div></div><div class="patient-facts"><div><small>UNIN / SNAU</small><strong>${p.unin}</strong></div><div><small>Current service</small><strong>${p.service}</strong></div><div><small>Encounter</small><strong>${p.status}</strong></div></div></section>
   <div class="tabs">${["Summary","Encounters","Orders & results","Medications","Notes","Demographics"].map((t,i)=>`<button class="tab ${i===0?"active":""}" data-tab="${t}">${t}</button>`).join("")}</div>
@@ -96,7 +99,7 @@ function access(){const icon={full:"✓",limited:"◆",none:"—"};return `${hea
 
 function render(){
   renderNav();
-  const routes={dashboard,patients:patientsView,chart,encounters,orders,medications,notes,registry,departments:departmentsView,access,audit};
+  const routes={dashboard,patients:patientsView,triage,chart,encounters,orders,medications,notes,registry,departments:departmentsView,access,audit};
   view.innerHTML=routes[active]();
   bindView();
   document.querySelector(".sidebar").classList.remove("open");

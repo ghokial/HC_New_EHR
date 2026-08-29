@@ -145,7 +145,7 @@ async function patientOtpCard(supabase,app,patientId){
 export async function enhancePortal(supabase,app,{kind,facilityId,patientId}){
   if(kind==="admin"){
     const grid=app.querySelector("#facility-form .grid"),slug=grid?.querySelector('[name="slug"]')?.closest("label");
-    slug?.insertAdjacentHTML("afterend",`<label>Type of facility<select name="facility_type" id="facility-type" required><option>Hospital</option><option>Health Center</option><option>Pharmacy</option><option>Laboratory (Labs)</option><option>Imaging Center</option><option>Research Center</option><option>Other</option></select></label><label id="facility-type-other" class="hidden">Other facility type<input name="facility_type_other"></label>`);
+    slug?.insertAdjacentHTML("afterend",`<label>Type of facility<select name="facility_type" id="facility-type" required><option>Hospital</option><option>Health Center</option><option>Pharmacy</option><option>Laboratory (Labs)</option><option>Imaging Center</option><option>Research Center</option><option>Other</option></select></label><label id="facility-type-other" class="hidden">Other facility type<input name="facility_type_other"></label><label>Triage organization<select name="triage_mode" required><option value="common">Common hospital triage</option><option value="department">Separate triage queues by department</option></select></label>`);
     const type=app.querySelector("#facility-type"),other=app.querySelector("#facility-type-other"),otherInput=other?.querySelector("input");
     type?.addEventListener("change",()=>{const show=type.value==="Other";other.classList.toggle("hidden",!show);otherInput.required=show;if(!show)otherInput.value=""});
   }

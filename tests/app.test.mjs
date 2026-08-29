@@ -325,6 +325,26 @@ test("UNIN follows the registry document and hides the country prefix in patient
   assert.match(migration,/UNIN is permanent and cannot be changed/);
 });
 
+test("patients enter triage before encounters with complete vitals and an audited bypass", async () => {
+  const app = await read("app.js");
+  const live = await read("live.js");
+  const portal = await read("portal-features.js");
+  const createFacility = await read("supabase/functions/create-facility/index.ts");
+  const migration = await read("supabase/migrations/20260829170000_required_triage_workflow.sql");
+  assert.match(app,/\["triage","♧","Triage"\]/);
+  assert.match(live,/async function hydrateTriage/);
+  assert.match(live,/async function triageForm/);
+  for(const field of ["weight_kg","height_cm","bmi","temperature_c","systolic_bp","diastolic_bp","heart_rate","respiratory_rate","oxygen_saturation","blood_glucose","pain_score","head_circumference_cm","mid_upper_arm_circumference_cm","consciousness_level","pregnancy_status","chief_complaint","allergy_alerts"]) assert.match(live,new RegExp(field));
+  assert.match(live,/Assign doctor \/ provider/);
+  assert.match(live,/Skip vital signs and go directly to the encounter/);
+  assert.match(portal,/Separate triage queues by department/);
+  assert.match(createFacility,/triage_mode:triageMode/);
+  assert.match(migration,/enqueue_new_patient_for_triage/);
+  assert.match(migration,/enforce_triage_before_encounter/);
+  assert.match(migration,/Patient must complete triage and vital signs before an encounter can start/);
+  assert.match(migration,/This role cannot bypass triage vital signs/);
+});
+
 test("stand-alone service facilities use scoped referrals, OTP consent, and inventory visibility", async () => {
   const portal = await read("portal-features.js");
   const live = await read("live.js");
