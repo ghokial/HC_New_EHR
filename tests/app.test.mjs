@@ -413,6 +413,13 @@ test("encounters persist SOAP steps, diagnostic ordering, guarded ICD-11 selecti
   assert.match(theme,/\.vital-trend/);
 });
 
+test("Healthcarology admin assigns health-department authority and women health records prenatal and partograph data", async()=>{
+  const portal=await read("portal-features.js"),migration=await read("supabase/migrations/20260829213000_health_department_maternal_health.sql"),fn=await read("supabase/functions/create-health-department/index.ts");
+  for(const text of ["ehr.healthcarology.com/admin","Create health department","authority_level","Audit tools","Accounts and analytics","renderMaternalHealth","Prenatal visit","partograph_observations"])assert.match(portal,new RegExp(text,"i"));
+  for(const table of ["health_department_rules","partographs","partograph_observations"])assert.match(migration,new RegExp(`create table public.${table}`));
+  assert.match(migration,/enforce_female_prenatal_patient/);assert.match(fn,/Healthcarology Root access required/);assert.match(fn,/health_department_admin/);
+});
+
 test("role lookup cannot recurse through user_roles RLS", async () => {
   const migration=await read("supabase/migrations/20260828020000_stop_role_policy_recursion.sql");
   assert.match(migration,/private\.current_role_code\(\)/);
