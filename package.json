@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.4",
-    "i18n-iso-countries": "7.14.0"
+    "i18n-iso-countries": "7.14.0",
+    "libphonenumber-js": "1.11.20"
   }
 }

@@ -420,6 +420,33 @@ test("Healthcarology admin assigns health-department authority and women health 
   assert.match(migration,/enforce_female_prenatal_patient/);assert.match(fn,/Healthcarology Root access required/);assert.match(fn,/health_department_admin/);
 });
 
+test("one account selects an isolated facility context and patient changes remain attributable",async()=>{
+  const live=await read("live.js"),migration=await read("supabase/migrations/20260829233000_multifacility_context_and_immutable_history.sql"),theme=await read("theme.css");
+  for(const text of ["facilityChoiceGate","ACTIVE_FACILITY_KEY","active_facility_context","patient_intake_drafts","openDeletedRecordHistory","deleted_by_name"])assert.match(live,new RegExp(text));
+  for(const table of ["active_facility_context","patient_intake_drafts","deleted_record_archive","record_change_audit"])assert.match(migration,new RegExp(`create table public.${table}`));
+  assert.match(migration,/private\.is_active_facility/);assert.match(migration,/archive_record_change/);assert.match(theme,/\.deleted-history/);
+});
+
+test("health departments are created as a facility type with bounded aggregate-only reporting and country phone codes",async()=>{
+  const features=await read("portal-features.js"),live=await read("live.js"),migration=await read("supabase/migrations/20260830003000_health_department_facility_flow.sql"),codes=JSON.parse(await read("assets/country-calling-codes.json"));
+  assert.match(features,/<option>Health Department<\/option>/);assert.match(features,/health-department-modal/);assert.match(features,/province_name/);assert.match(features,/city_name/);
+  assert.match(features,/aggregate reporting only/);assert.match(migration,/private\.jurisdiction_contains/);assert.doesNotMatch(migration,/patients/);
+  assert.match(live,/patient-calling-code/);assert.ok(codes.length>=240);assert.ok(codes.some(x=>x.iso2==="CD"&&x.calling_code==="+243"));
+});
+
+test("facility creation uses structured names and geography, optional URLs, select-all controls, and actionable function errors",async()=>{
+  const features=await read("portal-features.js"),fn=await read("supabase/functions/create-facility/index.ts"),live=await read("live.js");
+  for(const marker of ['splitNameField\\(facilityForm,"owner_name","owner"','splitNameField\\(facilityForm,"emergency_contact_name","emergency_contact"',"state_province_custom","city_name_custom","Other / not listed","Select all","functionErrorMessage"])assert.match(features,new RegExp(marker,"i"));
+  assert.match(fn,/body\.slug\|\|body\.name/);assert.match(fn,/existingProfile/);assert.match(fn,/existing_account/);assert.match(fn,/emergencyPhone/);
+  assert.match(live,/first_name/);assert.match(live,/middle_name/);assert.match(live,/last_name/);assert.match(live,/phone_calling_code/);
+});
+
+test("insurance access requests use the private facility authorization helper",async()=>{
+  const migration=await read("supabase/migrations/20260830150000_insurance_facility_access.sql");
+  assert.match(migration,/private\.is_facility_member\(target_insurance_facility\)/);
+  assert.doesNotMatch(migration,/public\.private\./);
+});
+
 test("role lookup cannot recurse through user_roles RLS", async () => {
   const migration=await read("supabase/migrations/20260828020000_stop_role_policy_recursion.sql");
   assert.match(migration,/private\.current_role_code\(\)/);
