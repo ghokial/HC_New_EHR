@@ -12,7 +12,9 @@ Deno.serve(async req=>{
     const {data:{user}}=await caller.auth.getUser();
     if(!user)throw new Error("Invalid session");
     const body=await req.json();
-    if(!body.user_id||body.user_id===user.id)throw new Error("A different staff account is required");
+    if(!body.user_id)throw new Error("A staff account is required");
+    const isSelf=body.user_id===user.id;
+    if(isSelf&&(body.access_permanently_denied||body.access_suspended_until))throw new Error("Administrators cannot suspend or deny their own access");
     if(!body.facility_id&&!body.jurisdiction_id)throw new Error("Facility or health-department scope is required");
 
     const admin=createClient(url,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);

@@ -507,5 +507,6 @@ test("staff access management is restricted to a shared administrative scope", a
   assert.match(fn,/Staff account is not assigned to this facility/);
   assert.match(fn,/Staff account is not assigned to this health department/);
   assert.match(fn,/Root account access cannot be changed here/);
-  assert.match(fn,/body\.user_id===user\.id/);
+  assert.match(fn,/Administrators cannot suspend or deny their own access/);
+  assert.match(fn,/isSelf&&\(body\.access_permanently_denied\|\|body\.access_suspended_until\)/);
 });
