@@ -484,3 +484,22 @@ test("role lookup cannot recurse through user_roles RLS", async () => {
   assert.match(migration,/security invoker/);
   assert.match(migration,/revoke all on function private\.current_role_code\(\) from public,anon/);
 });
+
+test("facility departments link to their activated services", async () => {
+  const desktop=await read("portal.js"),mobile=await read("mobile-patient/www/portal.js");
+  for(const source of [desktop,mobile]){
+    assert.match(source,/facility_services\(services\(id,name,department_id\)\)/);
+    assert.match(source,/data-department-services-link/);
+    assert.match(source,/No activated services in this department/);
+    assert.match(source,/wireDepartmentServiceLinks\(app\)/);
+  }
+});
+
+test("staff access management is restricted to a shared administrative scope", async () => {
+  const fn=await read("supabase/functions/manage-staff/index.ts");
+  assert.match(fn,/Facility or health-department scope is required/);
+  assert.match(fn,/Staff account is not assigned to this facility/);
+  assert.match(fn,/Staff account is not assigned to this health department/);
+  assert.match(fn,/Root account access cannot be changed here/);
+  assert.match(fn,/body\.user_id===user\.id/);
+});
