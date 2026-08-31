@@ -175,6 +175,10 @@ test("MFA can remember the verified browser for exactly 30 days without bypassin
     assert.match(source,/MFA_DEVICE_DAYS=30/);
     assert.match(source,/expiresAt=rememberDevice\?Date\.now\(\)\+MFA_DEVICE_DAYS\*24\*60\*60\*1000:null/);
     assert.match(source,/aal\.currentLevel==="aal2"/);
+    assert.doesNotMatch(source,/aal\.currentLevel==="aal2"\|\|sessionVerified/);
+    assert.match(source,/persistMfaSession\(supabase,result\)/);
+    assert.match(source,/supabase\.auth\.setSession\(\{access_token:result\.data\.access_token,refresh_token:result\.data\.refresh_token\}\)/);
+    assert.match(source,/assurance\.data\.currentLevel==="aal2"/);
     assert.match(source,/rememberDevice/);
   }
 });
@@ -365,7 +369,7 @@ test("stand-alone service facilities use scoped referrals, OTP consent, and inve
   assert.match(theme,/\.live-panel \[hidden\]\{display:none!important\}/);
 });
 
-test("sign in accepts account email or international phone and MFA navigation is honest", async () => {
+test("sign in accepts account email, international phone, or explicit username and MFA navigation is honest", async () => {
   const live = await read("live.js");
   const portal = await read("portal.js");
   const mobile = await read("mobile-patient/www/portal.js");
@@ -373,12 +377,25 @@ test("sign in accepts account email or international phone and MFA navigation is
   const createUser = await read("supabase/functions/create-user/index.ts");
   const createFacility = await read("supabase/functions/create-facility/index.ts");
   for (const source of [live,portal,mobile]) {
-    assert.match(source,/Email or phone/i);
-    assert.match(source,/identifier\.includes\("@"\)/);
-    assert.match(source, /phone:identifier\.replace/);
+    assert.match(source,/Email, phone \(\+country code\), or username/i);
+    assert.match(source,/(?:identifier|value)\.includes\("@"\)/);
+    assert.match(source,/sign-in-username/);
+    assert.match(source,/supabase\.auth\.setSession/);
+    assert.match(source,/\^\\\+\[1-9\]\[0-9\]\{7,14\}\$/);
+    assert.match(source,/Invalid login credentials/);
   }
   assert.match(createUser,/phone_confirm:true/);
   assert.match(createFacility,/phone:ownerPhone/);
+  assert.match(await read("supabase/functions/create-user/index.ts"),/existing_account:Boolean\(existingUserId\)/);
+  assert.match(portal,/This email or phone are already in use/);
+  assert.match(await read("portal-features.js"),/List of all staff/);
+  assert.match(await read("portal-features.js"),/Suspend until specific date/);
+  assert.match(await read("portal-features.js"),/Permanently deny access/);
+  assert.match(await read("portal-features.js"),/convertStaffCreationToDirectory/);
+  assert.match(await read("portal-features.js"),/Create new staff/);
+  assert.match(await read("portal-features.js"),/Physicians & Surgeons/);
+  assert.match(await read("portal-features.js"),/Environmental Services \(EVS\)/);
+  assert.match(await read("portal-features.js"),/Profile and credential information/);
   assert.match(mfa,/Only one authentication method is currently connected/);
   assert.match(mfa,/Choose another enrolled method/);
   assert.doesNotMatch(mfa,/id="mfa-back"[^;]+location\.reload/);
@@ -445,6 +462,18 @@ test("insurance access requests use the private facility authorization helper",a
   const migration=await read("supabase/migrations/20260830150000_insurance_facility_access.sql");
   assert.match(migration,/private\.is_facility_member\(target_insurance_facility\)/);
   assert.doesNotMatch(migration,/public\.private\./);
+});
+
+test("admin lists real facilities with portal links and location filters",async()=>{
+  const portal=await read("portal.js"),migration=await read("supabase/migrations/20260831010000_platform_agents_list_facilities.sql");
+  for(const field of ['name="name" type="search"','name="state" type="search"','name="city" type="search"','name="country" type="search"','name="postal_code" type="search"'])assert.match(portal,new RegExp(field));
+  for(const column of ["city_name","state_province","postal_code","country_name"])assert.match(portal,new RegExp(column));
+  assert.match(portal,/facility-name-link/);assert.match(portal,/Facilities could not be loaded/);assert.match(portal,/Showing \$\{shown\.length\} of \$\{facilities\.length\} facilities/);
+  for(const table of ["facility_clients","facility_client_members","facility_client_facilities"])assert.match(migration,new RegExp(`create table public\\.${table}`));
+  assert.match(migration,/private\.can_view_facility_directory\(id\)/);assert.match(migration,/private\.jurisdiction_contains\(hm\.jurisdiction_id,fj\.jurisdiction_id\)/);
+  assert.match(migration,/private\.current_role_code\(\)='sysadmin'/);
+  assert.match(migration,/cm\.user_id=\(select auth\.uid\(\)\) and cm\.active/);
+  const features=await read("portal-features.js");assert.match(features,/Facilities in your jurisdiction/);assert.match(features,/Client facility group/);assert.match(features,/facility-name-link/);
 });
 
 test("role lookup cannot recurse through user_roles RLS", async () => {

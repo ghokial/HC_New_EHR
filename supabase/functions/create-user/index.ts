@@ -30,6 +30,7 @@ Deno.serve(async (req) => {
         releasedPhone=true;
       }
     }
+    const existingUserId=profileMatch?.user_id||(phoneMatch&&!releasedPhone?phoneMatch.id:null);
     const existingIdentifier=profileMatch?.email||(profileMatch?.username&&!releasedPhone?profileMatch.username:null)||(phoneMatch&&!releasedPhone&&"phone number");
     if(existingIdentifier&&!body.confirm_existing_account) throw new Error(`This ${existingIdentifier.includes("@")?"email":existingIdentifier==="phone number"?"phone number":"username"} is already used. Confirm that it is the correct account to use across multiple facilities or portals, then try again with confirmation.`);
     const {data:rootRole}=await admin.from("user_roles").select("roles!inner(role_code)").eq("user_id",user.id).eq("roles.role_code","root").maybeSingle();
@@ -42,15 +43,16 @@ Deno.serve(async (req) => {
     const random=new Uint8Array(1);crypto.getRandomValues(random); // keep a per-request nonce for audit correlation; password is fixed by onboarding policy
     const temporaryPassword="Temp#123";
     if(!displayName)throw new Error("First and last name are required");
-    const {data:invite,error:inviteError}=await admin.auth.admin.createUser({email:body.email,phone,password:temporaryPassword,email_confirm:true,phone_confirm:true,user_metadata:{display_name:displayName},app_metadata:{must_change_password:true}});
-    if(inviteError) throw inviteError;
-    await admin.from("profiles").update({username}).eq("user_id",invite.user.id);
+    let accountUserId:string,invite:any=null;
+    const staffProfile={display_name,staff_group:String(body.staff_group||"").trim()||null,staff_subgroup:String(body.staff_subgroup||"").trim()||null,job_title:String(body.job_title||"").trim()||null,credentials:String(body.credentials||"").trim()||null};
+    if(existingUserId){accountUserId=existingUserId;const {error:profileError}=await admin.from("profiles").update(staffProfile).eq("user_id",accountUserId);if(profileError)throw profileError}
+    else {const created=await admin.auth.admin.createUser({email:body.email,phone,password:temporaryPassword,email_confirm:true,phone_confirm:true,user_metadata:{display_name},app_metadata:{must_change_password:true}});if(created.error)throw created.error;invite=created.data;accountUserId=invite.user.id;const {error:profileError}=await admin.from("profiles").update({...staffProfile,username}).eq("user_id",accountUserId);if(profileError)throw profileError}
     const {data:role,error:findRoleError}=await admin.from("roles").select("id").eq("role_code",body.role_code).single();
     if(findRoleError) throw findRoleError;
-    const {error:assignError}=await admin.from("user_roles").insert({user_id:invite.user.id,role_id:role.id,scope:body.scope||"hospital_main"});
+    const {error:assignError}=await admin.from("user_roles").upsert({user_id:accountUserId,role_id:role.id,scope:body.scope||"hospital_main"},{onConflict:"user_id,role_id,scope"});
     if(assignError) throw assignError;
-    if(body.facility_id){const {error:memberError}=await admin.from("facility_memberships").insert({facility_id:body.facility_id,user_id:invite.user.id,role_id:role.id});if(memberError)throw memberError;}
-    if(healthRole){const {error:healthError}=await admin.from("health_department_memberships").insert({jurisdiction_id:body.jurisdiction_id,user_id:invite.user.id,role_id:role.id});if(healthError)throw healthError;}
-    return new Response(JSON.stringify({id:invite.user.id,email:invite.user.email,phone:invite.user.phone,username,role_code:body.role_code,temporary_password:temporaryPassword,login_url:`${url.replace(/\/\/$/,"")}/login`,released_inactive_phone:releasedPhone}),{headers:{...cors,"Content-Type":"application/json"},status:201});
+    if(body.facility_id){const {error:memberError}=await admin.from("facility_memberships").upsert({facility_id:body.facility_id,user_id:accountUserId,role_id:role.id,active:true},{onConflict:"facility_id,user_id"});if(memberError)throw memberError;}
+    if(healthRole){const {error:healthError}=await admin.from("health_department_memberships").upsert({jurisdiction_id:body.jurisdiction_id,user_id:accountUserId,role_id:role.id,active:true},{onConflict:"jurisdiction_id,user_id"});if(healthError)throw healthError;}
+    return new Response(JSON.stringify({id:accountUserId,email:invite?.user?.email||profileMatch?.email||body.email,phone:invite?.user?.phone||phoneMatch?.phone||phone,username,role_code:body.role_code,temporary_password:existingUserId?null:temporaryPassword,existing_account:Boolean(existingUserId),login_url:`${url.replace(/\/\/$/,"")}/login`,released_inactive_phone:releasedPhone}),{headers:{...cors,"Content-Type":"application/json"},status:201});
   } catch(error){return new Response(JSON.stringify({error:error.message}),{headers:{...cors,"Content-Type":"application/json"},status:400});}
 });

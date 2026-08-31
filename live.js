@@ -60,19 +60,30 @@ const showModal = (title, body) => {
   modal.querySelector("[data-close]").addEventListener("click", closeModal);
 };
 
+async function credentialsForIdentifier(identifier,password){
+  const value=String(identifier).trim();
+  if(value.includes("@"))return{email:value.toLowerCase(),password};
+  const phone=value.replace(/[\s().-]/g,"");
+  if(/^\+[1-9][0-9]{7,14}$/.test(phone))return{phone,password};
+  const result=await supabase.functions.invoke("sign-in-username",{body:{username:value,password}});
+  if(result.error||!result.data?.access_token||!result.data?.refresh_token)throw new Error("Invalid login credentials");
+  const established=await supabase.auth.setSession({access_token:result.data.access_token,refresh_token:result.data.refresh_token});
+  if(established.error)throw new Error("Invalid login credentials");
+  if(!established.data.user?.email)throw new Error("Invalid login credentials");
+  return{email:established.data.user.email,password};
+}
+
 function authGate() {
   const gate = document.createElement("div");
   gate.className = "auth-gate";
-  gate.innerHTML = `<section class="auth-card"><img class="portal-logo" src="/assets/images/healthcarology-logo.png" alt="Healthcarology"><p class="eyebrow">Secure access</p><h1>Healthcarology EHR</h1><p>Sign in with the email address or international phone number on your account. New accounts must replace their temporary password before accessing the platform.</p><form id="login-form"><label>Language<select id="login-language"><option value="en">English</option><option value="fr">Français</option><option value="am">አማርኛ</option><option value="pt">Português</option><option value="es">Español</option><option value="bn">বাংলা</option><option value="kg">Kikongo</option><option value="lua">Tshiluba</option><option value="sw">Kiswahili</option><option value="ln">Lingála</option></select></label><input type="text" name="identifier" autocomplete="username" placeholder="Authorized email or phone (+country code)" required aria-label="Email or phone number"><input type="password" name="password" autocomplete="current-password" placeholder="Password" required aria-label="Password"><button class="button primary">Sign in</button><button type="button" class="button secondary" id="reset-password">Set or reset password</button></form><p id="auth-message">Authorized users only. All access is auditable.</p></section>`;
+  gate.innerHTML = `<section class="auth-card"><img class="portal-logo" src="/assets/images/healthcarology-logo.png" alt="Healthcarology"><p class="eyebrow">Secure access</p><h1>Healthcarology EHR</h1><p>Sign in with your email address, international phone number, or explicit username. New accounts must replace their temporary password before accessing the platform.</p><form id="login-form"><label>Language<select id="login-language"><option value="en">English</option><option value="fr">Français</option><option value="am">አማርኛ</option><option value="pt">Português</option><option value="es">Español</option><option value="bn">বাংলা</option><option value="kg">Kikongo</option><option value="lua">Tshiluba</option><option value="sw">Kiswahili</option><option value="ln">Lingála</option></select></label><input type="text" name="identifier" autocomplete="username" placeholder="Email, phone (+country code), or username" required aria-label="Email, phone number, or username"><input type="password" name="password" autocomplete="current-password" placeholder="Password" required aria-label="Password"><button class="button primary">Sign in</button><button type="button" class="button secondary" id="reset-password">Set or reset password</button></form><p id="auth-message">Authorized users only. All access is auditable.</p></section>`;
   const language=gate.querySelector("#login-language");language.value=localStorage.getItem("hc_locale")||"en";language.addEventListener("change",()=>{localStorage.setItem("hc_locale",language.value);document.documentElement.lang=language.value;applyLocale(gate,language.value)});applyLocale(gate,language.value);
   document.body.append(gate);
   gate.querySelector("form").addEventListener("submit", async event => {
     event.preventDefault();
     const form = new FormData(event.target);
     const identifier=String(form.get("identifier")).trim(),password=form.get("password");
-    const credentials=identifier.includes("@")?{email:identifier.toLowerCase(),password}:{phone:identifier.replace(/[\s().-]/g,""),password};
-    const { error } = await supabase.auth.signInWithPassword(credentials);
-    gate.querySelector("#auth-message").textContent = error ? error.message : "Signed in securely.";
+    try{const credentials=await credentialsForIdentifier(identifier,password),result=credentials?await supabase.auth.signInWithPassword(credentials):{error:null};gate.querySelector("#auth-message").textContent=result.error?"Invalid login credentials":"Signed in securely."}catch{gate.querySelector("#auth-message").textContent="Invalid login credentials"}
   });
   gate.querySelector("#reset-password").addEventListener("click", async () => {
     const email = gate.querySelector('input[name="identifier"]').value.trim();
