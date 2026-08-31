@@ -489,9 +489,15 @@ test("facility departments link to their activated services", async () => {
   const desktop=await read("portal.js"),mobile=await read("mobile-patient/www/portal.js");
   for(const source of [desktop,mobile]){
     assert.match(source,/facility_services\(services\(id,name,department_id\)\)/);
+    assert.match(source,/Active Departments &amp; Services/);
     assert.match(source,/data-department-services-link/);
+    assert.match(source,/data-service-providers-link/);
+    assert.match(source,/data-provider-calendar/);
     assert.match(source,/No activated services in this department/);
-    assert.match(source,/wireDepartmentServiceLinks\(app\)/);
+    assert.match(source,/No provider available for this service/);
+    assert.match(source,/No available appointments for this provider/);
+    assert.match(source,/provider_availability_slots/);
+    assert.match(source,/wireDepartmentServiceLinks\(app,f\)/);
   }
 });
 
