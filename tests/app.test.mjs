@@ -510,3 +510,11 @@ test("staff access management is restricted to a shared administrative scope", a
   assert.match(fn,/Administrators cannot suspend or deny their own access/);
   assert.match(fn,/isSelf&&\(body\.access_permanently_denied\|\|body\.access_suspended_until\)/);
 });
+
+test("staff profile popup has an explicit non-submit close control", async () => {
+  for(const file of ["portal-features.js","mobile-patient/www/portal-features.js"]){
+    const source=await read(file);
+    assert.match(source,/<button type="button" class="button secondary" data-close-staff-profile>Close<\/button>/);
+    assert.match(source,/querySelector\('\[data-close-staff-profile\]'\)\.onclick=\(\)=>modal\.close\(\)/);
+  }
+});
