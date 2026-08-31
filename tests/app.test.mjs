@@ -518,3 +518,24 @@ test("staff profile popup has an explicit non-submit close control", async () =>
     assert.match(source,/querySelector\('\[data-close-staff-profile\]'\)\.onclick=\(\)=>modal\.close\(\)/);
   }
 });
+
+test("staff popup loads and updates the protected full professional profile", async () => {
+  const migration=await read("supabase/migrations/20260831210000_staff_professional_profiles.sql"),fn=await read("supabase/functions/manage-staff/index.ts");
+  assert.match(migration,/create table if not exists public\.staff_professional_profiles/);
+  assert.match(migration,/enable row level security/);
+  assert.match(migration,/revoke all on public\.staff_professional_profiles from public,anon,authenticated/);
+  for(const field of ["legal_name","date_of_birth","languages_spoken","npi","state_licenses","education","clinical_specialties","accepted_insurance","hospital_privileges","scheduling_logic"])assert.match(migration,new RegExp(field));
+  assert.match(fn,/body\.action==="get"/);
+  assert.match(fn,/staff_professional_profiles/);
+  assert.match(fn,/professionalFields/);
+  assert.match(fn,/jurisdictionVisibleFields/);
+  assert.match(fn,/Facility owner access required/);
+  assert.match(fn,/delete visibleProfessional\[field\]/);
+  for(const file of ["portal-features.js","mobile-patient/www/portal-features.js"]){
+    const source=await read(file);
+    assert.match(source,/staffFullProfileFields/);
+    assert.match(source,/action:'get'/);
+    assert.match(source,/Personal and demographic information/);
+    assert.match(source,/Education, practice, and credentials/);
+  }
+});

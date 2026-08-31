@@ -1,6 +1,8 @@
 import {createClient} from "npm:@supabase/supabase-js@2.112.4";
 
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type"};
+const professionalFields=["legal_name","aliases","date_of_birth","gender","citizenship_work_authorization","home_address","mailing_address","personal_email","personal_phone","emergency_contact","languages_spoken","employee_id","primary_department","npi","state_licenses","license_expirations","dea_registration","board_certifications","education","postgraduate_training","clinical_specialties","accepted_insurance","professional_bio","work_history","liability_insurance","hospital_privileges","clinical_certifications","scheduling_logic"];
+const jurisdictionVisibleFields=new Set(["legal_name","languages_spoken","employee_id","primary_department","npi","state_licenses","license_expirations","board_certifications","education","postgraduate_training","clinical_specialties","hospital_privileges","clinical_certifications"]);
 
 Deno.serve(async req=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
@@ -25,13 +27,13 @@ Deno.serve(async req=>{
     if(!isRoot&&!isSysadmin&&!isHealthAdmin)throw new Error("Administrator access required");
 
     const {data:targetRoot}=await admin.from("user_roles").select("user_id,roles!inner(role_code)").eq("user_id",body.user_id).eq("roles.role_code","root").maybeSingle();
-    if(targetRoot)throw new Error("Root account access cannot be changed here");
+    if(targetRoot&&!isSelf)throw new Error("Root account access cannot be changed here");
 
     if(body.facility_id){
       const {data:actorMembership}=await admin.from("facility_memberships").select("is_owner").eq("facility_id",body.facility_id).eq("user_id",user.id).eq("active",true).maybeSingle();
-      if(!isRoot&&!isSysadmin&&!actorMembership?.is_owner)throw new Error("Facility administrator access required");
+      if(!isRoot&&!actorMembership?.is_owner)throw new Error("Facility owner access required");
       const {data:targetMembership}=await admin.from("facility_memberships").select("user_id").eq("facility_id",body.facility_id).eq("user_id",body.user_id).eq("active",true).maybeSingle();
-      if(!targetMembership)throw new Error("Staff account is not assigned to this facility");
+      if(!targetMembership&&!(isRoot&&isSelf))throw new Error("Staff account is not assigned to this facility");
     }else{
       if(!isRoot&&!isHealthAdmin)throw new Error("Health-department administrator access required");
       if(!isRoot){
@@ -39,13 +41,30 @@ Deno.serve(async req=>{
         if(!actorMembership)throw new Error("Health-department administrator access required");
       }
       const {data:targetMembership}=await admin.from("health_department_memberships").select("user_id").eq("jurisdiction_id",body.jurisdiction_id).eq("user_id",body.user_id).eq("active",true).maybeSingle();
-      if(!targetMembership)throw new Error("Staff account is not assigned to this health department");
+      if(!targetMembership&&!(isRoot&&isSelf))throw new Error("Staff account is not assigned to this health department");
+    }
+
+    if(body.action==="get"){
+      const [{data:account,error:accountError},{data:professional,error:professionalError}]=await Promise.all([
+        admin.from("profiles").select("user_id,email,display_name,username,staff_group,staff_subgroup,job_title,credentials,access_suspended_until,access_permanently_denied").eq("user_id",body.user_id).single(),
+        admin.from("staff_professional_profiles").select("*").eq("user_id",body.user_id).maybeSingle()
+      ]);
+      if(accountError)throw accountError;
+      if(professionalError)throw professionalError;
+      const visibleProfessional={...(professional||{})};
+      if(body.jurisdiction_id&&!isSelf)for(const field of professionalFields)if(!jurisdictionVisibleFields.has(field))delete visibleProfessional[field];
+      return new Response(JSON.stringify({profile:{...account,...visibleProfessional}}),{status:200,headers:{...cors,"Content-Type":"application/json"}});
     }
 
     const until=body.access_suspended_until?new Date(body.access_suspended_until).toISOString():null;
     const profile={job_title:body.job_title||null,credentials:body.credentials||null,staff_subgroup:body.staff_subgroup||null,access_suspended_until:body.access_permanently_denied?null:until,access_permanently_denied:Boolean(body.access_permanently_denied)};
     const {error:updateError}=await admin.from("profiles").update(profile).eq("user_id",body.user_id);
     if(updateError)throw updateError;
+    const professional:any={user_id:body.user_id,updated_by:user.id,updated_at:new Date().toISOString()};
+    const writableFields=body.jurisdiction_id&&!isSelf?professionalFields.filter(field=>jurisdictionVisibleFields.has(field)):professionalFields;
+    for(const field of writableFields)professional[field]=field==="date_of_birth"?(body[field]||null):(String(body[field]??"").trim()||null);
+    const {error:professionalError}=await admin.from("staff_professional_profiles").upsert(professional,{onConflict:"user_id"});
+    if(professionalError)throw professionalError;
     const banDuration=body.access_permanently_denied?"876000h":until?`${Math.max(1,Math.ceil((new Date(until).getTime()-Date.now())/3600000))}h`:"none";
     const accessResult=await admin.auth.admin.updateUserById(body.user_id,{ban_duration:banDuration});
     if(accessResult.error)throw accessResult.error;
