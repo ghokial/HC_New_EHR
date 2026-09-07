@@ -539,3 +539,63 @@ test("staff popup loads and updates the protected full professional profile", as
     assert.match(source,/Education, practice, and credentials/);
   }
 });
+
+test("patient admission links bed capacity and inpatient billing without invented clinical data", async()=>{
+  const app=await read("app.js"),live=await read("inpatient.js"),migration=await read("supabase/migrations/20260901010000_inpatient_admission_bed_billing.sql");
+  for(const module of ["Patient admission","Bed management","Inpatient billing"])assert.match(app,new RegExp(module));
+  for(const table of ["inpatient_admissions","inpatient_beds","inpatient_bed_assignments","inpatient_accounts","inpatient_charge_items","inpatient_claims","inpatient_claim_adjudications"])assert.match(migration,new RegExp(`create table public\\.${table}`));
+  assert.match(migration,/one_active_patient_per_bed/);assert.match(migration,/one_active_bed_per_admission/);
+  assert.match(migration,/create or replace function public\.admit_inpatient/);assert.match(migration,/security invoker/);
+  assert.match(migration,/create or replace function public\.discharge_inpatient/);assert.match(migration,/operational_status='needs_cleaning'/);assert.match(migration,/status='ready_to_claim'/);
+  assert.match(migration,/enable row level security/);assert.match(migration,/grant select,insert,update,delete/);
+  for(const feature of ["Admit and assign bed","Level of care","Isolation requirement","NUBC Revenue Code","Prepare institutional claim","data-next-status"])assert.match(live,new RegExp(feature));
+  assert.doesNotMatch(live,/John Edward Smith|Blue Cross Blue Shield PPO|3500\.00|2800\.00|700\.00/);
+});
+
+test("dialysis management adapts to the facility setting selected when Nephrology is activated",async()=>{
+  const migration=await read("supabase/migrations/20260901020000_dialysis_management.sql"),features=await read("portal-features.js"),mobile=await read("mobile-patient/www/portal-features.js"),fn=await read("supabase/functions/create-facility/index.ts");
+  for(const value of ["freestanding_outpatient","inpatient_hospital_unit","home_therapies"])for(const source of [migration,features,fn])assert.match(source,new RegExp(value));
+  for(const table of ["facility_dialysis_profiles","dialysis_outpatient_chair_sessions","dialysis_inpatient_acute_sessions","dialysis_home_therapy_logs","dialysis_device_observations"])assert.match(migration,new RegExp(`create table public\\.${table}`));
+  for(const field of ["kt_v","urr_percent","dry_weight_kg","blood_pump_speed_ml_min","arterial_pressure_mmhg","venous_pressure_mmhg"])assert.match(migration,new RegExp(field));
+  assert.match(migration,/enable row level security/);assert.match(migration,/revoke all/);assert.match(migration,/grant select,insert,update/);
+  assert.match(features,/Nephrology activated/);assert.match(features,/Will this facility have a dialysis center/);assert.match(features,/Changing the center type updates this workspace/);
+  assert.match(features,/Freestanding outpatient center/);assert.match(features,/Inpatient hospital unit/);assert.match(features,/Home therapies/);
+  assert.equal(features,mobile);
+  for(const source of [migration,features])assert.doesNotMatch(source,/John Edward Smith|Fresenius|DaVita/);
+});
+
+test("dialysis billing uses the supplied revenue CPT and HCPCS catalog and permits facility-scoped other items",async()=>{
+  const migration=await read("supabase/migrations/20260901111305_dialysis_billable_item_catalog.sql"),features=await read("portal-features.js"),mobile=await read("mobile-patient/www/portal-features.js");
+  for(const code of ["0821","0829","0831","0841","0851","0881","0809","90960","90961","90962","90935","90937","90945","90999","G0491","J0882","J0885","Q5105","J0606","J1644","J2997"])assert.match(migration,new RegExp(`'${code}'`));
+  assert.match(migration,/create table public\.dialysis_billable_items/);assert.match(migration,/create table public\.dialysis_session_billable_items/);
+  assert.match(migration,/facility_id is null or private\.is_platform_root\(\) or private\.is_facility_member\(facility_id\)/);
+  assert.match(migration,/private\.is_facility_admin\(facility_id\)/);assert.match(migration,/enable row level security/);assert.match(migration,/revoke all/);
+  for(const text of ["Dialysis billable items","Other — create missing item","Related revenue codes","Billable item added to the dialysis session"])assert.match(features,new RegExp(text));
+  assert.equal(features,mobile);
+});
+
+test("blood bank page implements the document-defined vein-to-vein safety workflow without seeding examples",async()=>{
+  const app=await read("app.js"),live=await read("live.js"),module=await read("blood-bank.js"),migration=await read("supabase/migrations/20260901115502_blood_bank_management.sql");
+  assert.match(app,/Blood bank management/);assert.match(app,/blood-drive/);assert.match(app,/blood-reaction-specimen/);
+  assert.match(live,/attachBloodBankFeatures/);assert.match(live,/\.\/blood-bank\.js/);
+  for(const table of ["blood_donors","blood_mobile_drives","blood_donor_screenings","blood_donations","blood_storage_devices","blood_products","blood_product_tests","blood_temperature_observations","blood_crossmatches","blood_transfusions","blood_transfusion_reactions","blood_reaction_specimens"])assert.match(migration,new RegExp(`create table public\\.${table}`));
+  for(const term of ["donation_identification_number","product_component_code","abo_group","rh_type","processing_modifiers","electronic","serologic","bedside_verification","vital_signs"])assert.match(migration,new RegExp(term));
+  assert.match(migration,/lock_blood_storage_on_temperature_breach/);assert.match(migration,/product_status='quarantined'/);assert.match(migration,/split_blood_product/);assert.match(migration,/security invoker/);
+  assert.match(migration,/enable row level security/);assert.match(migration,/private\.is_aal2\(\)/);assert.match(migration,/revoke all/);
+  for(const action of ["blood-donor","blood-drive","blood-screening","blood-product","blood-test","blood-component","blood-storage","blood-temperature","blood-crossmatch","blood-transfusion","blood-reaction","blood-reaction-specimen"])assert.match(module,new RegExp(action));
+  assert.doesNotMatch(module,/Jane Doe|Alex Mercer|Sarah Jenkins|American Red Cross|W000026123456|E3824|E0414/);
+});
+
+test("patient intake uses dependent geography, an ISO language list, and authoritative registry codes",async()=>{
+  const live=await read("live.js");
+  assert.match(live,/patient-preferred-language/);assert.match(live,/iso-639-1-languages\.json/);
+  assert.match(live,/patient-province/);assert.match(live,/patient-city/);assert.match(live,/data-registry-code/);
+  assert.match(live,/approved location records/);
+});
+
+test("encounters route to triage by default and imaging exams are filtered by imaging type",async()=>{
+  const live=await read("live.js"),migration=await read("supabase/migrations/20260901133000_patient_triage_and_imaging_types.sql");
+  assert.match(live,/enqueue_patient_for_triage/);assert.match(live,/Patient sent to triage/);
+  assert.match(live,/data-imaging-type/);assert.match(live,/Select imaging type/);
+  assert.match(migration,/add column if not exists imaging_type/);assert.match(migration,/nextval\('public\.triage_arrival_seq'\)/);
+});

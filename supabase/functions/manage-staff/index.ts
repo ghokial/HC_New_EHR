@@ -1,7 +1,7 @@
 import {createClient} from "npm:@supabase/supabase-js@2.112.4";
 
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type"};
-const professionalFields=["legal_name","aliases","date_of_birth","gender","citizenship_work_authorization","home_address","mailing_address","personal_email","personal_phone","emergency_contact","languages_spoken","employee_id","primary_department","npi","state_licenses","license_expirations","dea_registration","board_certifications","education","postgraduate_training","clinical_specialties","accepted_insurance","professional_bio","work_history","liability_insurance","hospital_privileges","clinical_certifications","scheduling_logic"];
+const professionalFields=["legal_name","aliases","date_of_birth","gender","citizenship_work_authorization","home_address","mailing_address","personal_email","personal_phone","emergency_contact","languages_spoken","employee_id","contract_type","primary_department","npi","state_licenses","license_expirations","dea_registration","board_certifications","education","postgraduate_training","clinical_specialties","accepted_insurance","professional_bio","work_history","liability_insurance","hospital_privileges","clinical_certifications","scheduling_logic"];
 const jurisdictionVisibleFields=new Set(["legal_name","languages_spoken","employee_id","primary_department","npi","state_licenses","license_expirations","board_certifications","education","postgraduate_training","clinical_specialties","hospital_privileges","clinical_certifications"]);
 
 Deno.serve(async req=>{
@@ -60,6 +60,16 @@ Deno.serve(async req=>{
     const profile={job_title:body.job_title||null,credentials:body.credentials||null,staff_subgroup:body.staff_subgroup||null,access_suspended_until:body.access_permanently_denied?null:until,access_permanently_denied:Boolean(body.access_permanently_denied)};
     const {error:updateError}=await admin.from("profiles").update(profile).eq("user_id",body.user_id);
     if(updateError)throw updateError;
+    if(body.gender&&!['M','F'].includes(body.gender))throw new Error('Gender assigned at birth must be Male or Female');
+    if(!body.employee_id&&body.engagement_date&&body.gender){
+      const match=String(body.engagement_date).match(/^(\d{4})-(\d{2})-\d{2}$/);
+      if(!match)throw new Error('A valid date of engagement is required to generate the employee identification');
+      const prefix=`${match[2]}${match[1]}-${body.gender}`;
+      const {data:existing,error:idError}=await admin.from('staff_professional_profiles').select('employee_id').like('employee_id',`${prefix}-%`);
+      if(idError)throw idError;
+      const next=Math.max(0,...(existing||[]).map((row:any)=>Number(String(row.employee_id||'').split('-').at(-1))||0))+1;
+      body.employee_id=`${prefix}-${String(next).padStart(5,'0')}`;
+    }
     const professional:any={user_id:body.user_id,updated_by:user.id,updated_at:new Date().toISOString()};
     const writableFields=body.jurisdiction_id&&!isSelf?professionalFields.filter(field=>jurisdictionVisibleFields.has(field)):professionalFields;
     for(const field of writableFields)professional[field]=field==="date_of_birth"?(body[field]||null):(String(body[field]??"").trim()||null);

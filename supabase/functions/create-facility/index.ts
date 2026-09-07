@@ -22,6 +22,10 @@ Deno.serve(async req=>{
     if(body.facility_type==="Other"&&!String(body.facility_type_other||"").trim()) throw new Error("Enter the other facility type");
     const departmentIds=(body.department_ids||[]).map(Number).filter(Number.isFinite);
     const serviceIds=(Array.isArray(body.service_ids)?body.service_ids:String(body.service_ids||"").split(",")).map(Number).filter(Number.isFinite);
+    const dialysisEnabled=body.dialysis_center_enabled===true||body.dialysis_center_enabled==="true"||body.dialysis_center_enabled==="yes";
+    const dialysisTypes=["freestanding_outpatient","inpatient_hospital_unit","home_therapies"];
+    const dialysisType=String(body.dialysis_center_type||"");
+    if(dialysisEnabled&&!dialysisTypes.includes(dialysisType)) throw new Error("Select a valid dialysis center type");
     const slugBase=String(body.slug||body.name).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,48)||"facility";let slug=slugBase;const {data:slugMatch}=await admin.from("facilities").select("id").eq("slug",slug).maybeSingle();if(slugMatch)slug=`${slugBase}-${crypto.randomUUID().slice(0,6)}`;
     const password="Temp#123",email=String(body.owner_email).trim().toLowerCase(),username=String(body.owner_username||email).trim();
     const {data:existingProfile}=await admin.from("profiles").select("user_id").or(`email.ilike.${email},username.ilike.${username}`).maybeSingle();let ownerUserId:string|undefined=existingProfile?.user_id;const existingAccount=Boolean(ownerUserId);let createdUserId:string|null=null;
@@ -34,6 +38,7 @@ Deno.serve(async req=>{
     await admin.from("user_roles").upsert({user_id:ownerUserId,role_id:role.id,scope:facility.slug},{onConflict:"user_id,role_id",ignoreDuplicates:true});
     if(departmentIds.length) await admin.from("facility_departments").insert(departmentIds.map(department_id=>({facility_id:facility.id,department_id})));
     if(serviceIds.length) await admin.from("facility_services").insert(serviceIds.map(service_id=>({facility_id:facility.id,service_id})));
+    if(body.dialysis_center_enabled!==undefined){const {error}=await admin.from("facility_dialysis_profiles").insert({facility_id:facility.id,enabled:dialysisEnabled,center_type:dialysisEnabled?dialysisType:null,updated_by:ownerUserId});if(error)throw error}
     const portalOrigin=Deno.env.get("PORTAL_ORIGIN")||"http://127.0.0.1:4173";
     return new Response(JSON.stringify({facility_id:facility.id,facility_number:facility.facility_number,slug:facility.slug,owner_email:email,owner_username:username,temporary_password:existingAccount?null:password,must_change_password:!existingAccount,login_url:`${portalOrigin.replace(/\/\/$/,"")}/${facility.slug}`,existing_account:existingAccount}),{status:201,headers:{...cors,"Content-Type":"application/json"}});
   }catch(error){return new Response(JSON.stringify({error:error.message}),{status:400,headers:{...cors,"Content-Type":"application/json"}})}

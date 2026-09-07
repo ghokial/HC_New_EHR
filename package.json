@@ -5,7 +5,13 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "seed:countries": "node scripts/seed-countries.mjs"
+    "seed:countries": "node scripts/seed-countries.mjs",
+    "supabase:help": "supabase --help",
+    "supabase:start": "supabase start",
+    "supabase:status": "supabase status",
+    "supabase:link": "supabase link",
+    "supabase:migrations": "supabase migration list",
+    "supabase:push": "supabase db push"
   },
   "engines": {
     "node": ">=22"
@@ -13,6 +19,10 @@
   "dependencies": {
     "@supabase/supabase-js": "2.112.4",
     "i18n-iso-countries": "7.14.0",
+    "iso-639-1": "3.1.5",
     "libphonenumber-js": "1.11.20"
+  },
+  "devDependencies": {
+    "supabase": "2.116.0"
   }
 }

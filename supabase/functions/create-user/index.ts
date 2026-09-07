@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 
 const cors = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type"};
+const professionalFields=["date_of_birth","gender","personal_email","personal_phone","languages_spoken","employee_id","contract_type","primary_department","npi","license_expirations","dea_registration","board_certifications","education","postgraduate_training","clinical_specialties","accepted_insurance","professional_bio","work_history","liability_insurance","hospital_privileges","clinical_certifications","scheduling_logic"];
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok",{headers:cors});
   try {
@@ -53,6 +54,31 @@ Deno.serve(async (req) => {
     if(assignError) throw assignError;
     if(body.facility_id){const {error:memberError}=await admin.from("facility_memberships").upsert({facility_id:body.facility_id,user_id:accountUserId,role_id:role.id,active:true},{onConflict:"facility_id,user_id"});if(memberError)throw memberError;}
     if(healthRole){const {error:healthError}=await admin.from("health_department_memberships").upsert({jurisdiction_id:body.jurisdiction_id,user_id:accountUserId,role_id:role.id,active:true},{onConflict:"jurisdiction_id,user_id"});if(healthError)throw healthError;}
+    if(body.gender&&!['M','F'].includes(body.gender))throw new Error('Gender assigned at birth must be Male or Female');
+    if(!body.employee_id&&body.engagement_date&&body.gender){
+      const match=String(body.engagement_date).match(/^(\d{4})-(\d{2})-\d{2}$/);
+      if(!match)throw new Error('A valid date of engagement is required to generate the employee identification');
+      const prefix=`${match[2]}${match[1]}-${body.gender}`;
+      const {data:existing,error:idError}=await admin.from('staff_professional_profiles').select('employee_id').like('employee_id',`${prefix}-%`);
+      if(idError)throw idError;
+      const next=Math.max(0,...(existing||[]).map((row:any)=>Number(String(row.employee_id||'').split('-').at(-1))||0))+1;
+      body.employee_id=`${prefix}-${String(next).padStart(5,'0')}`;
+    }
+    const professional:any={user_id:accountUserId,updated_by:user.id,updated_at:new Date().toISOString()};
+    for(const field of professionalFields)professional[field]=field==='date_of_birth'?(body[field]||null):(String(body[field]??'').trim()||null);
+    const {error:professionalError}=await admin.from('staff_professional_profiles').upsert(professional,{onConflict:'user_id'});
+    if(professionalError)throw professionalError;
+    if(body.facility_id&&body.payroll_currency){
+      const currency=String(body.payroll_currency).trim().toUpperCase();
+      if(!/^[A-Z]{3}$/.test(currency))throw new Error('Payroll currency must be a three-letter currency code');
+      const amount=value=>body[value]===''||body[value]==null?null:Number(body[value]);
+      const payroll={facility_id:body.facility_id,user_id:accountUserId,contract_type:body.contract_type,currency,pay_frequency:body.pay_frequency,base_hourly_rate:amount('base_hourly_rate'),annual_salary:amount('annual_salary'),contractor_rate:amount('contractor_rate'),overtime_method:body.overtime_method||'Not configured',overtime_multiplier:amount('overtime_multiplier'),night_differential:amount('night_differential'),weekend_differential:amount('weekend_differential'),holiday_differential:amount('holiday_differential'),on_call_rate:amount('on_call_rate'),hazard_rate:amount('hazard_rate'),rvu_rate:amount('rvu_rate'),credential_blocking_enabled:body.credential_blocking_enabled==='on',aca_tracking_enabled:body.aca_tracking_enabled==='on',pbj_tracking_enabled:body.pbj_tracking_enabled==='on',mobile_self_service_enabled:body.mobile_self_service_enabled==='on',earned_wage_access_enabled:body.earned_wage_access_enabled==='on',effective_from:body.payroll_effective_from,created_by:user.id,updated_by:user.id,updated_at:new Date().toISOString()};
+      const requiredAmount=body.contract_type==='Hourly staff'?payroll.base_hourly_rate:body.contract_type==='Salaried'?payroll.annual_salary:body.contract_type==='Contractor'?payroll.contractor_rate:null;
+      if(requiredAmount==null)throw new Error('Enter the compensation amount required by the selected contract type');
+      const {error:payrollError}=await admin.from('staff_payroll_profiles').upsert(payroll,{onConflict:'facility_id,user_id'});if(payrollError)throw payrollError;
+      const integrationTypes=['Biometric clock','Mobile time app','Payroll processor','Tax filing','ACA reporting','PBJ reporting','Earned wage access'];
+      const {error:integrationError}=await admin.from('payroll_integrations').upsert(integrationTypes.map(integration_type=>({facility_id:body.facility_id,integration_type,status:'unconfigured',created_by:user.id})),{onConflict:'facility_id,integration_type',ignoreDuplicates:true});if(integrationError)throw integrationError;
+    }
     return new Response(JSON.stringify({id:accountUserId,email:invite?.user?.email||profileMatch?.email||body.email,phone:invite?.user?.phone||phoneMatch?.phone||phone,username,role_code:body.role_code,temporary_password:existingUserId?null:temporaryPassword,existing_account:Boolean(existingUserId),login_url:`${url.replace(/\/\/$/,"")}/login`,released_inactive_phone:releasedPhone}),{headers:{...cors,"Content-Type":"application/json"},status:201});
   } catch(error){return new Response(JSON.stringify({error:error.message}),{headers:{...cors,"Content-Type":"application/json"},status:400});}
 });

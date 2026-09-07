@@ -1,4 +1,7 @@
 node_modules/
+.pnpm-store/
+.tmp/
+outputs/
 .env
 .env.*
 !.env.example
