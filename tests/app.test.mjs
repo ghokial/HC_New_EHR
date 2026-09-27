@@ -799,3 +799,9 @@ test("phase 3: laboratory HL7 interfaces are managed from the facility portal", 
   assert.ok(ui.includes('rpc("create_lab_interface"'));assert.ok(ui.includes("shown only once"));
   assert.ok(fn.includes('rpc("hl7_ingest_lab_results"'));assert.ok(fn.includes("x-interface-key"));
 });
+
+test("phase 3: imaging orders link to PACS studies from the result screen", async () => {
+  const live=await read("live.js"),portal=await read("portal-features.js");
+  assert.ok(live.includes("attachImagingArchive(detail)"));assert.ok(live.includes('rpc("link_imaging_study"'));assert.ok(live.includes("dicom-studies?imaging_order="));
+  assert.ok(portal.includes("renderImagingArchiveSettings(supabase,app,facilityId)"));
+});

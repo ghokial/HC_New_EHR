@@ -1,6 +1,7 @@
 import {renderBillingDepartment} from "./billing-department.js?v=20260908-5";
 import {renderLaboratoryDepartment} from "./laboratory-department.js?v=20260908-5";
 import {renderLabInterfaces} from "./lab-interfaces.js?v=20260927-1";
+import {renderImagingArchiveSettings} from "./imaging-archive.js?v=20260927-1";
 import {enhancePatientAppointmentNotification,renderAppointmentCalendar} from "./appointment-calendar.js?v=20260927-1";
 import {renderFacilityNotifications} from "./facility-notifications.js";
 
@@ -414,7 +415,7 @@ export async function enhancePortal(supabase,app,{kind,facilityId,patientId}){
   const facilityCountry=app.querySelector('#facility-form [name="country_name"]');facilityCountry?.addEventListener("change",async()=>{const iso2=facilityCountry.selectedOptions[0]?.dataset.iso2,rows=await phoneCountries(),code=rows.find(x=>x.iso2===iso2)?.calling_code;app.querySelectorAll('#facility-form [data-phone-prefix-for]').forEach(x=>x.value=code||x.value)});
   if(kind==="patient"){enhancePatientAppointmentNotification(supabase,app,patientId);await patientOtpCard(supabase,app,patientId)}
   if(kind==="facility"&&facilityId){await renderAppointmentCalendar(supabase,app,facilityId);await renderFacilityNotifications(supabase,app,facilityId);await renderMaternalHealth(supabase,app,facilityId);await renderDialysisManagement(supabase,app,facilityId);await renderDialysisBilling(supabase,app,facilityId)}
-  await wireProfileAndWallet(supabase,app,{patientId});if(kind==="patient")await insurancePatientAccessCard(supabase,app,patientId);if(kind==="facility"&&facilityId){await renderLaboratoryDepartment(supabase,app,facilityId);await renderLabInterfaces(supabase,app,facilityId);await renderBillingDepartment(supabase,app,facilityId)}organizePortalSections(app);upgradeGroupLandingPages(app);
+  await wireProfileAndWallet(supabase,app,{patientId});if(kind==="patient")await insurancePatientAccessCard(supabase,app,patientId);if(kind==="facility"&&facilityId){await renderLaboratoryDepartment(supabase,app,facilityId);await renderLabInterfaces(supabase,app,facilityId);await renderImagingArchiveSettings(supabase,app,facilityId);await renderBillingDepartment(supabase,app,facilityId)}organizePortalSections(app);upgradeGroupLandingPages(app);
 }
 
 export async function renderHealthDepartment(supabase,app,shell){
