@@ -1,0 +1,60 @@
+import fs from 'node:fs/promises';
+import {FileBlob,SpreadsheetFile} from '@oai/artifact-tool';
+
+const workbookPath='outputs/fictitious-accounts/fictitious-accounts-created.xlsx';
+const updatedWorkbookPath='outputs/fictitious-accounts/fictitious-accounts-created-updated.xlsx';
+const verifiedPath='C:/Users/ghoki/Downloads/verified-patient-accounts.json';
+const password='TesT!09876';
+const portal='http://127.0.0.1:4173/portal';
+const source=await FileBlob.load(workbookPath);
+const workbook=await SpreadsheetFile.importXlsx(source);
+const verified=JSON.parse(await fs.readFile(verifiedPath,'utf8')).sort((a,b)=>a.department.localeCompare(b.department)||a.service.localeCompare(b.service)||a.name.localeCompare(b.name));
+const patients=verified.map((patient,index)=>[index+1,patient.name,patient.email,password,patient.patient_id,patient.mrn,patient.department,patient.service,'Created and database-verified; demonstration registration assignment only',portal]);
+const summary=workbook.worksheets.getItem('Summary');
+summary.getRange('B6').values=[[patients.length]];
+summary.getRange('A7').values=[['Department/service registration assignments']];
+summary.getRange('B7').values=[[patients.length]];
+summary.getRange('D7').values=[['Patient batch']];
+summary.getRange('E7:F7').clear({applyTo:'all'});
+summary.getRange('E7:F7').merge();
+summary.getRange('E7').values=[['Two verified portal accounts for each of 158 active Demo Hospital service IDs. No clinical encounters or vital signs were fabricated.']];
+summary.getRange('E7:F7').format={fill:'#E7F7EE',font:{name:'Arial',size:10,color:'#286541'},wrapText:true};
+summary.getRange('E7:F7').format.rowHeight=44;
+summary.getRange('A:A').format.columnWidth=42;
+
+const sheet=workbook.worksheets.getItem('Patient accounts');
+for(const table of sheet.tables.items)table.delete();
+sheet.getUsedRange()?.clear({applyTo:'all'});
+sheet.showGridLines=false;
+const headers=['#','Name','Login email','Password','Patient ID','MRN','Department','Service','Status','Portal link'];
+const lastRow=4+patients.length;
+sheet.getRange('A2:J2').merge();
+sheet.getRange('A2').values=[['Verified patient portal accounts']];
+sheet.getRange('A2').format.font={name:'Arial',size:16,bold:true,color:'#073B4C'};
+sheet.getRange('A4:J4').values=[headers];
+sheet.getRange(`A5:J${lastRow}`).values=patients;
+const table=sheet.tables.add(`A4:J${lastRow}`,true,'PatientAccounts');
+table.style='TableStyleMedium2';
+table.showFilterButton=true;
+sheet.freezePanes.freezeRows(4);
+sheet.getRange(`A1:J${lastRow}`).format.font={name:'Arial',size:10};
+sheet.getRange('A:A').format.columnWidth=7;
+sheet.getRange('B:B').format.columnWidth=34;
+sheet.getRange('C:D').format.columnWidth=30;
+sheet.getRange('E:F').format.columnWidth=15;
+sheet.getRange('G:H').format.columnWidth=28;
+sheet.getRange('I:I').format.columnWidth=48;
+sheet.getRange('J:J').format.columnWidth=38;
+sheet.getRange(`A4:J${lastRow}`).format.wrapText=true;
+sheet.getRange(`A4:J${lastRow}`).format.verticalAlignment='center';
+
+workbook.recalculate();
+console.log((await workbook.inspect({kind:'table',range:'Summary!A4:F7',include:'values,formulas',tableMaxRows:8,tableMaxCols:8})).ndjson);
+console.log((await workbook.inspect({kind:'table',range:'Patient accounts!A4:J12',include:'values,formulas',tableMaxRows:12,tableMaxCols:10})).ndjson);
+console.log((await workbook.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A|#NUM!|#NULL!|#SPILL!|#CALC!',options:{useRegex:true,maxResults:50},summary:'formula errors'})).ndjson);
+for(const [name,range] of [['Summary','A1:F8'],['Staff accounts','A1:K20'],['Patient accounts','A1:J24']]){
+ const blob=await workbook.render({sheetName:name,range,scale:1,format:'png'});
+ await fs.writeFile(`outputs/fictitious-accounts/${name.replaceAll(' ','-').toLowerCase()}.png`,new Uint8Array(await blob.arrayBuffer()));
+}
+const xlsx=await SpreadsheetFile.exportXlsx(workbook);
+await xlsx.save(updatedWorkbookPath);

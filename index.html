@@ -26,7 +26,7 @@
     <main class="workspace">
       <header class="topbar">
         <button class="mobile-menu" id="mobile-menu" aria-label="Open navigation">☰</button>
-        <div class="search-wrap"><span>⌕</span><input id="global-search" aria-label="Search patients by name, MRN, or UNIN" placeholder="Search patient, MRN, or UNIN…" /></div>
+        <div class="search-wrap"><span>⌕</span><input id="global-search" type="search" minlength="3" aria-label="Search patients by name, MRN, or UNIN" placeholder="Search patient, MRN, or UNIN…" /><div id="global-search-results" class="global-search-results" hidden></div></div>
         <div class="top-actions">
           <button class="icon-button" aria-label="Notifications">◔<span class="badge">3</span></button>
           <button class="user-menu"><span class="avatar">--</span><span><strong>Signed-in user</strong><small>Loading assigned role…</small></span><span>⌄</span></button>
@@ -38,7 +38,7 @@
   <div id="toast" class="toast" role="status"></div>
   <div id="live-modal" class="live-modal" hidden></div>
   <script src="vendor/supabase.js"></script>
-  <script type="module" src="app.js"></script>
-  <script type="module" src="live.js"></script>
+  <script type="module" src="app.js?v=20260908-7"></script>
+  <script type="module" src="live.js?v=20260908-5"></script>
 </body>
 </html>

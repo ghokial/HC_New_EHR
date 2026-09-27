@@ -119,7 +119,7 @@ function setView(id){if(navItems.some(x=>x[0]===id)){active=id;render()}}
 function bindView(){
   view.querySelectorAll("[data-view]").forEach(el=>el.addEventListener("click",()=>setView(el.dataset.view)));
   view.querySelectorAll("[data-patient]").forEach(el=>el.addEventListener("click",()=>{selectedPatient=patients.find(p=>p.id===Number(el.dataset.patient));setView("chart")}));
-  const filter=view.querySelector("#patient-filter"); if(filter) filter.addEventListener("input",e=>{const q=e.target.value.toLowerCase();view.querySelector("#patient-table").innerHTML=patientRows(patients.filter(p=>`${p.name} ${p.mrn} ${p.unin}`.toLowerCase().includes(q)))||`<tr><td colspan="6" class="empty">No matching demonstration record</td></tr>`;bindView()});
+  const filter=view.querySelector("#patient-filter"); if(filter) filter.addEventListener("input",e=>{const q=e.target.value.trim().toLowerCase(),matches=q.length===0?patients:q.length<3?[]:patients.filter(p=>`${p.name} ${p.mrn} ${p.unin}`.toLowerCase().includes(q));view.querySelector("#patient-table").innerHTML=patientRows(matches)||`<tr><td colspan="6" class="empty">${q.length&&q.length<3?"Enter at least 3 characters to search.":"No matching demonstration record"}</td></tr>`;bindView()});
   view.querySelectorAll("[data-action]").forEach(el=>el.addEventListener("click",()=>{
     if(el.dataset.action==="validate-unin"){
       const value=view.querySelector("#unin-input").value.trim();
@@ -131,7 +131,10 @@ function bindView(){
 
 nav.addEventListener("click",e=>{const button=e.target.closest("[data-view]");if(button)setView(button.dataset.view)});
 document.querySelector("#mobile-menu").addEventListener("click",()=>document.querySelector(".sidebar").classList.toggle("open"));
-document.querySelector("#global-search").addEventListener("keydown",e=>{if(e.key==="Enter"){const q=e.target.value.toLowerCase();const match=patients.find(p=>`${p.name} ${p.mrn} ${p.unin}`.toLowerCase().includes(q));if(match){selectedPatient=match;setView("chart")}else toast("No matching demonstration record")}});
+const globalSearch=document.querySelector("#global-search"),globalSearchResults=document.querySelector("#global-search-results");
+globalSearch.addEventListener("input",e=>{const q=e.target.value.trim().toLowerCase();if(q.length<3){globalSearchResults.hidden=true;globalSearchResults.innerHTML="";return}const matches=patients.filter(p=>`${p.name} ${p.mrn} ${p.unin}`.toLowerCase().includes(q)).slice(0,8);globalSearchResults.innerHTML=matches.map(p=>`<button type="button" data-global-patient="${p.id}"><strong>${esc(p.name)}</strong><small>${esc(p.mrn)} · ${esc(p.unin)}</small></button>`).join("")||'<p>No matching demonstration record</p>';globalSearchResults.hidden=false});
+globalSearchResults.addEventListener("click",e=>{const button=e.target.closest("[data-global-patient]");if(!button)return;selectedPatient=patients.find(p=>p.id===Number(button.dataset.globalPatient));globalSearch.value="";globalSearchResults.hidden=true;setView("chart")});
+globalSearch.addEventListener("focusout",()=>setTimeout(()=>{if(!globalSearchResults.contains(document.activeElement))globalSearchResults.hidden=true},0));
 render();
 
 export { patients, departments, roles };

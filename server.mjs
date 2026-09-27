@@ -17,7 +17,7 @@ createServer(async (req, res) => {
   }
   try {
     const body = await readFile(file);
-    res.writeHead(200, { "content-type": `${types[extname(file)] || "application/octet-stream"}; charset=utf-8` });
+    res.writeHead(200, { "content-type": `${types[extname(file)] || "application/octet-stream"}; charset=utf-8`, "cache-control": ["html","js","css"].includes(extname(file).slice(1)) ? "no-store" : "public, max-age=3600" });
     res.end(body);
   } catch {
     res.writeHead(404).end("Not found");
