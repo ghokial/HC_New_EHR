@@ -1,4 +1,5 @@
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
+import { attachStaffRecordExchange } from "./record-exchange.js";
 import { requireMfa } from "./portal-features.js";
 import { applyLocale } from "./locale.js";
 import { attachInpatientFeatures } from "./inpatient.js";
@@ -467,6 +468,7 @@ async function openEncounterWorkflow(encounterId){
   }catch(error){notify(error.message)}
 }
 
+const recordExchange=attachStaffRecordExchange({supabase,showModal,closeModal,notify,getFacilityId:()=>currentFacilityId});
 const nowLocalInput=()=>{const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());return now.toISOString().slice(0,16)};
 async function refreshPatientProfile(patientId){if(document.querySelector("#view .patient-profile")){closeModal();await patientProfile(patientId,true)}else await patientProfile(patientId,false)}
 
@@ -735,7 +737,7 @@ document.addEventListener("click", event => {
   if(vitalAction){event.preventDefault();event.stopImmediatePropagation();openVitalTrends(Number(vitalAction.dataset.patientVitals));return}
   const deletedAction=event.target.closest("[data-patient-deleted]");
   if(deletedAction){event.preventDefault();event.stopImmediatePropagation();openDeletedRecordHistory(Number(deletedAction.dataset.patientDeleted));return}
-  const phaseOneActions=[["[data-add-allergy]",el=>allergyForm(Number(el.dataset.addAllergy))],["[data-allergy-status]",el=>allergyStatusForm(Number(el.dataset.allergyStatus),Number(el.dataset.allergyPatient))],["[data-add-immunization]",el=>immunizationForm(Number(el.dataset.addImmunization))],["[data-immunization-error]",el=>markImmunizationError(Number(el.dataset.immunizationError),Number(el.dataset.immunizationPatient))],["[data-emar]",el=>emarPanel(Number(el.dataset.emar))],["[data-manage-templates]",()=>manageNoteTemplates()],["[data-manage-order-sets]",()=>manageOrderSets()]];
+  const phaseOneActions=[["[data-add-allergy]",el=>allergyForm(Number(el.dataset.addAllergy))],["[data-allergy-status]",el=>allergyStatusForm(Number(el.dataset.allergyStatus),Number(el.dataset.allergyPatient))],["[data-add-immunization]",el=>immunizationForm(Number(el.dataset.addImmunization))],["[data-immunization-error]",el=>markImmunizationError(Number(el.dataset.immunizationError),Number(el.dataset.immunizationPatient))],["[data-emar]",el=>emarPanel(Number(el.dataset.emar))],["[data-manage-templates]",()=>manageNoteTemplates()],["[data-manage-order-sets]",()=>manageOrderSets()],["[data-record-exchange]",()=>recordExchange.open()]];
   for(const [selector,handler] of phaseOneActions){const element=event.target.closest(selector);if(element){event.preventDefault();event.stopImmediatePropagation();handler(element);return}}
   const encounterAction=event.target.closest("[data-patient-encounter]");
   if(encounterAction){event.preventDefault();event.stopImmediatePropagation();encounterForm(Number(encounterAction.dataset.patientEncounter));return}
@@ -758,7 +760,7 @@ document.addEventListener("hc:view-rendered", event => {
   if(event.detail?.view==="triage")hydrateTriage();
   if(event.detail?.view==="chart")renderLivePatientChart();
   if(event.detail?.view==="dashboard")hydrateDashboard();
-  const manage={notes:["data-manage-templates","Note templates"],orders:["data-manage-order-sets","Order sets"]}[event.detail?.view];
+  const manage={notes:["data-manage-templates","Note templates"],orders:["data-manage-order-sets","Order sets"],patients:["data-record-exchange","Records from other facilities"]}[event.detail?.view];
   if(manage&&session)document.querySelector("#view .page-head")?.insertAdjacentHTML("beforeend",`<button type="button" class="button secondary" ${manage[0]}>${manage[1]}</button>`);
 });
 
