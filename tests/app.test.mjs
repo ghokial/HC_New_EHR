@@ -777,3 +777,10 @@ test("phase 2: admissions, transfers, room charges, claims and payer responses a
   assert.doesNotMatch(js,/from\("inpatient_claims"\)\.insert/,"claims are created only through the database function");
   assert.match(migration,/no invented prices/);assert.doesNotMatch(migration,/insert into public\.facility_chargemaster_items/);
 });
+
+test("phase 2: discharge summaries and medication reconciliation are wired into the admission screen", async () => {
+  const js=await read("inpatient.js"),migration=await read("supabase/migrations/20260927180000_medication_reconciliation_discharge_summary.sql");
+  for(const rpc of ["pending_discharge_reconciliation","reconcile_inpatient_medication"])assert.ok(js.includes(`rpc("${rpc}"`),`${rpc} is called`);
+  assert.ok(js.includes("data-discharge-summary"));assert.ok(js.includes('from("inpatient_discharge_summaries")'));
+  assert.ok(migration.includes("Reconcile these medications before discharge"));assert.ok(migration.includes("A signed discharge summary cannot be changed"));
+});
