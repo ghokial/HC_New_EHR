@@ -769,3 +769,11 @@ test("S5-S8 and the audit log are wired into the database and the staff app", as
   assert.match(live,/from\("audit_logs"\)/);
   assert.doesNotMatch(app,/Signed-in user · Clinical EHR/,"the fake audit rows are gone");
 });
+
+test("phase 2: admissions, transfers, room charges, claims and payer responses are wired into the inpatient screens", async () => {
+  const js=await read("inpatient.js"),migration=await read("supabase/migrations/20260927170000_inpatient_adt_beds_billing_completion.sql");
+  for(const rpc of ["admit_inpatient","transfer_inpatient_bed","discharge_inpatient","post_inpatient_room_charges","create_inpatient_claim","record_inpatient_claim_adjudication"])assert.ok(js.includes(`rpc("${rpc}"`),`${rpc} is called`);
+  assert.match(js,/triage_bypass_reason/);assert.match(js,/placement_override_reason/);assert.match(js,/data-bed-room-charge/);assert.match(js,/chargemaster_item_id/);
+  assert.doesNotMatch(js,/from\("inpatient_claims"\)\.insert/,"claims are created only through the database function");
+  assert.match(migration,/no invented prices/);assert.doesNotMatch(migration,/insert into public\.facility_chargemaster_items/);
+});
