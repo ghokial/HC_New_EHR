@@ -1,7 +1,7 @@
 import {SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY} from "./supabase-config.js";
 import {renderPatientRecordRequests} from "./record-exchange.js?v=20260927-1";
 import {renderSmartApps,renderMyConnectedApps} from "./smart-apps.js?v=20260927-1";
-import {requirePasswordChange,requireMfa,enhancePortal,renderHealthDepartment} from "./portal-features.js?v=20260927-3";
+import {requirePasswordChange,requireMfa,enhancePortal,renderHealthDepartment} from "./portal-features.js?v=20260928-1";
 import {applyLocale} from "./locale.js";
 const supabase=globalThis.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY),app=document.querySelector("#portal-app");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

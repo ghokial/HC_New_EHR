@@ -811,3 +811,10 @@ test("phase 3: facilities request records by UNIN and patients approve, deny, or
   for(const rpc of ["request_facility_record_access","emergency_facility_record_access","read_shared_facility_record","respond_facility_record_access","revoke_facility_record_access"])assert.ok(js.includes(`rpc("${rpc}"`),rpc);
   assert.ok(live.includes("data-record-exchange"));assert.ok(portal.includes("renderPatientRecordRequests(supabase,app)"));
 });
+
+test("reporting: facility reports, audited CSV export, and DHIS2 export are on the facility portal", async () => {
+  const js=await read("reporting.js"),portal=await read("portal-features.js"),fn=await read("supabase/functions/dhis2-push/index.ts");
+  assert.ok(portal.includes("renderFacilityReports(supabase,app,facilityId)"));
+  assert.ok(js.includes('from("data_export_audit").insert'),"CSV downloads are recorded first");
+  assert.ok(fn.includes("/api/dataValueSets"));assert.ok(fn.includes("ApiToken"));assert.ok(fn.includes('rpc("dhis2_data_value_set"'));
+});
