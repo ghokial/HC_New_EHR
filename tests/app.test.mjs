@@ -27,7 +27,9 @@ test("live authentication enforces temporary-password replacement", async () => 
   const live = await read("live.js");
   const createUser = await read("supabase/functions/create-user/index.ts");
   const changePassword = await read("supabase/functions/complete-password-change/index.ts");
-  assert.match(createUser, /crypto\.getRandomValues/);
+  // S6: new accounts are invited by email; no shared or administrator-visible password exists.
+  assert.match(createUser, /inviteUserByEmail/);
+  assert.doesNotMatch(createUser, /Temp#123|temporary_password/);
   assert.match(createUser, /must_change_password:true/);
   assert.match(live, /signInWithPassword/);
   assert.match(live, /passwordChangeGate/);
@@ -274,7 +276,8 @@ test("encounter creation filters alphabetized services by alphabetized departmen
   assert.match(live,/Select department first/);
   assert.match(live,/localeCompare/);
   assert.match(live,/matchingServices=addingDepartment\?\[\]:sortedServices\.filter/);
-  assert.match(live,/\["root","sysadmin"\]\.includes\(currentRoleCode\)/);
+  // S8: the shared department/service catalog is Root-only.
+  assert.match(live,/const canManageCatalog=currentRoleCode==="root";/);
   assert.match(live,/Other — add new/);
   assert.match(live,/new_department_name/);
   assert.match(live,/new_service_name/);
@@ -709,4 +712,60 @@ test("staff language search saves and closes while staff identity and assignment
   assert.match(features,/job_title" multiple/);assert.match(features,/data-primary-department multiple/);assert.match(features,/data-primary-service multiple/);
   assert.match(css,/\[data-language-row\]\[hidden\]\{display:none!important\}/);assert.match(app,/globalSearch\.addEventListener\("focusout"/);
   assert.equal(features,mobile);assert.equal(css,mobileCss);
+});
+
+test("phase 1 adds allergies, enforced prescribing safety, append-only eMAR, and immunizations", async () => {
+  const migration=await read("supabase/migrations/20260927120000_phase1_allergies_medication_safety_emar_immunizations.sql");
+  const js=await read("live.js");
+  for(const table of ["patient_allergies","medication_safety_overrides","immunizations"]){
+    assert.match(migration,new RegExp(`create table public\.${table}`));
+    assert.match(migration,new RegExp(`alter table public\.${table} enable row level security`));
+  }
+  for(const table of ["patient_allergies","immunizations"])assert.match(migration,new RegExp(`create policy mfa_required on public\.${table} as restrictive`));
+  assert.match(migration,/create trigger enforce_medication_safety before insert on public\.medication_orders/);
+  assert.match(migration,/An override reason is required to prescribe/);
+  assert.match(migration,/no interaction content is seeded here/);
+  assert.doesNotMatch(migration,/insert into public\.medication_interactions/);
+  assert.match(migration,/grant select,insert on public\.medication_administrations/);
+  assert.doesNotMatch(migration,/grant[^;]*update[^;]*public\.medication_administrations/);
+  assert.match(migration,/Immunization records are permanent/);
+  assert.match(js,/rpc\("medication_safety_check"/);
+  assert.match(js,/Safety check unavailable, so the order was not saved/);
+  assert.match(js,/No allergies recorded\. This is not the same as “no known allergies”/);
+  for(const hook of ["data-add-allergy","data-add-immunization","data-emar","data-emar-correct"])assert.match(js,new RegExp(hook));
+});
+
+test("S4: shared records honour the share period everywhere and the password is never sent with the link", async () => {
+  const fn=await read("supabase/functions/shared-record/index.ts"),portal=await read("portal-features.js");
+  for(const [table,column] of [["diagnoses","onset_at"],["encounters","start_at"],["medication_orders","start_at"],["orders","created_at"],["clinical_notes","created_at"]]){
+    const call=fn.slice(fn.indexOf(`within(admin.from("${table}")`));
+    assert.ok(fn.includes(`within(admin.from("${table}")`),`${table} is filtered by the share period`);
+    assert.ok(call.slice(0,call.indexOf(";")).includes(`"${column}")`),`${table} uses ${column}`);
+  }
+  assert.match(portal,/Send the link and the password separately/);
+  assert.doesNotMatch(portal,/navigator\.share\([^)]*temporary_password/);
+});
+
+test("clinical notes, order sets, templates, and duplicate-order warnings are wired into the staff app", async () => {
+  const js=await read("live.js"),notes=await read("supabase/migrations/20260927140000_clinical_notes_providers.sql"),content=await read("supabase/migrations/20260927150000_order_sets_note_templates.sql");
+  assert.match(notes,/create trigger ensure_clinical_provider/);
+  assert.match(notes,/Signed notes cannot be changed/);
+  assert.match(notes,/drop policy if exists clinical_notes_author_insert/);
+  assert.match(content,/No clinical content is seeded/);
+  assert.doesNotMatch(content,/insert into public\.(note_templates|order_sets|order_set_items)/);
+  for(const fn of ["findDuplicateOrders","placeOrders","manageNoteTemplates","manageOrderSets"])assert.match(js,new RegExp(`async function ${fn}`));
+  assert.match(js,/Possible duplicate orders/);
+  assert.match(js,/from\("note_templates"\)/);
+  assert.match(js,/from\("order_sets"\)/);
+});
+
+test("S5-S8 and the audit log are wired into the database and the staff app", async () => {
+  const migration=await read("supabase/migrations/20260927160000_security_mfa_privacy_scoping_audit.sql"),live=await read("live.js"),app=await read("app.js");
+  for(const fn of ["create-user","create-facility","create-health-department"]){const source=await read(`supabase/functions/${fn}/index.ts`);assert.match(source,/inviteUserByEmail/);assert.doesNotMatch(source,/temporary_password/)}
+  assert.match(migration,/must_change_password'\),'false'\)<>'true'/);
+  assert.match(migration,/audit_log_is_append_only/);
+  assert.match(migration,/values\(first_part,last_part,'active','account_bootstrap',null\)/);
+  assert.match(live,/rpc\("log_patient_record_view"/);
+  assert.match(live,/from\("audit_logs"\)/);
+  assert.doesNotMatch(app,/Signed-in user · Clinical EHR/,"the fake audit rows are gone");
 });

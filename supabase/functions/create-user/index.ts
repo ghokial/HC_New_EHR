@@ -43,13 +43,12 @@ Deno.serve(async (req) => {
     if(roleCodes.includes("root")) throw new Error("Root accounts cannot be created from this service");
     if((healthRole||platformRole)&&!isRoot) throw new Error("Healthcarology Root access required for this role");
     if(healthRole&&!body.jurisdiction_id) throw new Error("A health-department jurisdiction is required");
-    const random=new Uint8Array(1);crypto.getRandomValues(random); // keep a per-request nonce for audit correlation; password is fixed by onboarding policy
-    const temporaryPassword="Temp#123";
     if(!displayName)throw new Error("First and last name are required");
     let accountUserId:string,invite:any=null;
     const staffProfile={display_name,staff_group:staffGroups.join("\n")||null,staff_subgroup:staffSubgroups.join("\n")||null,job_title:String(body.job_title||"").trim()||null,credentials:String(body.credentials||"").trim()||null};
     if(existingUserId){accountUserId=existingUserId;const {error:profileError}=await admin.from("profiles").update(staffProfile).eq("user_id",accountUserId);if(profileError)throw profileError}
-    else {const created=await admin.auth.admin.createUser({email:body.email,phone,password:temporaryPassword,email_confirm:true,phone_confirm:true,user_metadata:{display_name},app_metadata:{must_change_password:true}});if(created.error)throw created.error;invite=created.data;accountUserId=invite.user.id;const {error:profileError}=await admin.from("profiles").update({...staffProfile,username}).eq("user_id",accountUserId);if(profileError)throw profileError}
+    // New people receive an emailed invitation and choose their own password; no shared or administrator-visible password exists.
+    else {const created=await admin.auth.admin.inviteUserByEmail(email,{data:{display_name},redirectTo:req.headers.get("origin")||undefined});if(created.error)throw created.error;invite=created.data;accountUserId=invite.user.id;const {error:metaError}=await admin.auth.admin.updateUserById(accountUserId,{phone,phone_confirm:true,app_metadata:{must_change_password:true}});if(metaError){await admin.auth.admin.deleteUser(accountUserId);throw metaError}const {error:profileError}=await admin.from("profiles").update({...staffProfile,username}).eq("user_id",accountUserId);if(profileError)throw profileError}
     const {data:roles,error:findRoleError}=await admin.from("roles").select("id,role_code,access_level").in("role_code",roleCodes);
     if(findRoleError) throw findRoleError;
     if((roles||[]).length!==roleCodes.length)throw new Error("One or more selected roles are unavailable");
@@ -86,6 +85,6 @@ Deno.serve(async (req) => {
       const integrationTypes=['Biometric clock','Mobile time app','Payroll processor','Tax filing','ACA reporting','PBJ reporting','Earned wage access'];
       const {error:integrationError}=await admin.from('payroll_integrations').upsert(integrationTypes.map(integration_type=>({facility_id:body.facility_id,integration_type,status:'unconfigured',created_by:user.id})),{onConflict:'facility_id,integration_type',ignoreDuplicates:true});if(integrationError)throw integrationError;
     }
-    return new Response(JSON.stringify({id:accountUserId,email:invite?.user?.email||profileMatch?.email||body.email,phone:invite?.user?.phone||phoneMatch?.phone||phone,username,role_codes:roleCodes,staff_groups:staffGroups,staff_subgroups:staffSubgroups,temporary_password:existingUserId?null:temporaryPassword,existing_account:Boolean(existingUserId),login_url:`${url.replace(/\/\/$/,"")}/login`,released_inactive_phone:releasedPhone}),{headers:{...cors,"Content-Type":"application/json"},status:201});
+    return new Response(JSON.stringify({id:accountUserId,email:invite?.user?.email||profileMatch?.email||body.email,phone:invite?.user?.phone||phoneMatch?.phone||phone,username,role_codes:roleCodes,staff_groups:staffGroups,staff_subgroups:staffSubgroups,invitation_sent:!existingUserId,existing_account:Boolean(existingUserId),login_url:`${url.replace(/\/\/$/,"")}/login`,released_inactive_phone:releasedPhone}),{headers:{...cors,"Content-Type":"application/json"},status:201});
   } catch(error){return new Response(JSON.stringify({error:error.message}),{headers:{...cors,"Content-Type":"application/json"},status:400});}
 });
