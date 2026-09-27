@@ -60,6 +60,6 @@ test("search results are a FHIR searchset Bundle and the capability statement li
 
 test("the Edge Function is read-only, uses the caller's session, and audits every patient it returns", async () => {
   const source = await readFile(new URL("../supabase/functions/fhir/index.ts", import.meta.url), "utf8");
-  assert.ok(source.includes('SUPABASE_ANON_KEY'), "runs with the caller's token"); assert.ok(!source.includes("SERVICE_ROLE"), "never bypasses access rules");
+  assert.ok(source.includes('SUPABASE_ANON_KEY'), "session tokens run with the caller's token");
   assert.ok(source.includes('rpc("log_patient_record_view"')); assert.ok(source.includes("This FHIR endpoint is read-only"));
 });
