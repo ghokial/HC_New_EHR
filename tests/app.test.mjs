@@ -805,3 +805,9 @@ test("phase 3: imaging orders link to PACS studies from the result screen", asyn
   assert.ok(live.includes("attachImagingArchive(detail)"));assert.ok(live.includes('rpc("link_imaging_study"'));assert.ok(live.includes("dicom-studies?imaging_order="));
   assert.ok(portal.includes("renderImagingArchiveSettings(supabase,app,facilityId)"));
 });
+
+test("phase 3: facilities request records by UNIN and patients approve, deny, or revoke in their portal", async () => {
+  const js=await read("record-exchange.js"),live=await read("live.js"),portal=await read("portal.js");
+  for(const rpc of ["request_facility_record_access","emergency_facility_record_access","read_shared_facility_record","respond_facility_record_access","revoke_facility_record_access"])assert.ok(js.includes(`rpc("${rpc}"`),rpc);
+  assert.ok(live.includes("data-record-exchange"));assert.ok(portal.includes("renderPatientRecordRequests(supabase,app)"));
+});
