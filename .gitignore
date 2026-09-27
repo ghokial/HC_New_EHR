@@ -18,3 +18,6 @@ mobile-patient/android/build/
 mobile-patient/android/app/build/
 mobile-patient/ios/App/build/
 mobile-patient/ios/DerivedData/
+
+# Logical database backups contain patient data
+backup/
