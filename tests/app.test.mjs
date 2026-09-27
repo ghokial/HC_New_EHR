@@ -784,3 +784,11 @@ test("phase 2: discharge summaries and medication reconciliation are wired into 
   assert.ok(js.includes("data-discharge-summary"));assert.ok(js.includes('from("inpatient_discharge_summaries")'));
   assert.ok(migration.includes("Reconcile these medications before discharge"));assert.ok(migration.includes("A signed discharge summary cannot be changed"));
 });
+
+test("phase 2: staff scheduling creates availability and books for patients from the calendar", async () => {
+  const tools=await read("scheduling-tools.js"),calendar=await read("appointment-calendar.js"),migration=await read("supabase/migrations/20260927190000_scheduling_availability_and_staff_booking.sql");
+  assert.ok(calendar.includes("attachSchedulingTools(supabase,section"));
+  for(const rpc of ["generate_availability_slots","book_available_slot"])assert.ok(tools.includes(`rpc("${rpc}"`));
+  assert.ok(migration.includes("drop function if exists public.book_available_slot(bigint,bigint,text);"),"the ambiguous overload is removed");
+  assert.ok(migration.includes("prevent_overlapping_slots"));
+});

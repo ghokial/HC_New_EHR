@@ -1,6 +1,6 @@
 import {renderBillingDepartment} from "./billing-department.js?v=20260908-5";
 import {renderLaboratoryDepartment} from "./laboratory-department.js?v=20260908-5";
-import {enhancePatientAppointmentNotification,renderAppointmentCalendar} from "./appointment-calendar.js?v=20260910-1";
+import {enhancePatientAppointmentNotification,renderAppointmentCalendar} from "./appointment-calendar.js?v=20260927-1";
 import {renderFacilityNotifications} from "./facility-notifications.js";
 
 function upgradeGroupLandingPages(app){
