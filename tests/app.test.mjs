@@ -792,3 +792,10 @@ test("phase 2: staff scheduling creates availability and books for patients from
   assert.ok(migration.includes("drop function if exists public.book_available_slot(bigint,bigint,text);"),"the ambiguous overload is removed");
   assert.ok(migration.includes("prevent_overlapping_slots"));
 });
+
+test("phase 3: laboratory HL7 interfaces are managed from the facility portal", async () => {
+  const ui=await read("lab-interfaces.js"),portal=await read("portal-features.js"),fn=await read("supabase/functions/hl7-lab/index.ts");
+  assert.ok(portal.includes("renderLabInterfaces(supabase,app,facilityId)"));
+  assert.ok(ui.includes('rpc("create_lab_interface"'));assert.ok(ui.includes("shown only once"));
+  assert.ok(fn.includes('rpc("hl7_ingest_lab_results"'));assert.ok(fn.includes("x-interface-key"));
+});
