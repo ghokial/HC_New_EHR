@@ -6,6 +6,8 @@
     "start": "node server.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:db": "node --test tests/db/*.test.mjs",
+    "test:load": "node tests/load/access-rules.load.mjs",
+    "backup:verify": "node scripts/verify-backup.mjs",
     "seed:countries": "node scripts/seed-countries.mjs",
     "supabase:help": "supabase --help",
     "supabase:start": "supabase start",
