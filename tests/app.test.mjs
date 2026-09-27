@@ -27,7 +27,9 @@ test("live authentication enforces temporary-password replacement", async () => 
   const live = await read("live.js");
   const createUser = await read("supabase/functions/create-user/index.ts");
   const changePassword = await read("supabase/functions/complete-password-change/index.ts");
-  assert.match(createUser, /crypto\.getRandomValues/);
+  // S6: new accounts are invited by email; no shared or administrator-visible password exists.
+  assert.match(createUser, /inviteUserByEmail/);
+  assert.doesNotMatch(createUser, /Temp#123|temporary_password/);
   assert.match(createUser, /must_change_password:true/);
   assert.match(live, /signInWithPassword/);
   assert.match(live, /passwordChangeGate/);
@@ -274,7 +276,8 @@ test("encounter creation filters alphabetized services by alphabetized departmen
   assert.match(live,/Select department first/);
   assert.match(live,/localeCompare/);
   assert.match(live,/matchingServices=addingDepartment\?\[\]:sortedServices\.filter/);
-  assert.match(live,/\["root","sysadmin"\]\.includes\(currentRoleCode\)/);
+  // S8: the shared department/service catalog is Root-only.
+  assert.match(live,/const canManageCatalog=currentRoleCode==="root";/);
   assert.match(live,/Other — add new/);
   assert.match(live,/new_department_name/);
   assert.match(live,/new_service_name/);
@@ -598,4 +601,171 @@ test("encounters route to triage by default and imaging exams are filtered by im
   assert.match(live,/enqueue_patient_for_triage/);assert.match(live,/Patient sent to triage/);
   assert.match(live,/data-imaging-type/);assert.match(live,/Select imaging type/);
   assert.match(migration,/add column if not exists imaging_type/);assert.match(migration,/nextval\('public\.triage_arrival_seq'\)/);
+});
+test("all facilities receive a chargemaster Billing Department with duplicate and inflated-price checks",async()=>{
+  const feature=await read("billing-department.js"),portal=await read("portal-features.js"),migration=await read("supabase/migrations/20260907170141_facility_chargemaster_billing_department.sql");
+  assert.match(feature,/Billing Department/);assert.match(feature,/Revenue Code/);assert.match(feature,/Charge Code \/ Item Number/);assert.match(feature,/Units of Service/);assert.match(feature,/Billed Charge/);
+  assert.match(feature,/data-price-item/);assert.match(feature,/Save price/);assert.match(feature,/update\(\{unit_price:unitPrice/);
+  assert.match(portal,/renderBillingDepartment\(supabase,app,facilityId\)/);assert.match(portal,/renderBillingDepartment\(supabase,app,facility\.id\)/);
+  assert.match(migration,/create table public\.facility_chargemaster_items/);assert.match(migration,/create table public\.facility_charge_lines/);assert.match(migration,/new\.duplicate_charge=exists/);assert.match(migration,/new\.billed_charge>new\.expected_charge/);assert.match(migration,/enable row level security/);
+});
+
+test("supplied laboratory workbooks populate ordering and facility billing setup without invented prices",async()=>{
+  const migration=await read("supabase/migrations/20260907214544_laboratory_workbook_catalog.sql"),billing=await read("billing-department.js"),laboratory=await read("laboratory-department.js"),features=await read("portal-features.js");
+  assert.match(migration,/create table public\.laboratory_exam_catalog/);
+  assert.match(migration,/source_workbook text not null/);
+  assert.match(migration,/source_row integer not null/);
+  assert.match(migration,/insert into public\.clinical_order_catalog/);
+  assert.match(migration,/add column laboratory_exam_catalog_id/);
+  for(const file of ["anatomic_pathology_examens_reference_ranges.xlsx","blood_bank_examens_reference_ranges.xlsx","blood_bank_transfusion_services_reference_ranges.xlsx","chemistry_lab_examens_reference_ranges.xlsx","clinical_laboratory_examens_reference_ranges.xlsx","complete_cytology_billing_codes.xlsx","core_lab_examens_reference_ranges.xlsx","genetic_testing_billing_codes.xlsx"])assert.match(migration,new RegExp(file.replaceAll(".","\\.")));
+  assert.match(billing,/Laboratory billable-item setup/);
+  assert.match(billing,/do not contain revenue codes, units of service, or facility prices/);
+  assert.match(billing,/laboratory_exam_catalog_id/);
+  assert.match(laboratory,/186 source rows|exams\?\.length/);
+  assert.match(laboratory,/must be validated by the performing laboratory/);
+  assert.match(features,/renderLaboratoryDepartment/);
+});
+
+test("all authenticated portals use the shared responsive left-sidebar shell",async()=>{
+  const portal=await read("portal.js"),features=await read("portal-features.js"),theme=await read("theme.css");
+  assert.match(portal,/portal app-shell/);assert.match(portal,/portal-global-sidebar/);
+  assert.match(portal,/portal-topbar/);assert.match(portal,/portal-menu-toggle/);
+  assert.match(features,/portal-global-sidebar \.portal-section-nav/);
+  assert.match(features,/portal-menu-open/);assert.match(features,/portal-sidebar/);
+  assert.match(theme,/\.portal\.app-shell/);
+  assert.match(theme,/grid-template-columns:260px minmax\(0,1fr\)/);
+  assert.match(theme,/\.portal-global-sidebar/);assert.match(theme,/text-align:left/);
+  assert.match(theme,/linear-gradient\(180deg,#0b4fad/);assert.match(theme,/background:#3372c8/);
+  assert.match(theme,/transform:translateX\(-105%\)/);
+});
+
+test("staff and facility settings have grouped sidebar landing pages",async()=>{
+  const features=await read("portal-features.js"),mobile=await read("mobile-patient/www/portal-features.js"),theme=await read("theme.css");
+  for(const title of ["Staff","Facilities","List of all staff","Staff scheduling","My staff profile","Task assignment","Client facility group","Facility branding","Facility subscription"])assert.match(features,new RegExp(title));
+  assert.match(features,/portal-group-landing/);assert.match(features,/portal-group-grid/);
+  assert.match(features,/entries\.forEach/);assert.match(theme,/\.portal-group-grid/);
+  assert.equal(features,mobile);
+});
+
+test("staff workspace uses expandable tiles, scoped assignment, teams, pictures, and calculated base pay",async()=>{
+  const features=await read("portal-features.js"),createUser=await read("supabase/functions/create-user/index.ts"),manageStaff=await read("supabase/functions/manage-staff/index.ts"),migration=await read("supabase/migrations/20260908143000_staff_primary_service.sql");
+  for(const term of ["staff-tool-tile","Filter staff before selection","Create a Team","facility_staff_team_members","profile_photo","base_pay_type","Hourly Rate","Base Salary","Estimated regular gross pay"])assert.match(features,new RegExp(term));
+  assert.match(features,/department\.required=true/);assert.match(features,/service\.required=/);
+  assert.match(createUser,/primary department is required/);assert.match(createUser,/basePayAmount/);assert.match(createUser,/baseHourlyRate/);assert.match(createUser,/baseSalary/);
+  assert.match(manageStaff,/primary_service/);assert.match(migration,/add column if not exists primary_service/);
+});
+
+test("facility departments tile owns activated specialty workspaces and separates nephrology services",async()=>{
+  const features=await read("portal-features.js"),mobile=await read("mobile-patient/www/portal-features.js"),migration=await read("supabase/migrations/20260908161500_nephrology_dialysis_services.sql");
+  assert.match(features,/List of Departments/);assert.match(features,/departmentPanel/);
+  assert.match(features,/Laboratory Department/);assert.match(features,/Dialysis management/);
+  assert.match(features,/Women.s health/);assert.match(features,/department-workspace/);
+  assert.match(features,/group\.title==="Staff"\|\|group\.title==="Facilities"/);
+  assert.match(migration,/\('Nephrology'\),\('Dialysis'\)/);
+  assert.match(migration,/insert into public\.facility_services/);
+  assert.equal(features,mobile);
+});
+
+test("appointments use filterable week or month calendars with retained cancellation and rescheduling",async()=>{
+  const calendar=await read("appointment-calendar.js"),mobile=await read("mobile-patient/www/appointment-calendar.js"),features=await read("portal-features.js"),migration=await read("supabase/migrations/20260908183000_appointment_calendar_management.sql");
+  for(const term of ["Weekly","Monthly","All departments","All services","All providers","Modify","Cancel appointment","notify_if_sooner","Notify me if a sooner appointment becomes available"])assert.match(calendar,new RegExp(term));
+  assert.match(calendar,/appointment\.status="cancelled"/);assert.match(calendar,/cancel_appointment_keep_calendar/);assert.match(calendar,/reschedule_appointment/);
+  assert.match(features,/renderAppointmentCalendar/);assert.match(features,/enhancePatientAppointmentNotification/);
+  assert.match(migration,/add column if not exists notify_if_sooner/);assert.match(migration,/status='cancelled'/);assert.match(migration,/starts_at>now\(\)/);
+  assert.equal(calendar.trim(),mobile.trim());
+});
+
+test("daily opted-in sooner-appointment checks create facility notifications",async()=>{
+  const module=await read("facility-notifications.js"),mobile=await read("mobile-patient/www/facility-notifications.js"),features=await read("portal-features.js"),migration=await read("supabase/migrations/20260908194500_daily_sooner_appointment_notifications.sql");
+  assert.match(features,/renderFacilityNotifications/);assert.match(module,/<h2>Notifications<\/h2>/);
+  assert.match(module,/patients\(first_name,last_name\)/);assert.match(module,/Mark read/);
+  assert.match(migration,/create extension if not exists pg_cron/);assert.match(migration,/appointment\.notify_if_sooner/);
+  assert.match(migration,/interval '48 hours'/);assert.match(migration,/candidate\.provider_id=appointment\.provider_id/);
+  assert.match(migration,/0 6 \* \* \*/);assert.match(migration,/unique\(appointment_id,available_slot_id,notification_type\)/);
+  assert.match(migration,/enable row level security/);assert.match(migration,/private\.is_facility_member\(facility_id\)/);
+  assert.equal(module.trim(),mobile.trim());
+});
+
+test("searchable lists begin live filtering at three characters on desktop and mobile",async()=>{
+  const app=await read("app.js"),live=await read("live.js"),portal=await read("portal.js"),features=await read("portal-features.js"),billing=await read("billing-department.js"),laboratory=await read("laboratory-department.js");
+  assert.match(app,/globalSearch\.addEventListener\("input"/);assert.match(app,/q\.length<3/);
+  assert.match(live,/search\.minLength=3/);assert.match(live,/term\.length<3/);
+  assert.match(portal,/term\.length>0&&term\.length<3/);
+  assert.match(features,/minimumSearchLength='3'/);assert.match(features,/term\.length<3\|\|!row\.dataset\.searchText\.includes\(term\)/);
+  assert.match(billing,/raw\.length>=3/);assert.match(laboratory,/tooShort=query\.length>0&&query\.length<3/);
+  for(const file of ["portal.js","portal-features.js","billing-department.js","laboratory-department.js"]){
+    assert.equal(await read(file),await read(`mobile-patient/www/${file}`));
+  }
+});
+
+test("staff creation supports multiple groups and roles with reusable contact details",async()=>{
+  const features=await read("portal-features.js"),mobile=await read("mobile-patient/www/portal-features.js"),createUser=await read("supabase/functions/create-user/index.ts"),styles=await read("staff-facility-tiles.css");
+  for(const term of ['Staff groups and types','multiple size="8"','staff_groups_json','staff_subgroups_json','role_codes_json','data-copy-contact="email"','data-copy-contact="phone"'])assert.match(features,new RegExp(term));
+  assert.match(createUser,/roleCodes=stringList/);assert.match(createUser,/user_roles"\)\.upsert\(\(roles\|\|\[\]\)\.map/);
+  assert.match(createUser,/staff_group:staffGroups\.join/);assert.match(createUser,/staff_subgroup:staffSubgroups\.join/);
+  assert.match(styles,/same-contact-control/);assert.equal(features,mobile);
+});
+
+test("staff language search saves and closes while staff identity and assignments support multiples",async()=>{
+  const features=await read("portal-features.js"),mobile=await read("mobile-patient/www/portal-features.js"),css=await read("portal.css"),mobileCss=await read("mobile-patient/www/portal.css"),app=await read("app.js");
+  for(const term of ['data-language-results','data-language-save','Save languages','data-search-text','dropdown.open=false','staff-directory-photo','staff-language-badge','Job Titles','Primary Departments','Primary Services'])assert.match(features,new RegExp(term));
+  assert.match(features,/job_title" multiple/);assert.match(features,/data-primary-department multiple/);assert.match(features,/data-primary-service multiple/);
+  assert.match(css,/\[data-language-row\]\[hidden\]\{display:none!important\}/);assert.match(app,/globalSearch\.addEventListener\("focusout"/);
+  assert.equal(features,mobile);assert.equal(css,mobileCss);
+});
+
+test("phase 1 adds allergies, enforced prescribing safety, append-only eMAR, and immunizations", async () => {
+  const migration=await read("supabase/migrations/20260927120000_phase1_allergies_medication_safety_emar_immunizations.sql");
+  const js=await read("live.js");
+  for(const table of ["patient_allergies","medication_safety_overrides","immunizations"]){
+    assert.match(migration,new RegExp(`create table public\.${table}`));
+    assert.match(migration,new RegExp(`alter table public\.${table} enable row level security`));
+  }
+  for(const table of ["patient_allergies","immunizations"])assert.match(migration,new RegExp(`create policy mfa_required on public\.${table} as restrictive`));
+  assert.match(migration,/create trigger enforce_medication_safety before insert on public\.medication_orders/);
+  assert.match(migration,/An override reason is required to prescribe/);
+  assert.match(migration,/no interaction content is seeded here/);
+  assert.doesNotMatch(migration,/insert into public\.medication_interactions/);
+  assert.match(migration,/grant select,insert on public\.medication_administrations/);
+  assert.doesNotMatch(migration,/grant[^;]*update[^;]*public\.medication_administrations/);
+  assert.match(migration,/Immunization records are permanent/);
+  assert.match(js,/rpc\("medication_safety_check"/);
+  assert.match(js,/Safety check unavailable, so the order was not saved/);
+  assert.match(js,/No allergies recorded\. This is not the same as “no known allergies”/);
+  for(const hook of ["data-add-allergy","data-add-immunization","data-emar","data-emar-correct"])assert.match(js,new RegExp(hook));
+});
+
+test("S4: shared records honour the share period everywhere and the password is never sent with the link", async () => {
+  const fn=await read("supabase/functions/shared-record/index.ts"),portal=await read("portal-features.js");
+  for(const [table,column] of [["diagnoses","onset_at"],["encounters","start_at"],["medication_orders","start_at"],["orders","created_at"],["clinical_notes","created_at"]]){
+    const call=fn.slice(fn.indexOf(`within(admin.from("${table}")`));
+    assert.ok(fn.includes(`within(admin.from("${table}")`),`${table} is filtered by the share period`);
+    assert.ok(call.slice(0,call.indexOf(";")).includes(`"${column}")`),`${table} uses ${column}`);
+  }
+  assert.match(portal,/Send the link and the password separately/);
+  assert.doesNotMatch(portal,/navigator\.share\([^)]*temporary_password/);
+});
+
+test("clinical notes, order sets, templates, and duplicate-order warnings are wired into the staff app", async () => {
+  const js=await read("live.js"),notes=await read("supabase/migrations/20260927140000_clinical_notes_providers.sql"),content=await read("supabase/migrations/20260927150000_order_sets_note_templates.sql");
+  assert.match(notes,/create trigger ensure_clinical_provider/);
+  assert.match(notes,/Signed notes cannot be changed/);
+  assert.match(notes,/drop policy if exists clinical_notes_author_insert/);
+  assert.match(content,/No clinical content is seeded/);
+  assert.doesNotMatch(content,/insert into public\.(note_templates|order_sets|order_set_items)/);
+  for(const fn of ["findDuplicateOrders","placeOrders","manageNoteTemplates","manageOrderSets"])assert.match(js,new RegExp(`async function ${fn}`));
+  assert.match(js,/Possible duplicate orders/);
+  assert.match(js,/from\("note_templates"\)/);
+  assert.match(js,/from\("order_sets"\)/);
+});
+
+test("S5-S8 and the audit log are wired into the database and the staff app", async () => {
+  const migration=await read("supabase/migrations/20260927160000_security_mfa_privacy_scoping_audit.sql"),live=await read("live.js"),app=await read("app.js");
+  for(const fn of ["create-user","create-facility","create-health-department"]){const source=await read(`supabase/functions/${fn}/index.ts`);assert.match(source,/inviteUserByEmail/);assert.doesNotMatch(source,/temporary_password/)}
+  assert.match(migration,/must_change_password'\),'false'\)<>'true'/);
+  assert.match(migration,/audit_log_is_append_only/);
+  assert.match(migration,/values\(first_part,last_part,'active','account_bootstrap',null\)/);
+  assert.match(live,/rpc\("log_patient_record_view"/);
+  assert.match(live,/from\("audit_logs"\)/);
+  assert.doesNotMatch(app,/Signed-in user · Clinical EHR/,"the fake audit rows are gone");
 });

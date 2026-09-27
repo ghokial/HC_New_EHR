@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "node --test tests/*.test.mjs",
+    "test:db": "node --test tests/db/*.test.mjs",
     "seed:countries": "node scripts/seed-countries.mjs",
     "supabase:help": "supabase --help",
     "supabase:start": "supabase start",
@@ -23,6 +24,7 @@
     "libphonenumber-js": "1.11.20"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.3.16",
     "supabase": "2.116.0"
   }
 }
